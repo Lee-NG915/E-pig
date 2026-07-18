@@ -25,6 +25,8 @@
     "smoke:runtime-market": "node scripts/smoke/runtime-market.mjs",
     "storybook": "pnpm --filter @e-pig/happy-dog storybook",
     "build-storybook": "pnpm --filter @e-pig/happy-dog build-storybook",
+    "storybook:modules": "pnpm --filter @e-pig/storybook-host storybook",
+    "build-storybook:modules": "pnpm --filter @e-pig/storybook-host build-storybook",
     "happy-dog:test": "pnpm --filter @e-pig/happy-dog test"
   },
   "dependencies": {
@@ -44,6 +46,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@storybook/react-vite": "^10.0.0",
     "@tailwindcss/postcss": "4.3.3",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",

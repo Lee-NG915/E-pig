@@ -1,6 +1,6 @@
 # Engineering 流程文档
 
-更新日期：2026-07-18
+更新日期：2026-07-19
 
 状态：active
 
@@ -22,3 +22,5 @@
 | [component-folder-contract-rollout.md](./component-folder-contract-rollout.md) | R0–R3 落地节奏 |
 
 产品里程碑 PRD 在 `docs/milestones/`；架构硬约束在 `AGENTS.md` 与 `docs/codex/research/`。
+
+业务组件 stories 统一在 `packages/storybook-host` 预览：`pnpm storybook:modules`（端口 6007，聚合 `src/modules` + happy-dog；happy-dog 自家 Storybook 仍是 `pnpm storybook`，端口 6006）。

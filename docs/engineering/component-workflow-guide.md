@@ -1,6 +1,6 @@
 # 组件对话开发流程指南
 
-更新日期：2026-07-18
+更新日期：2026-07-19
 
 状态：active
 
@@ -35,6 +35,8 @@
 | `scripts/quality/check-component-companions.mjs` | Static：companion 存在性（CF-2/3/4） |
 | `pnpm quality:companions` | 单独跑 companions（默认 warn） |
 | `pnpm quality:diff` | ESLint + 签名扫描 + companions（warn） |
+| `packages/storybook-host` | 业务 modules + happy-dog 聚合 Storybook（`@storybook/react-vite`，端口 6007） |
+| `pnpm storybook:modules` | 启动聚合 Storybook 查看业务组件 stories（`pnpm build-storybook:modules` 出静态产物） |
 
 ---
 
@@ -53,7 +55,7 @@
 ② 在 md 里增补「用户故事 / 状态矩阵」（只写行为，不写 className）
         │
         ▼
-③ 同一次改动：tsx + spec（+ stories；happy-dog 必做）
+③ 同一次改动：tsx + spec + stories（allowlist 内组件三者都是强制 companion）
         │
         ▼
 ④ pnpm quality:companions   # 漏 companion 会报 CF-*
@@ -89,7 +91,7 @@ src/modules/<domain>/components/<name>/
   <name>.tsx
   <name>.md            # 业务试点（allowlist）强制
   <name>.spec.tsx      # 或 .spec.ts
-  <name>.stories.tsx   # happy-dog 强制；业务可后开
+  <name>.stories.tsx   # allowlist 内强制（requireStoriesForModuleFolders=true）
   <name>.mock.ts       # 可选
   parts/               # 可选私有子组件
 ```
@@ -125,7 +127,7 @@ pnpm quality:diff
 | --- | --- |
 | CF-1 | 扁平 `components/foo.tsx` 必须在 `legacyFlatFiles`；新组件请用文件夹形状 |
 | CF-2 | 同目录必须有 `.spec.ts` 或 `.spec.tsx` |
-| CF-3 | happy-dog 必须有 `.stories.tsx`；业务文件夹在 allowlist 打开后才强制 |
+| CF-3 | happy-dog 必须有 `.stories.tsx`；业务文件夹已强制（allowlist `requireStoriesForModuleFolders=true`） |
 | CF-4 | 业务**文件夹形状**且 allowlist `requireMdForModuleFolders` 时，必须有 `.md` 且含 `## 状态矩阵` 或 `## 用户故事` |
 
 日志：`logs/component-folder-companions.json`（已 gitignore）。

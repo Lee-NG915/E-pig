@@ -1,6 +1,6 @@
 # Harness 设计：组件文件夹契约领域
 
-更新日期：2026-07-18
+更新日期：2026-07-19
 
 状态：active（H1 warn 已落地）  
 领域 ID：`component-folder`  
@@ -54,7 +54,7 @@
     "src/modules/catalog/components"
   ],
   "requireMdForModuleFolders": true,
-  "requireStoriesForModuleFolders": false,
+  "requireStoriesForModuleFolders": true,
   "legacyFlatFiles": ["…existing flat paths…"],
   "ignoreFilePatterns": [
     "**/*.spec.ts",
@@ -68,7 +68,7 @@
 }
 ```
 
-Phase 2 试点：`requireStoriesForModuleFolders` 先 `false`，R1 末再对 allowlist 升 `true`。
+Phase 2 试点：`requireStoriesForModuleFolders` 已升 `true`（业务 stories 统一由 `packages/storybook-host` 预览，`pnpm storybook:modules`，端口 6007）。
 
 ---
 

@@ -1,0 +1,8 @@
+/* 与 src/app/globals.css 同源：业务 stories 复用 happy-dog 的 theme tokens 与基础样式。 */
+@import "@e-pig/happy-dog/globals.css";
+
+/*
+ * Tailwind v4 自动内容探测以 CSS 所在包为基线，扫不到仓根的 src/；
+ * 显式 @source（相对本文件）让业务模块组件的 utility class 也能生成。
+ */
+@source "../../../src";

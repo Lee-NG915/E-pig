@@ -5,7 +5,7 @@
     "src/modules/catalog/components"
   ],
   "requireMdForModuleFolders": true,
-  "requireStoriesForModuleFolders": false,
+  "requireStoriesForModuleFolders": true,
   "legacyFlatFiles": [
     "packages/happy-dog/src/components/badge.tsx",
     "packages/happy-dog/src/components/button.tsx",

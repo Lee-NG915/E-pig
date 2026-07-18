@@ -1,6 +1,6 @@
 # 组件文件夹契约（Component Folder Contract）
 
-更新日期：2026-07-18
+更新日期：2026-07-19
 
 状态：active
 
@@ -64,7 +64,7 @@ src/modules/<domain>/components/<component-name>/
 
 - **只做状态矩阵**，不做「加购→结账」旅程。
 - 旅程：组件级用 Testing Library；跨页用未来 Playwright（Phase 3+）。
-- 业务 modules 的 stories 可挂在 happy-dog Storybook 的额外 stories glob，或后续 `apps/storybook`；Phase 2 试点阶段允许先只在 happy-dog 强制，业务 stories 随后开启。
+- 业务 modules 与 happy-dog 的 stories 统一由 `packages/storybook-host` 聚合预览（`pnpm storybook:modules`，端口 6007）；allowlist `requireStoriesForModuleFolders=true` 起，业务文件夹组件强制 stories（CF-3）。
 
 ### 4.4 `.mock` — 稳定夹具
 

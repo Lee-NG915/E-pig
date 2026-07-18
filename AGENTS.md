@@ -39,6 +39,10 @@ pnpm smoke:runtime-market # 用 SG 启动同一 standalone，验证运行时 mar
 pnpm storybook       # 启动 packages/happy-dog Storybook（端口 6006）
 pnpm build-storybook # 构建静态 Storybook
 pnpm happy-dog:test  # 运行 happy-dog 独立测试
+
+# storybook-host 业务组件库（modules + happy-dog 聚合，端口 6007）
+pnpm storybook:modules       # 启动 packages/storybook-host Storybook
+pnpm build-storybook:modules # 构建 storybook-host 静态 Storybook
 ```
 
 跑单个测试文件：
@@ -177,6 +181,7 @@ src/
 public/
 packages/
   happy-dog/             # @e-pig/happy-dog：shadcn 基础组件、Theme tokens、Storybook
+  storybook-host/        # @e-pig/storybook-host：modules + happy-dog 聚合 Storybook（6007，react-vite）
 tests/e2e/              # 预留（P0 暂无 E2E 设施）
 docs/
 ```
