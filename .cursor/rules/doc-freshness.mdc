@@ -1,0 +1,12 @@
+---
+description: 编辑任何带 YAML frontmatter 或"更新日期"头的 Markdown 文件时同步更新元数据
+globs: ["**/*.md", "**/*.mdx"]
+alwaysApply: true
+---
+
+编辑任何 `.md` / `.mdx` 文件时，先读文件头 10 行判断元数据格式，然后在同一次编辑内同步更新：
+
+- `docs/codex/research/*.md`（无 frontmatter，正文头部有日期行）：`更新日期：YYYY-MM-DD` → 改为当天；`状态：` → 不要改，除非负责人明确要求
+- 带 YAML frontmatter 的文件：`last-reviewed` / `last-modified` / `updated_at` → 设为当天（YYYY-MM-DD）；`version` → 内容编辑递增 patch（1.0.0 → 1.0.1），新增章节递增 minor（1.0.0 → 1.1.0）；`owner` / `status` → 不要改，除非用户明确要求
+
+完整规范见 canonical：`.agents/rules/doc-freshness.md`
