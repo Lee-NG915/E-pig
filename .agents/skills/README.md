@@ -20,7 +20,7 @@ E-pig 的 skill 不是孤立的提示词，它们和仓库的质量门（`.claud
 | --- | --- | --- |
 | `submit-pr` | 按 E-pig 约定创建/更新 GitHub PR（分支名解析类型、Conventional Commits 标题、六段 body 模板、建后自纠） | body 的 "how to verify" 段必须列**实际跑过**的 `pnpm typecheck / lint / test / build / quality:diff` 结果，没跑写 NOT RUN |
 | `harness-guide` | 为某个代码领域（import 边界 / env 卫生 / 缓存规则 / market 配置 / 测试覆盖）搭建 8 组件治理 | 落地件就是本仓库已有的 Spec（AGENTS.md Hard Rules）、Static（ESLint no-restricted-imports）、Gate（diff-check.sh + stop-review.sh） |
-| `vercel-react-best-practices` | React/Next.js 性能与渲染规则速查（58 条，按 async/bundle/client/js/rendering/rerender/server 分类） | 写 `src/modules/**` 组件与 `src/app/**` 路由时对照；与 07 号研究文档的 Cache Components 决策一致 |
+| `vercel-react-best-practices` | React 19 / Next.js 16 性能与渲染规则速查（54 条本地筛选规则） | 先应用 E-pig 的 Cache Components、状态管理、CSP 与依赖边界覆盖，再按需读取单条规则；不自动引入示例依赖 |
 
 配套的 always-on 规则在 `.agents/rules/`（编辑后质量自检循环、文档日期同步），经 `AGENTS.md` 顶部 `@include` 加载；`CLAUDE.md` 通过 `@AGENTS.md` 委托。评测用例（人工执行清单）在 `.claude/evals/`。
 
@@ -122,7 +122,7 @@ git commit -m "chore(skills): remove my-skill"
 
 ```text
 .agents/skills/           ← skill 源文件（git tracked，唯一事实源）
-├── README.md
+├── README.md             ← 本目录的项目级治理说明，不属于任何单个 skill
 └── <skill-name>/
     ├── SKILL.md          ← 必须，主指令文件
     ├── references/       ← 可选，详细参考（SKILL.md 超 500 行时外置到这里）

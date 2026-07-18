@@ -1,10 +1,10 @@
-# Joyboy 依赖与版本清单
+# 参考工程依赖与版本清单
 
 更新日期：2026-07-18
 
 ## 1. 口径
 
-- 版本来自 Joyboy 快照 `5ad622b…` 的直接 manifest 声明，不代表 lockfile 的最终解析版本。
+- 版本来自参考工程快照 `5ad622b…` 的直接 manifest 声明，不代表 lockfile 的最终解析版本。
 - `^`、`~`、`*` 保持原样，便于识别约束强度。
 - 根 `package.json` 有 90 个 runtime、132 个 dev dependency；全仓 71 份 manifest、289 个不同包名。
 - 本文列出所有架构相关 runtime 与开发工具族。大量 `@types/*`、内部 `@castlery/*` 0.0.1 包和工具的间接依赖不逐项解释；精确解析以 `pnpm-lock.yaml` 为准。

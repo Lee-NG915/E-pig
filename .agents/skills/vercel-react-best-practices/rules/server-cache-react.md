@@ -61,9 +61,9 @@ getUser(params); // Query runs
 getUser(params); // Cache hit (same reference)
 ```
 
-**Next.js-Specific Note:**
+**Next.js 16 / E-pig Note:**
 
-In Next.js, the `fetch` API is automatically extended with request memoization. Requests with the same URL and options are automatically deduplicated within a single request, so you don't need `React.cache()` for `fetch` calls. However, `React.cache()` is still essential for other async tasks:
+Request memoization and persistent data caching are different concerns. Identical GET-style `fetch` calls may be deduplicated during one server render, but `fetch` is not persistently cached by default in Next.js 16. Use `React.cache()` only for per-request deduplication of non-fetch work such as:
 
 - Database queries (Prisma, Drizzle, etc.)
 - Heavy computations
@@ -71,6 +71,6 @@ In Next.js, the `fetch` API is automatically extended with request memoization. 
 - File system operations
 - Any non-fetch async work
 
-Use `React.cache()` to deduplicate these operations across your component tree.
+Use `React.cache()` to deduplicate these operations across one server render. For approved public cross-request data caching, follow E-pig's `'use cache'` + `cacheLife(...)` + `cacheTag(...)` policy instead. Never apply either cache to cart, account, checkout, payment, price, or inventory data.
 
 Reference: [React.cache documentation](https://react.dev/reference/react/cache)

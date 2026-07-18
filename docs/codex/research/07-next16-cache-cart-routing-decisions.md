@@ -113,9 +113,9 @@ PDP Server Component
 
 Google 建议多语言版本使用不同 URL 和 `hreflang`，避免按推测语言自动强制跳转；同语言多地区近似内容应配合 canonical 与 hreflang。E-pig 的 URL 测试应把这些规则当成可验证输出，而不只检查页面能打开。
 
-## 7. Joyboy 证据与取舍
+## 7. 参考工程证据与取舍
 
-Joyboy 已经有 `REGIONAL_SUPPORTED_LOCALES` 以及“数组首项为默认 locale”的约束，这部分思想应继承；但这些规则与 device/region/locale 解析、地理信息、country select、cookie/header 和 rewrite 混在 middleware 链中。当前 `apps/web/middleware.ts` 串联 13 个 active middleware，典型路径包括：
+参考工程已经有 `REGIONAL_SUPPORTED_LOCALES` 以及“数组首项为默认 locale”的约束，这部分思想应继承；但这些规则与 device/region/locale 解析、地理信息、country select、cookie/header 和 rewrite 混在 middleware 链中。当前 `apps/web/middleware.ts` 串联 13 个 active middleware，典型路径包括：
 
 - `apps/web/middleware/constants.ts`：region→locales 和默认 locale。
 - `apps/web/middleware/middlewares/paramResolverMiddleware.ts`：region/locale/device 与 cookie/header 解析。

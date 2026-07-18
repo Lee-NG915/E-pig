@@ -33,19 +33,15 @@ Harness 是一个多层防护系统，在某个代码领域（domain）上强制
 
 ## 交互式流程
 
-当用户要求为领域 X 建治理时，按以下步骤走：
+当用户要求为领域 X 建治理时，按以下步骤走。优先从请求与代码路径推断领域；只有不同选择会实质改变治理范围且仓库内无法判断时才追问。
 
 ### Step 1 — 评估现状
 
-先问："要治理哪个领域？"（如 import-boundary、env-hygiene、cache-rules、market-config、test-coverage）
-
-然后扫描代码库：
+扫描代码库：
 
 ```bash
-grep -ri "{domain}" AGENTS.md eslint.config.mjs
-ls scripts/quality/ 2>/dev/null
-ls .agents/rules/ 2>/dev/null
-ls .github/workflows/ 2>/dev/null
+rg -n "{domain}" AGENTS.md eslint.config.mjs .agents/rules scripts/quality .github/workflows
+rg --files scripts/quality .agents/rules .github/workflows
 ```
 
 报告 8 组件中哪些已存在、哪些缺失（用 Step 5 的 checklist）。
@@ -66,7 +62,7 @@ ls .github/workflows/ 2>/dev/null
 
 - 接入 `scripts/quality/diff-check.sh` 的高危签名 fallback（rg/grep 文本扫描）。
 - 需要提交门禁时再装 git hooks（simple-git-hooks / Husky，可选）。
-- CI workflow 在首个可运行版本后建立，不预装。
+- 复用 `.github/workflows/ci.yml` 的现有质量 job；新增门禁前先确认本地命令与 CI 命令一致。
 
 ### Step 3 — Phase 2：可持续（Knowledge + Evolution）
 
@@ -94,7 +90,7 @@ ls .github/workflows/ 2>/dev/null
 
 | 领域              | 现有基础                                                            | 缺口                                   | 建议   |
 | ----------------- | ------------------------------------------------------------------- | -------------------------------------- | ------ |
-| Import 边界       | ESLint no-restricted-imports（Static ✅）+ diff-check fallback（Gate 雏形 ✅） | Spec 在 AGENTS.md 已写、缺量化         | **推荐第一个** |
+| Import 边界       | AGENTS.md Spec + ESLint no-restricted-imports + diff-check + CI | 缺量化与规则回归用例 | **推荐第一个** |
 | Env / secret 卫生 | env schema（@t3-oss/env-nextjs）+ diff-check 两条 fallback 签名      | 缺完整 Static 规则与量化                | 推荐   |
 | 缓存规则          | Hard Rules 已定稿（Spec ✅）                                         | Static（AST 检测 'use cache' 误用）缺失 | 中期   |
 | Market 配置       | typed market registry 约定（Spec ✅）                                | 纯函数单测（Dynamic）随实现补齐         | 中期   |

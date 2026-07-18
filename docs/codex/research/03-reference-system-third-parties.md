@@ -1,14 +1,14 @@
-# Joyboy 第三方与基础设施清单
+# 参考工程第三方与基础设施清单
 
 更新日期：2026-07-18
 
 ## 1. 原则
 
-本清单综合 manifest、环境 schema、应用配置、集成源文件和 Joyboy 原有第三方文档。`存在配置/代码` 不等于所有市场都启用，也不等于 E-pig 必须采用。
+本清单综合 manifest、环境 schema、应用配置、集成源文件和参考工程原有第三方文档。`存在配置/代码` 不等于所有市场都启用，也不等于 E-pig 必须采用。
 
 ## 2. 内容、媒体、搜索与缓存
 
-| 服务 | Joyboy 用途 | 接入形态 | E-pig 判断 |
+| 服务 | 参考工程用途 | 接入形态 | E-pig 判断 |
 | --- | --- | --- | --- |
 | Storyblok | 页面、导航、CMS block、Webhook、fallback | SDK + API + token | 不作为 P0 硬依赖；保留 CMS port |
 | Cloudinary | 图片上传、转换、CDN | SDK + remote image | 可选 provider；默认先用 Next Image + 本地/S3 兼容存储 |
@@ -34,7 +34,7 @@
 
 ## 4. 身份、风控与用户通信
 
-| 服务 | Joyboy 用途 | E-pig 判断 |
+| 服务 | 参考工程用途 | E-pig 判断 |
 | --- | --- | --- |
 | NextAuth/Auth.js beta | OAuth/session | 不直接复制；先定义 Auth port，确认后端身份源后再选 |
 | UMS OIDC | 企业用户系统 | OIDC adapter 预留 |
@@ -49,7 +49,7 @@
 
 ## 5. 分析、营销、隐私与验证
 
-| 服务 | Joyboy 用途 | E-pig 判断 |
+| 服务 | 参考工程用途 | E-pig 判断 |
 | --- | --- | --- |
 | Google Tag Manager / GA | 全局事件和渠道脚本 | P1；通过 analytics adapter，禁用时零 SDK |
 | Dynamic Yield | 个性化、活动、推荐 | 不进入 P0；推荐 provider port |
@@ -64,11 +64,11 @@
 | Trustpilot / Pinterest / Facebook verification | 域名 metadata | 配置化 metadata，不绑定 SDK |
 | Google Merchant / Customer Reviews | 商户与评论 | P1 配置化插件 |
 
-值得继承的是 Joyboy 的 tracking 单向事件流，而不是具体供应商。E-pig 内部事件名应保持业务语义，例如 `product_viewed`、`cart_item_added`、`checkout_started`；provider 自己映射 GA/PostHog/Klaviyo 格式。
+值得继承的是参考工程的 tracking 单向事件流，而不是具体供应商。E-pig 内部事件名应保持业务语义，例如 `product_viewed`、`cart_item_added`、`checkout_started`；provider 自己映射 GA/PostHog/Klaviyo 格式。
 
 ## 6. 可观测性与交付平台
 
-| 服务 | Joyboy 用途 | E-pig 判断 |
+| 服务 | 参考工程用途 | E-pig 判断 |
 | --- | --- | --- |
 | Sentry | error、trace、release、source map | P0 可选，默认 sample 且可完全关闭 |
 | Datadog RUM | 浏览器性能 | P0 不接 |
@@ -84,7 +84,7 @@
 
 ## 7. 环境配置族
 
-Joyboy 的环境键可归为以下类别；这里只列类别与典型名称，不记录值：
+参考工程的环境键可归为以下类别；这里只列类别与典型名称，不记录值：
 
 - 核心：`APPLICATION_ENV`、`NEXT_PUBLIC_API_HOST`、`NEXT_PUBLIC_BASE_URL`、`NEXT_PUBLIC_COUNTRY`、`NEXT_PUBLIC_LOCALE`、`NEXT_PUBLIC_CURRENCY`、`NEXT_PUBLIC_CHANNEL`。
 - 资产/缓存：`ASSETS_PATH`、`NEXT_PUBLIC_ASSETS_PATH`、`REDIS_URL`。

@@ -1,10 +1,10 @@
-# Joyboy 现状与架构盘点
+# 参考工程现状与架构盘点
 
 更新日期：2026-07-18
 
 ## 1. 项目画像
 
-Joyboy 是面向多国家站点的 Castlery 电商 monorepo，不是轻量 starter。它同时承载顾客 Web 与 POS，并包含内部设计系统、领域库、CMS、搜索、营销、监控和测试基础设施。
+参考工程是面向多国家站点的 Castlery 电商 monorepo，不是轻量 starter。它同时承载顾客 Web 与 POS，并包含内部设计系统、领域库、CMS、搜索、营销、监控和测试基础设施。
 
 | 维度 | 现状 |
 | --- | --- |
@@ -18,7 +18,7 @@ Joyboy 是面向多国家站点的 Castlery 电商 monorepo，不是轻量 start
 | 直接依赖 | 根 runtime 90、dev 132；全仓 71 份 `package.json` |
 | 构建资源 | Web build 12 GB Node heap；Storybook 16 GB；本地 Web serve 8 GB |
 
-这组数据说明 Joyboy 的很多技术是“规模产生后的治理工具”，不能直接当成新商城的最小起点。
+这组数据说明参考工程的很多技术是“规模产生后的治理工具”，不能直接当成新商城的最小起点。
 
 ## 2. 目录与边界
 
@@ -44,7 +44,7 @@ tools/                 Nx 插件、Storyblok/Storybook 工具、观测 lint
 
 ### 2.1 依赖规则
 
-Joyboy 通过 `@nx/enforce-module-boundaries` 以 error 级别约束依赖方向：
+参考工程通过 `@nx/enforce-module-boundaries` 以 error 级别约束依赖方向：
 
 ```text
 app / cms / composite
@@ -68,7 +68,7 @@ base-components (Fortress)
 
 ## 3. 主要技术选型
 
-| 类别 | Joyboy 选择 | 用途 |
+| 类别 | 参考工程选择 | 用途 |
 | --- | --- | --- |
 | 运行时 | Node 20.9.0 | 构建和 Next.js server |
 | 包管理 | pnpm 9.15.4 | workspace、lockfile、依赖安装 |
@@ -106,7 +106,7 @@ base-components (Fortress)
 
 ### 5.1 Tracking
 
-Joyboy 已形成值得保留的单向链路：
+参考工程已形成值得保留的单向链路：
 
 ```text
 UI → 领域交互事件 → tracking listener → channel trigger → 第三方
@@ -177,7 +177,7 @@ E-pig P0 只需要结构化 logger + 可选 Sentry adapter，不应同时接 Dat
 
 ## 8. 风险结论
 
-1. Joyboy 的最大价值是成熟边界与真实电商场景，不是依赖数量。
+1. 参考工程的最大价值是成熟边界与真实电商场景，不是依赖数量。
 2. 如果 E-pig 直接复制 Nx/Redux/Storyblok/Redis，会在业务成立前先承担平台维护成本。
 3. 如果过度“轻量”而取消 commerce port、支付服务端边界、事件模型和市场配置，又会失去可替换性。
 4. 正确折中是单应用垂直切片 + adapter seam；等出现第二应用、第二团队或独立发布需求后再拆 workspace package。
