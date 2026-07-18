@@ -54,7 +54,7 @@
 
 **参考（只读）：**
 
-- Joyboy `libs/fortress`：独立包、`Theme/{colors,typography,theme.tsx,provider}`、`.storybook/*`、stories 组织、theme toolbar
+- 参考工程 `libs/fortress`：独立包、`Theme/{colors,typography,theme.tsx,provider}`、`.storybook/*`、stories 组织、theme toolbar
 - shadcn 官方：[Monorepo](https://ui.shadcn.com/docs/monorepo)、[Package Imports](https://ui.shadcn.com/docs/package-imports)
 
 **必须差异：**
