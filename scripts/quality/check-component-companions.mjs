@@ -177,7 +177,8 @@ function fileExists(rel) {
 
 function mdHasRequiredHeading(rel) {
   const text = fs.readFileSync(path.join(ROOT, rel), "utf8");
-  return /^##\s*(状态矩阵|用户故事)\b/m.test(text);
+  // \b 对 CJK 永远失配（CJK 非 \w），改用否定前瞻：标题词后不得紧跟 ASCII word 字符。
+  return /^##\s*(状态矩阵|用户故事)(?![A-Za-z0-9_])/m.test(text);
 }
 
 function checkTarget(target, allowlist) {

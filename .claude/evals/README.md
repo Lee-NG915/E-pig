@@ -84,7 +84,7 @@ Negative case: 同样的 process.env 出现在 src/platform/config/env.ts 中不
 
 ```
 [CAPABILITY EVAL: companions-warn-missing-spec]
-Fixture: 工作区改动触及 src/modules/catalog/components/product-card.tsx（或临时 touch），且同目录无 product-card.spec.*
+Fixture: 工作区改动触及 src/modules/catalog/components/product-card/product-card.tsx（或临时 touch），且临时移走同目录 product-card.spec.*
 Success Criteria:
   - [ ] `pnpm quality:companions` 输出含 CF-2 / missing spec
   - [ ] 默认 warn：exit code = 0
@@ -142,7 +142,7 @@ Success Criteria:
 
 ```
 [CAPABILITY EVAL: warns-on-component-impl]
-Fixture: file_path = "src/modules/catalog/components/product-card.tsx"
+Fixture: file_path = "src/modules/catalog/components/product-card/product-card.tsx"
 Success Criteria:
   - [ ] 输出含 "[WARN] [Companions]"
   - [ ] 输出含 component-workflow-guide.md 或 quality:companions

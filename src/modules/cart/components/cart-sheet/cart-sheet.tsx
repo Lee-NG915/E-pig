@@ -4,7 +4,7 @@ import Image from "next/image";
 import { Minus, Plus, ShoppingBag } from "lucide-react";
 
 import { setCartOpen, setQuantity, useCartStore } from "@/modules/cart/lib/cart-store";
-import { useCartMarket } from "./cart-market-context";
+import { useCartMarket } from "../cart-market-context/cart-market-context";
 import { formatPrice } from "@/shared/lib/money";
 import { Button } from "@e-pig/happy-dog/components/button";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@e-pig/happy-dog/components/sheet";

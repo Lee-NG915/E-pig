@@ -9,11 +9,7 @@
   "legacyFlatFiles": [
     "packages/happy-dog/src/components/badge.tsx",
     "packages/happy-dog/src/components/button.tsx",
-    "packages/happy-dog/src/components/sheet.tsx",
-    "src/modules/cart/components/cart-market-context.tsx",
-    "src/modules/cart/components/cart-sheet-mount.tsx",
-    "src/modules/cart/components/cart-sheet.tsx",
-    "src/modules/catalog/components/product-card.tsx"
+    "packages/happy-dog/src/components/sheet.tsx"
   ],
   "ignoreFilePatterns": [
     "**/*.spec.ts",

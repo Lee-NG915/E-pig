@@ -5,11 +5,11 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { setCartOpen, setQuantity } from "@/modules/cart/lib/cart-store";
-import { ProductCard } from "@/modules/catalog/components/product-card";
-import { SiteHeader } from "@/modules/content/components/site-header";
+import { ProductCard } from "@/modules/catalog/components/product-card/product-card";
+import { SiteHeader } from "@/modules/content/components/site-header/site-header";
 
-import { CartMarketProvider, type CartMarket } from "./cart-market-context";
-import { CartSheet } from "./cart-sheet";
+import { CartMarketProvider, type CartMarket } from "./cart-market-context/cart-market-context";
+import { CartSheet } from "./cart-sheet/cart-sheet";
 
 vi.mock("next/image", () => ({
   default: ({ alt }: { alt: string }) => <span role="img" aria-label={alt || "Product image"} />,

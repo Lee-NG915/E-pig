@@ -1,7 +1,7 @@
 "use client";
 
-import { CartSheet } from "@/modules/cart/components/cart-sheet";
-import { CartMarketProvider, type CartMarket } from "./cart-market-context";
+import { CartSheet } from "@/modules/cart/components/cart-sheet/cart-sheet";
+import { CartMarketProvider, type CartMarket } from "../cart-market-context/cart-market-context";
 
 /**
  * 在 request-time market boundary 内挂载购物车抽屉的 client 边界。

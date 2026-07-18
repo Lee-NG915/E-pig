@@ -5,7 +5,7 @@ import { cleanup, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { CartMarketProvider } from "@/modules/cart/components/cart-market-context";
+import { CartMarketProvider } from "@/modules/cart/components/cart-market-context/cart-market-context";
 import {
   addItem,
   getCartSnapshot,

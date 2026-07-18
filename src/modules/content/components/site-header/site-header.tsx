@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { ShoppingBag } from "lucide-react";
 
-import { useCartMarket } from "@/modules/cart/components/cart-market-context";
+import { useCartMarket } from "@/modules/cart/components/cart-market-context/cart-market-context";
 import { setCartOpen, useCartStore } from "@/modules/cart/lib/cart-store";
 import { Button } from "@e-pig/happy-dog/components/button";
 

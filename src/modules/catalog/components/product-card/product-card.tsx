@@ -4,7 +4,7 @@ import Image from "next/image";
 import { Plus } from "lucide-react";
 
 import type { ProductListItem } from "@/core/contracts/commerce/catalog";
-import { useCartMarket } from "@/modules/cart/components/cart-market-context";
+import { useCartMarket } from "@/modules/cart/components/cart-market-context/cart-market-context";
 import { addItem } from "@/modules/cart/lib/cart-store";
 import { Badge } from "@e-pig/happy-dog/components/badge";
 import { Button } from "@e-pig/happy-dog/components/button";
