@@ -5,6 +5,8 @@ import Link from "next/link";
 import { connection } from "next/server";
 import { ArrowRight, Leaf, PackageCheck, ShieldCheck } from "lucide-react";
 
+import { CartMarketProvider } from "@/modules/cart/components/cart-market-context";
+import { CartSheetMount } from "@/modules/cart/components/cart-sheet-mount";
 import { ProductCard } from "@/modules/catalog/components/product-card";
 import { SiteFooter } from "@/modules/content/components/site-footer";
 import { SiteHeader } from "@/modules/content/components/site-header";
@@ -13,9 +15,8 @@ import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 
 // Cache Components 渲染模型（docs/codex/research/07 §2）：
-// 本页是静态 shell；市场相关的 request-time 区域（商品网格 + 市场徽标）
-// 放进有业务含义的 <Suspense> boundary，而不是给整页套无区分 fallback。
-// 市场来自进程启动环境变量（MARKET）；多市场 host 解析见 07 §5-6。
+// RootLayout 只输出当前 markets 共有的 base language `en`；region-specific
+// market/locale/currency 在下面的 request-time Suspense boundaries 中解析。
 
 const benefits = [
   {
@@ -35,14 +36,16 @@ const benefits = [
   },
 ];
 
-/** request-time 区域：读取当前进程 MARKET，经 registry 取 mock adapter 数据 */
+/** request-time 区域：读取当前进程 MARKET，经 registry 取 mock adapter 数据。 */
 async function MarketProductGrid() {
   await connection();
   const { catalog, market } = getCapabilities();
   const productList = await catalog.listProducts();
 
   return (
-    <>
+    <CartMarketProvider
+      market={{ id: market.id, currency: market.currency, locale: market.defaultLocale }}
+    >
       <div className="mb-10 flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
         <div>
           <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
@@ -61,8 +64,24 @@ async function MarketProductGrid() {
           <ProductCard key={product.id} product={product} locale={market.defaultLocale} />
         ))}
       </div>
-    </>
+    </CartMarketProvider>
   );
+}
+
+async function MarketChrome() {
+  await connection();
+  const { market } = getCapabilities();
+  return (
+    <CartSheetMount
+      market={{ id: market.id, currency: market.currency, locale: market.defaultLocale }}
+    >
+      <SiteHeader />
+    </CartSheetMount>
+  );
+}
+
+function HeaderSkeleton() {
+  return <div className="h-16 border-b bg-background" aria-hidden="true" />;
 }
 
 function ProductGridSkeleton() {
@@ -81,7 +100,9 @@ function ProductGridSkeleton() {
 export default function HomePage() {
   return (
     <div className="min-h-screen overflow-hidden">
-      <SiteHeader />
+      <Suspense fallback={<HeaderSkeleton />}>
+        <MarketChrome />
+      </Suspense>
       <main>
         <section className="mx-auto grid max-w-[1440px] gap-4 px-4 pb-4 pt-4 sm:px-6 lg:grid-cols-[0.92fr_1.08fr] lg:px-8">
           <div className="flex min-h-[560px] flex-col justify-between rounded-[2rem] bg-primary p-8 text-primary-foreground sm:p-12 lg:min-h-[680px] lg:p-16">
@@ -90,7 +111,7 @@ export default function HomePage() {
                 New season · 2026
               </Badge>
               <span className="text-xs uppercase tracking-[0.22em] text-white/60">
-                Sydney studio
+                E-pig studio
               </span>
             </div>
             <div className="max-w-xl py-14">

@@ -11,7 +11,7 @@ SUMMARY_JSON="$LOG_DIR/review-summary-latest.json"
 mkdir -p "$LOG_DIR"
 
 # --- 守卫：检测规则/架构文档变更 ---
-ALL_CHANGED=$(git diff --name-only HEAD 2>/dev/null; git diff --name-only --cached 2>/dev/null)
+ALL_CHANGED=$(git diff --name-only HEAD 2>/dev/null; git diff --name-only --cached 2>/dev/null; git ls-files --others --exclude-standard 2>/dev/null)
 RULE_FILES=$(echo "$ALL_CHANGED" | sort -u | grep -iE \
   "^(\.agents/|AGENTS\.md|docs/)" \
   | grep -v '^$' || true)

@@ -16,6 +16,7 @@
 | 路由默认 | 单市场单语言 P0 无 market/locale 前缀；范围确认后再升级 |
 | Koala 是否可参考 | 可参考“市场子域 + 市场默认语言 + 稳定资源路径”，不复制 Shopify 主题/实现 |
 | provider/integration 边界 | 业务流等待结果 → port/adapter；可降级 fan-out → integration |
+| Phase 1 runtime market | standalone 启动时注入 `MARKET`；Root Layout 只声明共有 base language `en`，regional locale/currency 在 request-time Suspense boundaries 中解析 |
 
 ## 2. 为什么旧描述不成立
 
@@ -28,6 +29,8 @@ Next 16 的 Cache Components 是显式 opt-in。启用后，动态代码仍在�
 - 单参数 `revalidateTag(tag)` 是 deprecated；webhook 应明确使用 `revalidateTag(tag, 'max')` 或明确 expire 行为。
 
 因此 E-pig 不使用“ISR 式短缓存”作为设计语言，而使用“什么数据、哪个 profile、哪个业务 tag、由什么事件失效”。
+
+Phase 1 的 `MARKET` 是 standalone 进程启动配置，不是构建配置。当前 AU/SG/US 都属于英语，Root Layout 因而只声明不会随市场变化的 `<html lang="en">`；header/cart/catalog 分别在有语义的 `<Suspense>` 下调用 `connection()`，再使用 `en-AU`/`en-SG`/`en-US` 与对应货币。这样保留 Cache Components 静态 shell，也不会把默认 AU locale 固化到 SG/US 响应。未来加入非英语市场时必须升级为 `[lang]` root layout（或按市场独立 root layout），不能用构建期默认 env 填充 `html lang`。未来公开 content/catalog 引入 `'use cache'` 时，应把 request-time 解析出的 `market.id`/`locale` 作为参数传给缓存函数。
 
 ## 3. 缓存矩阵与失效责任
 
@@ -101,7 +104,7 @@ PDP Server Component
 | 输入 | 预期 |
 | --- | --- |
 | 已知 host + 默认 locale 内容 | 200，self canonical，正确 `lang`/currency |
-| 未知 host/market | 404 或显式 country selector，不猜测 |
+| 未知 host/market | 404 或显式 country selector，只接受 registry 完整 host，不按首段子域名猜测 |
 | 已知 market + 不支持 locale | 404；只有已登记旧 URL 才 308 |
 | 非规范大小写、尾斜杠或旧结构 | 单跳 308 到唯一规范 URL |
 | 有等价的跨市场/语言页面 | self + 全量互返 hreflang，绝对 HTTPS URL |

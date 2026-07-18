@@ -10,6 +10,7 @@ import { marketIds } from "./markets";
  * 导出为独立常量以便单测直接验证 zod 行为（不触发 createEnv 的进程级解析）。
  */
 export const serverEnvSchema = {
+  NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   /** 本进程服务哪个市场；非秘密配置本体在 ./markets registry */
   MARKET: z.enum(marketIds).default("au"),
   /** commerce adapter 选择；P0 只有 mock，真实后端接入后扩展（如 "custom-rest"） */
@@ -29,6 +30,7 @@ export const env = createEnv({
   server: serverEnvSchema,
   client: clientEnvSchema,
   runtimeEnv: {
+    NODE_ENV: process.env.NODE_ENV,
     MARKET: process.env.MARKET,
     COMMERCE_ADAPTER: process.env.COMMERCE_ADAPTER,
     LOG_LEVEL: process.env.LOG_LEVEL,

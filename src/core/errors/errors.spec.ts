@@ -37,8 +37,19 @@ describe("normalizeError", () => {
   it("普通 Error 归一化为 unknown 且保留 cause", () => {
     const normalized = normalizeError(new Error("boom"));
     expect(normalized.kind).toBe("unknown");
-    expect(normalized.message).toBe("boom");
+    expect(normalized.message).toBe("Unexpected error");
     expect(normalized.cause).toBeInstanceOf(Error);
+  });
+
+  it("归一化后再公开时不泄露原始 Error.message", () => {
+    const publicError = toPublicError(
+      normalizeError(new Error("database password is hunter2")),
+    );
+
+    expect(publicError).toEqual({
+      kind: "unknown",
+      message: "Something went wrong. Please try again.",
+    });
   });
 
   it("非 Error 值归一化为 unknown", () => {
@@ -56,5 +67,16 @@ describe("toPublicError", () => {
     const publicError = toPublicError(new Error("db password is hunter2"));
     expect(publicError.kind).toBe("unknown");
     expect(publicError.message).not.toContain("hunter2");
+  });
+
+  it("upstream/unknown AppError 默认也不公开供应商原始消息", () => {
+    expect(toPublicError(new AppError("upstream", "stripe token sk_live_secret"))).toEqual({
+      kind: "upstream",
+      message: "A service is temporarily unavailable. Please try again.",
+    });
+    expect(toPublicError(new AppError("unknown", "internal connection string"))).toEqual({
+      kind: "unknown",
+      message: "Something went wrong. Please try again.",
+    });
   });
 });

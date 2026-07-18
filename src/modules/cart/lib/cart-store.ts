@@ -4,11 +4,8 @@ import { useSyncExternalStore } from "react";
 
 /**
  * 浏览器 demo cart（README 已声明的有意决策）：
- * P0 无后端时保存在 localStorage；接后端后由 CartPort adapter + 匿名 cart
- * cookie（Server Action 签发，docs/07 §4）替换，UI 职责不变。
- *
- * line 在加入时存快照（名称/价格/图片），展示不再回查 catalog ——
- * 与真实 cart API 返回 line 明细的行为一致。
+ * P0 无后端时按 market 保存在带版本的 localStorage；接后端后由 CartPort
+ * adapter + 匿名 cart cookie（Server Action 签发，docs/07 §4）替换。
  */
 
 export type DemoCartLine = {
@@ -21,7 +18,6 @@ export type DemoCartLine = {
   quantity: number;
 };
 
-/** 与 ProductListItem 结构兼容（结构类型即可，不 import catalog 模块）。 */
 export type DemoCartProduct = {
   id: string;
   name: string;
@@ -30,88 +26,170 @@ export type DemoCartProduct = {
   price: { amount: number; currency: string };
 };
 
+export type CartMarketIdentity = {
+  id: string;
+  currency: string;
+};
+
 type CartState = {
   lines: DemoCartLine[];
   open: boolean;
 };
 
-const STORAGE_KEY = "e-pig:demo-cart";
+type PersistedCart = {
+  version: 1;
+  marketId: string;
+  lines: DemoCartLine[];
+};
+
+type MarketCartStore = {
+  getSnapshot: () => CartState;
+  subscribe: (listener: () => void) => () => void;
+  update: (next: CartState) => void;
+};
+
+const STORAGE_VERSION = 1;
+const STORAGE_PREFIX = "e-pig:demo-cart:v1";
 const SERVER_SNAPSHOT: CartState = { lines: [], open: false };
+const marketStores = new Map<string, { currency: string; store: MarketCartStore }>();
 
-let state: CartState = SERVER_SNAPSHOT;
-let hydrated = false;
-const listeners = new Set<() => void>();
-
-function emit() {
-  listeners.forEach((listener) => listener());
+export function getCartStorageKey(marketId: string): string {
+  return `${STORAGE_PREFIX}:${marketId}`;
 }
 
-function isValidLine(line: unknown): line is DemoCartLine {
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === "string" && value.length > 0;
+}
+
+function isValidLine(line: unknown, currency: string): line is DemoCartLine {
   if (typeof line !== "object" || line === null) return false;
   const candidate = line as Record<string, unknown>;
   return (
-    typeof candidate.productId === "string" &&
-    typeof candidate.name === "string" &&
+    isNonEmptyString(candidate.productId) &&
+    isNonEmptyString(candidate.name) &&
+    typeof candidate.colour === "string" &&
+    typeof candidate.image === "string" &&
     typeof candidate.priceAmount === "number" &&
-    typeof candidate.priceCurrency === "string" &&
-    typeof candidate.quantity === "number"
+    Number.isFinite(candidate.priceAmount) &&
+    candidate.priceAmount >= 0 &&
+    candidate.priceCurrency === currency &&
+    Number.isInteger(candidate.quantity) &&
+    (candidate.quantity as number) > 0
   );
 }
 
-function hydrateFromStorage() {
-  if (hydrated || typeof window === "undefined") return;
-  hydrated = true;
+function isPersistedCart(
+  value: unknown,
+  market: CartMarketIdentity,
+): value is PersistedCart {
+  if (typeof value !== "object" || value === null) return false;
+  const candidate = value as Record<string, unknown>;
+  return (
+    candidate.version === STORAGE_VERSION &&
+    candidate.marketId === market.id &&
+    Array.isArray(candidate.lines) &&
+    candidate.lines.every((line) => isValidLine(line, market.currency))
+  );
+}
 
+function safelyRemoveStoredCart(storageKey: string) {
   try {
-    const stored = window.localStorage.getItem(STORAGE_KEY);
-    const parsed: unknown = stored ? JSON.parse(stored) : [];
-    const lines = Array.isArray(parsed) ? parsed.filter(isValidLine) : [];
-    state = { ...state, lines };
+    window.localStorage.removeItem(storageKey);
   } catch {
-    window.localStorage.removeItem(STORAGE_KEY);
+    // 浏览器禁用 storage 时保持内存购物车可用。
   }
 }
 
-function persist(lines: DemoCartLine[]) {
-  if (typeof window !== "undefined") {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(lines));
+function createMarketStore(market: CartMarketIdentity): MarketCartStore {
+  let state: CartState = SERVER_SNAPSHOT;
+  let hydrated = false;
+  const listeners = new Set<() => void>();
+  const storageKey = getCartStorageKey(market.id);
+
+  function hydrate() {
+    if (hydrated || typeof window === "undefined") return;
+    hydrated = true;
+
+    try {
+      const stored = window.localStorage.getItem(storageKey);
+      if (!stored) return;
+      const parsed: unknown = JSON.parse(stored);
+      if (!isPersistedCart(parsed, market)) {
+        safelyRemoveStoredCart(storageKey);
+        return;
+      }
+      state = { ...state, lines: parsed.lines };
+    } catch {
+      safelyRemoveStoredCart(storageKey);
+    }
   }
+
+  function persist(lines: DemoCartLine[]) {
+    if (typeof window === "undefined") return;
+    const payload: PersistedCart = { version: STORAGE_VERSION, marketId: market.id, lines };
+    try {
+      window.localStorage.setItem(storageKey, JSON.stringify(payload));
+    } catch {
+      // Quota/private-mode 错误不应让当前页面的内存购物车失效。
+    }
+  }
+
+  function emit() {
+    listeners.forEach((listener) => listener());
+  }
+
+  return {
+    getSnapshot() {
+      hydrate();
+      return state;
+    },
+    subscribe(listener) {
+      listeners.add(listener);
+      hydrate();
+      return () => listeners.delete(listener);
+    },
+    update(next) {
+      state = next;
+      persist(next.lines);
+      emit();
+    },
+  };
 }
 
-function update(next: CartState) {
-  state = next;
-  persist(next.lines);
-  emit();
+function getMarketStore(market: CartMarketIdentity): MarketCartStore {
+  const existing = marketStores.get(market.id);
+  if (existing) {
+    if (existing.currency !== market.currency) {
+      throw new Error(`Market ${market.id} changed currency during the current session`);
+    }
+    return existing.store;
+  }
+
+  const store = createMarketStore(market);
+  marketStores.set(market.id, { currency: market.currency, store });
+  return store;
 }
 
-function subscribe(listener: () => void) {
-  listeners.add(listener);
-  hydrateFromStorage();
-  return () => listeners.delete(listener);
+export function getCartSnapshot(market: CartMarketIdentity): CartState {
+  return getMarketStore(market).getSnapshot();
 }
 
-function getSnapshot() {
-  return state;
-}
+export function addItem(market: CartMarketIdentity, product: DemoCartProduct) {
+  if (product.price.currency !== market.currency) {
+    throw new Error(
+      `Product currency ${product.price.currency} does not match market currency ${market.currency}`,
+    );
+  }
 
-function getServerSnapshot() {
-  return SERVER_SNAPSHOT;
-}
-
-/** 组件外（测试、未来的 Server Action 桥）读取当前快照用。 */
-export function getCartSnapshot(): CartState {
-  return getSnapshot();
-}
-
-export function addItem(product: DemoCartProduct) {
-  hydrateFromStorage();
-  const existing = state.lines.find((line) => line.productId === product.id);
+  const store = getMarketStore(market);
+  const current = store.getSnapshot();
+  const existing = current.lines.find((line) => line.productId === product.id);
   const lines = existing
-    ? state.lines.map((line) =>
+    ? current.lines.map((line) =>
         line.productId === product.id ? { ...line, quantity: line.quantity + 1 } : line,
       )
     : [
-        ...state.lines,
+        ...current.lines,
         {
           productId: product.id,
           name: product.name,
@@ -123,21 +201,30 @@ export function addItem(product: DemoCartProduct) {
         },
       ];
 
-  update({ lines, open: true });
+  store.update({ lines, open: true });
 }
 
-export function setQuantity(productId: string, quantity: number) {
-  const lines = state.lines
+export function setQuantity(
+  market: CartMarketIdentity,
+  productId: string,
+  quantity: number,
+) {
+  if (!Number.isInteger(quantity)) throw new Error("Cart quantity must be an integer");
+  const store = getMarketStore(market);
+  const current = store.getSnapshot();
+  const lines = current.lines
     .map((line) => (line.productId === productId ? { ...line, quantity } : line))
     .filter((line) => line.quantity > 0);
-  update({ ...state, lines });
+  store.update({ ...current, lines });
 }
 
-export function setCartOpen(open: boolean) {
-  state = { ...state, open };
-  emit();
+export function setCartOpen(market: CartMarketIdentity, open: boolean) {
+  const store = getMarketStore(market);
+  const current = store.getSnapshot();
+  store.update({ ...current, open });
 }
 
-export function useCartStore() {
-  return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+export function useCartStore(market: CartMarketIdentity) {
+  const store = getMarketStore(market);
+  return useSyncExternalStore(store.subscribe, store.getSnapshot, () => SERVER_SNAPSHOT);
 }

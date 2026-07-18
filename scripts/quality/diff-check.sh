@@ -106,6 +106,7 @@ process.stdin.on('data', (c) => (raw += c)).on('end', () => {
 });" || true)
 
 FALLBACK_TRIGGERED=false
+SIGNATURE_RESULT=""
 
 # Fallback 用的文本扫描器：优先 rg，缺失时退回 grep -nHE（输出均为 file:line:content）
 if command -v rg >/dev/null 2>&1; then
@@ -114,38 +115,34 @@ else
   scan_files() { xargs grep -nHE "$1" 2>/dev/null || true; }
 fi
 
-# Fallback：ESLint 无结构化输出且退出码非 0（可能崩溃）→ 扫高危签名
-if [[ -z "$RESULT" && "$ESLINT_EXIT" -ne 0 ]]; then
+# 高危签名始终扫描，不依赖 ESLint 是否崩溃。
+SECRET_RESULT=$(echo "$FILES" | scan_files "NEXT_PUBLIC_[A-Z0-9_]*(SECRET|TOKEN|KEY|PASSWORD)")
+if [[ -n "$SECRET_RESULT" ]]; then
+  SIGNATURE_RESULT="${SIGNATURE_RESULT}"$'[ERR][signature-scan] NEXT_PUBLIC_* variable looks like a secret:\n'"$SECRET_RESULT"$'\n'
+fi
+
+MODULE_FILES=$(echo "$FILES" | grep "^src/modules/" || true)
+if [[ -n "$MODULE_FILES" ]]; then
+  BOUNDARY_RESULT=$(echo "$MODULE_FILES" | scan_files "@/(adapters|integrations)/")
+  if [[ -n "$BOUNDARY_RESULT" ]]; then
+    SIGNATURE_RESULT="${SIGNATURE_RESULT}"$'[ERR][signature-scan] src/modules/ importing @/adapters or @/integrations:\n'"$BOUNDARY_RESULT"$'\n'
+  fi
+fi
+
+SRC_FILES=$(echo "$FILES" | grep "^src/" | grep -v "^src/platform/config/env.ts$" || true)
+if [[ -n "$SRC_FILES" ]]; then
+  ENV_RESULT=$(echo "$SRC_FILES" | scan_files "process\.env(\.|\[)")
+  if [[ -n "$ENV_RESULT" ]]; then
+    SIGNATURE_RESULT="${SIGNATURE_RESULT}"$'[ERR][signature-scan] process.env read outside src/platform/config/env.ts:\n'"$ENV_RESULT"$'\n'
+  fi
+fi
+
+if [[ -n "$SIGNATURE_RESULT" ]]; then
+  RESULT="${RESULT}${RESULT:+$'\n'}${SIGNATURE_RESULT}"
+fi
+
+if [[ "$ESLINT_EXIT" -ne 0 && -z "$RESULT" ]]; then
   FALLBACK_TRIGGERED=true
-  FALLBACK_RESULT=""
-
-  # 1) 公开变量放秘密：NEXT_PUBLIC_*SECRET/TOKEN/KEY/PASSWORD
-  SECRET_RESULT=$(echo "$FILES" | scan_files "NEXT_PUBLIC_[A-Z0-9_]*(SECRET|TOKEN|KEY|PASSWORD)")
-  if [[ -n "$SECRET_RESULT" ]]; then
-    FALLBACK_RESULT="${FALLBACK_RESULT}"$'[ERR][grep-fallback] NEXT_PUBLIC_* variable looks like a secret:\n'"$SECRET_RESULT"$'\n'
-  fi
-
-  # 2) 依赖方向违规：src/modules/ 下 import @/adapters/ 或 @/integrations/
-  MODULE_FILES=$(echo "$FILES" | grep "^src/modules/" || true)
-  if [[ -n "$MODULE_FILES" ]]; then
-    BOUNDARY_RESULT=$(echo "$MODULE_FILES" | scan_files "@/(adapters|integrations)/")
-    if [[ -n "$BOUNDARY_RESULT" ]]; then
-      FALLBACK_RESULT="${FALLBACK_RESULT}"$'[ERR][grep-fallback] src/modules/ importing @/adapters or @/integrations:\n'"$BOUNDARY_RESULT"$'\n'
-    fi
-  fi
-
-  # 3) 绕过 env schema：src/ 下（除 src/platform/config/env.ts）直接读 process.env
-  SRC_FILES=$(echo "$FILES" | grep "^src/" | grep -v "^src/platform/config/env.ts$" || true)
-  if [[ -n "$SRC_FILES" ]]; then
-    ENV_RESULT=$(echo "$SRC_FILES" | scan_files "process\.env\.")
-    if [[ -n "$ENV_RESULT" ]]; then
-      FALLBACK_RESULT="${FALLBACK_RESULT}"$'[ERR][grep-fallback] process.env read outside src/platform/config/env.ts:\n'"$ENV_RESULT"$'\n'
-    fi
-  fi
-
-  if [[ -n "$FALLBACK_RESULT" ]]; then
-    RESULT="$FALLBACK_RESULT"
-  fi
 fi
 
 # ESLint 崩溃且 fallback 也无结果 → 无法安全判定

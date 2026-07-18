@@ -16,16 +16,20 @@
 
 ### Phase 1：最小骨架
 
+当前状态：**已完成（2026-07-18）**。
+
 - Next.js 16.2 App Router、`cacheComponents: true`、strict TypeScript、Tailwind 4、基础 tokens。
 - env schema、market registry、host/locale 纯函数校验、logger、error model。
 - mock `CatalogPort`、`CartPort` 和 capability registry。
 - adapter/integration 分层 registry；Docker standalone、CI typecheck/lint/test/Turbopack build。
+- 可交互 Home demo、按 market/version 隔离的本地购物车、Testing Library 组件测试。
+- env/secret/import 静态门禁、文档同步门禁、非默认市场 standalone smoke。
 
-验收：全新 clone 只需复制 `.env.example`、`pnpm install`、`pnpm dev`；无 SaaS 账号可运行。
+验收：全新 clone 只需复制 `.env.example`、`pnpm install`、`pnpm dev`；无 SaaS 账号可运行。Node 24 下 typecheck、lint、unit/component tests、doc sync、Turbopack build 与 SG runtime smoke 全绿。
 
 ### Phase 2：浏览与加购
 
-- Home、PLP、PDP、搜索 query、variant、cart。
+- 在 Phase 1 demo 基础上补齐 production-grade Home、PLP、PDP、搜索 query、variant、server cart。
 - `use cache`/`cacheLife`/`cacheTag` 策略、SEO metadata、canonical/hreflang、structured data、图片策略。
 - 首次 add-to-cart Server Action 懒创建匿名 cart 并签发 cookie；并发请求有幂等测试。
 - MSW/contract tests、核心组件测试。

@@ -42,10 +42,10 @@ export function getCapabilities(): Capabilities {
     throw new AppError("validation", `Unsupported COMMERCE_ADAPTER: ${env.COMMERCE_ADAPTER}`);
   }
 
-  if (process.env.NODE_ENV === "production" && !process.env.COMMERCE_ADAPTER) {
-    // 04 §9：production 必需能力缺失时启动失败。mock 允许跑 demo 镜像，但必须显式告警。
+  if (env.NODE_ENV === "production" && env.COMMERCE_ADAPTER === "mock") {
+    // Phase 1 demo 镜像允许 mock，但 production 运行时必须留下显式告警。
     logger.warn("capabilities.mock_in_production", {
-      hint: "COMMERCE_ADAPTER 未显式设置，正在生产环境使用 mock commerce adapter",
+      hint: "正在生产环境使用 mock commerce adapter；不可承载真实交易",
     });
   }
 

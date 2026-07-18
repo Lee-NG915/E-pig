@@ -8,6 +8,7 @@
  *   1. AGENTS.md 的 Commands 章节必须包含 package.json 里的全部 scripts 名
  *      （逐个 substring 检查，缺一个即报）。
  *   2. README.md 必须包含 `pnpm dev` 与 `MARKET=`。
+ *   3. README 的 MARKET_IDS marker 必须与 typed market registry 一致。
  *
  * 输出：
  *   默认：人读文本（[doc-sync] PASS / FAILED + 缺失清单）。
@@ -24,6 +25,7 @@ const ROOT = process.cwd();
 const AGENTS_PATH = path.join(ROOT, 'AGENTS.md');
 const README_PATH = path.join(ROOT, 'README.md');
 const PACKAGE_PATH = path.join(ROOT, 'package.json');
+const MARKETS_PATH = path.join(ROOT, 'src/platform/config/markets.ts');
 
 function readFile(filePath) {
   return fs.readFileSync(filePath, 'utf8');
@@ -90,6 +92,26 @@ function main() {
     mismatches.push({
       file: 'README.md',
       missing: readmeMissing.map((snippet) => `missing snippet: ${snippet}`),
+    });
+  }
+
+  // --- 锚点 3：README MARKET_IDS marker === markets.ts 中的显式 id ---
+  const marketsSource = readFile(MARKETS_PATH);
+  const registryIds = [...marketsSource.matchAll(/^\s+id:\s*"([a-z0-9-]+)",\s*$/gm)].map(
+    (match) => match[1],
+  );
+  const marketMarker = readme.match(/<!-- MARKET_IDS:([^>]+) -->/);
+  const readmeIds = marketMarker ? marketMarker[1].trim().split('|') : [];
+  if (
+    registryIds.length === 0 ||
+    readmeIds.length !== registryIds.length ||
+    readmeIds.some((id, index) => id !== registryIds[index])
+  ) {
+    mismatches.push({
+      file: 'README.md',
+      missing: [
+        `MARKET_IDS marker must be: <!-- MARKET_IDS:${registryIds.join('|')} -->`,
+      ],
     });
   }
 

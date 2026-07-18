@@ -51,7 +51,7 @@ export function getMarket(id: MarketId): Market {
 
 /**
  * host → market 纯函数（docs/codex/research/07 §6：未知 host 返回 null，不猜测）。
- * 匹配顺序：registry hosts 精确匹配 → 首段子域名是 market id（如 sg.example.com）。
+ * 只匹配 registry 中显式登记的完整 host；不得根据首段子域名猜测市场。
  * 未来由 proxy.ts 调用；P0 单市场无前缀路由时仅用于本地多市场调试。
  */
 export function resolveMarketFromHost(host: string | null | undefined): Market | null {
@@ -60,8 +60,7 @@ export function resolveMarketFromHost(host: string | null | undefined): Market |
   for (const market of Object.values(markets)) {
     if ((market.hosts as readonly string[]).includes(normalized)) return market;
   }
-  const firstLabel = normalized.split(".")[0];
-  return isMarketId(firstLabel) ? markets[firstLabel] : null;
+  return null;
 }
 
 /** locale 必须属于该 market；`/us/zh-CN` 这类组合不能进入数据层（04 §8）。 */

@@ -12,12 +12,15 @@
     "dev:sg": "MARKET=sg next dev",
     "dev:us": "MARKET=us next dev",
     "build": "next build",
-    "start": "next start",
+    "prestart": "node scripts/prepare-standalone.mjs",
+    "start": "node .next/standalone/server.js",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "quality:diff": "bash scripts/quality/diff-check.sh"
+    "quality:diff": "bash scripts/quality/diff-check.sh",
+    "docs:check": "node scripts/quality/check-doc-sync.mjs",
+    "smoke:runtime-market": "node scripts/smoke/runtime-market.mjs"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "1.1.19",
@@ -36,11 +39,14 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "4.3.3",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
     "@types/node": "24.13.3",
     "@types/react": "19.2.17",
     "@types/react-dom": "19.2.3",
     "eslint": "9.39.5",
     "eslint-config-next": "16.2.10",
+    "jsdom": "^29.1.1",
     "tailwindcss": "4.3.3",
     "typescript": "6.0.3",
     "vitest": "^4.1.10"

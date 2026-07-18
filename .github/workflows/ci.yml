@@ -34,8 +34,14 @@ jobs:
       - name: Lint
         run: pnpm lint
 
+      - name: Documentation sync
+        run: pnpm docs:check
+
       - name: Unit tests
         run: pnpm test
 
       - name: Production build (Turbopack + Cache Components)
         run: pnpm build
+
+      - name: Runtime market smoke (standalone)
+        run: pnpm smoke:runtime-market

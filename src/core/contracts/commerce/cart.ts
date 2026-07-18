@@ -30,6 +30,10 @@ export type AddCartLineInput = {
   quantity: number;
 };
 
+export type CartMutationOptions = {
+  idempotencyKey: string;
+};
+
 export interface CartPort {
   /** 同一 idempotencyKey 重复调用必须返回同一购物车，不创建新 cart */
   createCart(input: { idempotencyKey: string }): Promise<Cart>;
@@ -38,10 +42,15 @@ export interface CartPort {
   addItem(
     cartId: string,
     input: AddCartLineInput,
-    options: { idempotencyKey: string },
+    options: CartMutationOptions,
   ): Promise<Cart>;
   /** quantity <= 0 等价于 removeItem */
-  updateItem(cartId: string, lineId: string, quantity: number): Promise<Cart>;
-  removeItem(cartId: string, lineId: string): Promise<Cart>;
-  applyCoupon(cartId: string, code: string): Promise<Cart>;
+  updateItem(
+    cartId: string,
+    lineId: string,
+    quantity: number,
+    options: CartMutationOptions,
+  ): Promise<Cart>;
+  removeItem(cartId: string, lineId: string, options: CartMutationOptions): Promise<Cart>;
+  applyCoupon(cartId: string, code: string, options: CartMutationOptions): Promise<Cart>;
 }

@@ -18,6 +18,11 @@ describe("market registry", () => {
     }
   });
 
+  it("所有显式 host 在 registry 中全局唯一", () => {
+    const hosts = Object.values(markets).flatMap((market) => [...market.hosts]);
+    expect(new Set(hosts).size).toBe(hosts.length);
+  });
+
   it("isMarketId 只接受 registry 里的 id", () => {
     expect(isMarketId("sg")).toBe(true);
     expect(isMarketId("us")).toBe(true);
@@ -42,14 +47,12 @@ describe("resolveMarketFromHost（host → market 纯函数）", () => {
     expect(resolveMarketFromHost("au.localhost:3000")?.id).toBe("au");
   });
 
-  it("首段子域名是 market id 时解析（如 sg.example.com）", () => {
-    expect(resolveMarketFromHost("sg.example.com")?.id).toBe("sg");
-    expect(resolveMarketFromHost("us.example.com")?.id).toBe("us");
-  });
-
   it("未知 host 返回 null，不猜测", () => {
     expect(resolveMarketFromHost("example.com")).toBeNull();
     expect(resolveMarketFromHost("shop.example.com")).toBeNull();
+    expect(resolveMarketFromHost("sg.example.com")).toBeNull();
+    expect(resolveMarketFromHost("us.attacker.com")).toBeNull();
+    expect(resolveMarketFromHost("sg.e-pig.local.evil.com")).toBeNull();
     expect(resolveMarketFromHost("ca.example.com")).toBeNull();
     expect(resolveMarketFromHost(null)).toBeNull();
     expect(resolveMarketFromHost(undefined)).toBeNull();

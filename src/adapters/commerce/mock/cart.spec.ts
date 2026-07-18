@@ -42,6 +42,65 @@ describe("mock cart adapter", () => {
     expect(updated.subtotal.currency).toBe("AUD");
   });
 
+  it("addItem 重放同一幂等键时不重复增加数量", async () => {
+    const { cart } = setup();
+    const created = await cart.createCart({ idempotencyKey: "op-replay" });
+    const input = { productId: "alto-modular-sofa", quantity: 2 };
+
+    const first = await cart.addItem(created.id, input, { idempotencyKey: "same-add" });
+    const replayed = await cart.addItem(created.id, input, { idempotencyKey: "same-add" });
+
+    expect(first.lines[0].quantity).toBe(2);
+    expect(replayed.lines[0].quantity).toBe(2);
+    expect((await cart.getCart(created.id)).lines[0].quantity).toBe(2);
+  });
+
+  it("addItem 并发重放同一幂等键时只执行一次", async () => {
+    const { cart } = setup();
+    const created = await cart.createCart({ idempotencyKey: "op-concurrent" });
+    const input = { productId: "alto-modular-sofa", quantity: 1 };
+
+    await Promise.all([
+      cart.addItem(created.id, input, { idempotencyKey: "concurrent-add" }),
+      cart.addItem(created.id, input, { idempotencyKey: "concurrent-add" }),
+    ]);
+
+    expect((await cart.getCart(created.id)).lines[0].quantity).toBe(1);
+  });
+
+  it("不同幂等键并发加入同一商品时仍合并为一行", async () => {
+    const { cart } = setup();
+    const created = await cart.createCart({ idempotencyKey: "op-concurrent-distinct" });
+    const input = { productId: "alto-modular-sofa", quantity: 1 };
+
+    await Promise.all([
+      cart.addItem(created.id, input, { idempotencyKey: "concurrent-a" }),
+      cart.addItem(created.id, input, { idempotencyKey: "concurrent-b" }),
+    ]);
+
+    const current = await cart.getCart(created.id);
+    expect(current.lines).toHaveLength(1);
+    expect(current.lines[0].quantity).toBe(2);
+  });
+
+  it("同一幂等键不能复用于不同 mutation payload", async () => {
+    const { cart } = setup();
+    const created = await cart.createCart({ idempotencyKey: "op-conflict" });
+    await cart.addItem(
+      created.id,
+      { productId: "alto-modular-sofa", quantity: 1 },
+      { idempotencyKey: "reused-key" },
+    );
+
+    await expect(
+      cart.addItem(
+        created.id,
+        { productId: "nook-coffee-table", quantity: 1 },
+        { idempotencyKey: "reused-key" },
+      ),
+    ).rejects.toMatchObject({ kind: "conflict" });
+  });
+
   it("addItem 拒绝非法 quantity 与未知商品", async () => {
     const { cart } = setup();
     const created = await cart.createCart({ idempotencyKey: "op-invalid" });
@@ -53,6 +112,19 @@ describe("mock cart adapter", () => {
     await expect(
       cart.addItem(created.id, { productId: "ghost", quantity: 1 }, { idempotencyKey: "g1" }),
     ).rejects.toMatchObject({ kind: "not_found" });
+
+    await cart.addItem(
+      created.id,
+      { productId: "alto-modular-sofa", quantity: 1 },
+      { idempotencyKey: "valid-first" },
+    );
+    await expect(
+      cart.addItem(
+        created.id,
+        { productId: "alto-modular-sofa", quantity: -1 },
+        { idempotencyKey: "invalid-existing" },
+      ),
+    ).rejects.toMatchObject({ kind: "validation" });
   });
 
   it("updateItem 到 0 等价于移除该行", async () => {
@@ -64,7 +136,9 @@ describe("mock cart adapter", () => {
       { idempotencyKey: "u1" },
     );
 
-    const emptied = await cart.updateItem(created.id, withLine.lines[0].id, 0);
+    const emptied = await cart.updateItem(created.id, withLine.lines[0].id, 0, {
+      idempotencyKey: "remove-via-update",
+    });
     expect(emptied.lines).toHaveLength(0);
     expect(emptied.subtotal.amount).toBe(0);
   });
@@ -74,11 +148,15 @@ describe("mock cart adapter", () => {
     const created = await cart.createCart({ idempotencyKey: "op-coupon" });
     await cart.addItem(created.id, { productId: "cove-lounge-chair", quantity: 1 }, { idempotencyKey: "c1" });
 
-    const discounted = await cart.applyCoupon(created.id, "demo10");
+    const discounted = await cart.applyCoupon(created.id, "demo10", {
+      idempotencyKey: "coupon-demo10",
+    });
     expect(discounted.couponCode).toBe("DEMO10");
     expect(discounted.discount?.amount).toBeCloseTo(discounted.subtotal.amount * 0.1, 2);
 
-    await expect(cart.applyCoupon(created.id, "  ")).rejects.toMatchObject({ kind: "validation" });
+    await expect(
+      cart.applyCoupon(created.id, "  ", { idempotencyKey: "coupon-empty" }),
+    ).rejects.toMatchObject({ kind: "validation" });
   });
 
   it("getCart 未知 id 抛 not_found", async () => {

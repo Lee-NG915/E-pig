@@ -4,12 +4,14 @@ import Image from "next/image";
 import { Plus } from "lucide-react";
 
 import type { ProductListItem } from "@/core/contracts/commerce/catalog";
+import { useCartMarket } from "@/modules/cart/components/cart-market-context";
 import { addItem } from "@/modules/cart/lib/cart-store";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { formatPrice } from "@/shared/lib/money";
 
 export function ProductCard({ product, locale }: { product: ProductListItem; locale: string }) {
+  const market = useCartMarket();
   return (
     <article className="group">
       <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-secondary">
@@ -28,7 +30,7 @@ export function ProductCard({ product, locale }: { product: ProductListItem; loc
         <Button
           size="icon"
           className="absolute bottom-3 right-3 rounded-full shadow-md transition-transform hover:scale-105"
-          onClick={() => addItem(product)}
+          onClick={() => addItem(market, product)}
           aria-label={`Add ${product.name} to bag`}
         >
           <Plus aria-hidden="true" />

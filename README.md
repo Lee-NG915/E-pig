@@ -14,15 +14,17 @@ pnpm dev                     # 默认市场 au → http://localhost:3000
 
 ## 多市场本地开发
 
+<!-- MARKET_IDS:au|sg|us -->
+
 非秘密市场配置（货币、locale、host）维护在 `src/platform/config/markets.ts`，环境变量只负责"选哪个市场"：
 
 ```bash
 pnpm dev:sg    # MARKET=sg，新加坡市场（SGD / en-SG）
 pnpm dev:us    # MARKET=us
-MARKET=uk pnpm dev   # 也可以直接注入
+MARKET=au pnpm dev   # 也可以直接注入
 ```
 
-`MARKET` 非法值会在启动时直接失败（env schema），不会静默回退。可选市场：`au | sg | us | ca | uk`。
+`MARKET` 非法值会在启动时直接失败（env schema），不会静默回退。可选市场：`au | sg | us`。
 
 ## 常用命令
 
@@ -31,7 +33,9 @@ pnpm typecheck     # tsc --noEmit
 pnpm lint          # eslint（含 modules/shared 依赖方向规则）
 pnpm test          # vitest run
 pnpm build         # Turbopack 生产构建（Cache Components）
+pnpm start         # 启动 .next/standalone 生产服务（需先 build）
 pnpm quality:diff  # 对 git diff 中的 TS 文件做定向质量检查
+pnpm docs:check    # 校验命令和市场文档是否与代码同步
 ```
 
 ## 架构（Phase 1 骨架）
@@ -54,6 +58,7 @@ src/
 - 单市场单语言、无 URL 前缀；多市场运行时解析（host → market）见 `docs/codex/research/07`。
 - 不连接 commerce、CMS、搜索、认证或支付服务；`COMMERCE_ADAPTER=mock`。
 - demo cart 存浏览器 `localStorage`；接入后端后用 `CartPort` adapter + 匿名 cart cookie（Server Action 签发）替换，UI 职责不变。
+- `MARKET` 在 standalone/Docker 启动时解析；Phase 1 markets 共用 `<html lang="en">`，region-specific locale/currency 在 request-time market boundaries 中解析，避免 AU 构建值污染 SG/US。
 - Docker：`docker build -t e-pig . && docker run -e MARKET=sg -p 3000:3000 e-pig`。
 
 ## AI 辅助开发工作流

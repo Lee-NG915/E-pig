@@ -4,20 +4,21 @@ import Image from "next/image";
 import { Minus, Plus, ShoppingBag } from "lucide-react";
 
 import { setCartOpen, setQuantity, useCartStore } from "@/modules/cart/lib/cart-store";
+import { useCartMarket } from "./cart-market-context";
 import { formatPrice } from "@/shared/lib/money";
 import { Button } from "@/shared/ui/button";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/shared/ui/sheet";
 
-export function CartSheet({ locale }: { locale: string }) {
-  const cart = useCartStore();
+export function CartSheet() {
+  const market = useCartMarket();
+  const cart = useCartStore(market);
   const subtotal = cart.lines.reduce(
     (total, line) => total + line.priceAmount * line.quantity,
     0,
   );
-  const currency = cart.lines[0]?.priceCurrency;
 
   return (
-    <Sheet open={cart.open} onOpenChange={setCartOpen}>
+    <Sheet open={cart.open} onOpenChange={(open) => setCartOpen(market, open)}>
       <SheetContent>
         <SheetHeader>
           <SheetTitle>Your bag</SheetTitle>
@@ -45,7 +46,7 @@ export function CartSheet({ locale }: { locale: string }) {
                       <div className="flex items-center rounded-full border bg-background">
                         <button
                           className="grid size-8 place-items-center rounded-full hover:bg-muted"
-                          onClick={() => setQuantity(line.productId, line.quantity - 1)}
+                          onClick={() => setQuantity(market, line.productId, line.quantity - 1)}
                           aria-label={`Decrease ${line.name} quantity`}
                         >
                           <Minus className="size-3.5" aria-hidden="true" />
@@ -53,7 +54,7 @@ export function CartSheet({ locale }: { locale: string }) {
                         <span className="w-7 text-center text-sm tabular-nums">{line.quantity}</span>
                         <button
                           className="grid size-8 place-items-center rounded-full hover:bg-muted"
-                          onClick={() => setQuantity(line.productId, line.quantity + 1)}
+                          onClick={() => setQuantity(market, line.productId, line.quantity + 1)}
                           aria-label={`Increase ${line.name} quantity`}
                         >
                           <Plus className="size-3.5" aria-hidden="true" />
@@ -62,7 +63,7 @@ export function CartSheet({ locale }: { locale: string }) {
                       <p className="text-sm font-medium">
                         {formatPrice(
                           { amount: line.priceAmount * line.quantity, currency: line.priceCurrency },
-                          locale,
+                          market.locale,
                         )}
                       </p>
                     </div>
@@ -74,9 +75,10 @@ export function CartSheet({ locale }: { locale: string }) {
               <div className="mb-2 flex items-center justify-between">
                 <span className="font-medium">Subtotal</span>
                 <span className="font-medium">
-                  {currency
-                    ? formatPrice({ amount: subtotal, currency }, locale)
-                    : formatPrice({ amount: subtotal, currency: "AUD" }, locale)}
+                  {formatPrice(
+                    { amount: subtotal, currency: market.currency },
+                    market.locale,
+                  )}
                 </span>
               </div>
               <p className="text-xs leading-5 text-muted-foreground">
@@ -97,7 +99,11 @@ export function CartSheet({ locale }: { locale: string }) {
               <p className="mx-auto mt-2 max-w-xs text-sm leading-6 text-muted-foreground">
                 Add a piece from the collection to test the local cart interaction.
               </p>
-              <Button variant="outline" className="mt-5 rounded-full" onClick={() => setCartOpen(false)}>
+              <Button
+                variant="outline"
+                className="mt-5 rounded-full"
+                onClick={() => setCartOpen(market, false)}
+              >
                 Keep browsing
               </Button>
             </div>

@@ -20,15 +20,18 @@ pnpm dev:us         # MARKET=us next dev
 # 其余市场：先在 src/platform/config/markets.ts 登记，再用 MARKET=<id> pnpm dev 启动
 
 # 构建与启动
-pnpm build          # next build（Turbopack）
-pnpm start          # next start（需先 build）
+pnpm build          # next build（Turbopack + standalone 输出）
+pnpm prestart       # 把 public/.next/static 同步到 standalone（由 pnpm start 自动调用）
+pnpm start          # node .next/standalone/server.js（需先 build）
 
 # 质量
 pnpm lint           # eslint .（flat config，含 no-restricted-imports 边界规则）
 pnpm typecheck      # tsc --noEmit
-pnpm test           # vitest run（全部单测，node 环境）
+pnpm test           # vitest run（纯逻辑 node；组件测试文件显式 jsdom）
 pnpm test:watch     # vitest watch 模式
 pnpm quality:diff   # bash scripts/quality/diff-check.sh（git diff 定向质量检查）
+pnpm docs:check     # 校验 package scripts、README market marker 与 registry 同步
+pnpm smoke:runtime-market # 用 SG 启动同一 standalone，验证运行时 market 未被 AU 构建值污染
 ```
 
 跑单个测试文件：

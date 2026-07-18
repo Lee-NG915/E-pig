@@ -1,8 +1,5 @@
 import type { Metadata } from "next";
 
-import { CartSheetMount } from "@/modules/cart/components/cart-sheet-mount";
-import { getActiveMarket } from "@/platform/config/active-market";
-
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -11,16 +8,12 @@ export const metadata: Metadata = {
     "A lightweight, local-first ecommerce frontend demo built with Next.js, Tailwind CSS and shadcn/ui.",
 };
 
-export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  // 同步读取进程启动期 env，prerender 安全；dev 模式天然按请求渲染。
-  // 多市场 host 解析（Phase 4）落地后改为 request-time 读取。
-  const market = getActiveMarket();
-
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang={market.defaultLocale}>
-      <body>
-        <CartSheetMount locale={market.defaultLocale}>{children}</CartSheetMount>
-      </body>
+    // Phase 1 三个 market 均为英语；region-specific locale 在 request-time
+    // market boundaries 中用于金额/UI。未来加入非英语市场时升级为 [lang] root layout。
+    <html lang="en">
+      <body>{children}</body>
     </html>
   );
 }

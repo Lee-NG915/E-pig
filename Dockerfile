@@ -15,7 +15,7 @@ RUN pnpm install --frozen-lockfile
 FROM base AS build
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-# 构建期使用默认 mock adapter；MARKET 等运行时配置在容器启动时注入
+# 构建期可使用默认 mock adapter；页面的 request-time boundaries 读取启动时 MARKET
 RUN pnpm build
 
 FROM base AS runner
