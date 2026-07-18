@@ -112,7 +112,7 @@ Joyboy 已形成值得保留的单向链路：
 UI → 领域交互事件 → tracking listener → channel trigger → 第三方
 ```
 
-UI 不直接调用 GTM、DY、Klaviyo、CAPI 等 SDK；事件 payload 必须携带 trigger 所需数据。这个思想适合 E-pig，但可用更小的 typed event bus + provider adapter 实现，不需要 Redux listener 起步。
+UI 不直接调用 GTM、DY、Klaviyo、CAPI 等 SDK；事件 payload 必须携带 trigger 所需数据。这个思想适合 E-pig，但可用更小的 typed event bus + integration facade 实现，不需要 Redux listener 起步。
 
 ### 5.2 可观测性
 

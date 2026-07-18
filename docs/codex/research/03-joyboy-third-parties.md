@@ -15,7 +15,7 @@
 | AWS S3 / CloudFront | 静态图片与资产分发 | 远程域名/CDN | 部署 provider，不写入业务层 |
 | Elasticsearch | 商品搜索 | server credentials + Searchkit | P0 不自建 ES；先用 commerce API 搜索，后续 Meilisearch/Typesense |
 | Searchkit / InstantSearch | 搜索 UI、facet | React SDK | 不复制；内部 Search DTO + UI |
-| Redis | Next route/ISR cache | 自定义 cache handler | P0 不需要；先用 Next cache，规模触发后接 Redis |
+| Redis | Next route/ISR cache | 自定义 cache handler | P0 不需要；先用 Next 16 内建 Cache Components，只有共享/容量证据出现后再评估 Redis |
 
 ## 3. 支付、分期、保修
 

@@ -8,25 +8,26 @@
 
 ### Phase 0：决策冻结
 
-- Review 本目录 6 份文档。
-- 确认 P0 页面、目标市场、后端来源、部署环境和设计系统方向。
+- Review 本目录 7 份文档。
+- 确认 P0 页面、目标市场/语言/URL 模式、后端来源、部署环境和设计系统方向。
 - 为关键 ADR 标记 accepted/rejected/deferred/needs-spike。
 
 验收：没有影响目录结构或数据模型的未决问题，再初始化代码。
 
 ### Phase 1：最小骨架
 
-- Next.js 16.2 App Router、strict TypeScript、Tailwind 4、基础 tokens。
-- env schema、market config、logger、error model。
-- mock `CatalogPort`、`CartPort` 和 provider registry。
-- Docker standalone、CI typecheck/lint/test/build。
+- Next.js 16.2 App Router、`cacheComponents: true`、strict TypeScript、Tailwind 4、基础 tokens。
+- env schema、market registry、host/locale 纯函数校验、logger、error model。
+- mock `CatalogPort`、`CartPort` 和 capability registry。
+- adapter/integration 分层 registry；Docker standalone、CI typecheck/lint/test/Turbopack build。
 
 验收：全新 clone 只需复制 `.env.example`、`pnpm install`、`pnpm dev`；无 SaaS 账号可运行。
 
 ### Phase 2：浏览与加购
 
 - Home、PLP、PDP、搜索 query、variant、cart。
-- server-first 数据策略、SEO metadata、structured data、图片策略。
+- `use cache`/`cacheLife`/`cacheTag` 策略、SEO metadata、canonical/hreflang、structured data、图片策略。
+- 首次 add-to-cart Server Action 懒创建匿名 cart 并签发 cookie；并发请求有幂等测试。
 - MSW/contract tests、核心组件测试。
 
 验收：mock catalog 完成浏览 → 加购；刷新后 cart 恢复；无客户端 hydration warning。
@@ -39,13 +40,13 @@
 
 验收：订单最终状态来自服务端/webhook 模拟，不由 success URL 单独决定。
 
-### Phase 4：首个真实 provider
+### Phase 4：首个真实 adapter
 
 - 接 custom REST/选定 commerce backend。
 - mapper、timeout、retry boundary、health check、contract test。
 - optional Sentry/PostHog，在 consent 与 env 开关后加载。
 
-验收：mock 与真实 provider 可通过配置切换，业务 module 无供应商 import。
+验收：mock 与真实 adapter 可通过配置切换，业务 module 无供应商 import。
 
 ### Phase 5：生产准备
 
@@ -70,26 +71,28 @@
 ## 3. 你需要重点 Review 的选择
 
 1. 单 Next app 起步，而不是 Nx monorepo。
-2. Next.js 16.2 + Node 24 LTS 作为基线，不复用 Joyboy Next 14/Node 20；TypeScript 6.0 先做兼容 smoke，必要时回退 5.9。
+2. Next.js 16.2 + Node 24 LTS + Cache Components + Turbopack 作为基线，不复用 Joyboy Next 14/Node 20/旧缓存模型；TypeScript 6.0 先做兼容 smoke，必要时回退 5.9。
 3. Tailwind + shadcn 源码组件，不复制 Fortress/MUI Joy。
 4. RSC + TanStack Query + React/Zustand，不复制 Redux/RTK Query 全局体系。
-5. mock/custom REST port 为核心，不在架构阶段绑定 Medusa、Shopify 或自有后端。
-6. local content 起步；Payload 是优先自建 CMS 候选，但延后安装。
-7. Docker 是权威部署；Vercel 只是可选预览/付费部署。
-8. Stripe 是唯一 P0 第三方交易 SDK，且只用 sandbox。
+5. 所有业务 port 实现统一进入 `adapters/`；只有可降级的副作用进入 `integrations/`。
+6. mock/custom REST port 为核心，不在架构阶段绑定 Medusa、Shopify 或自有后端。
+7. local content 起步；Payload 是优先自建 CMS 候选，但延后安装。
+8. Docker 是权威部署；Vercel 只是可选预览/付费部署。
+9. Stripe 是唯一 P0 第三方交易 SDK，且只用 sandbox。
 
 ## 4. 待确认问题
 
 这些问题不阻塞本轮文档，但会影响下一阶段脚手架：
 
 - E-pig 首个目标是纯前端 demo、连接现有 Castlery API，还是带一个可自建 commerce backend？
-- 首发市场/语言/货币是什么？是否一开始就需要多市场 URL？
+- 首发市场/语言/货币是什么？据此在“无前缀 / `[locale]` / 市场子域 / `[market]/[locale]`”中冻结一种 URL 模式；在答案确定前不得创建双动态段。
 - 必须支持的 P0 页面：Home、PLP、PDP、Cart、Checkout、Account、Order 中哪些？
 - 是否需要管理员编辑内容？如果需要，Payload 应从 P1 提前到 P0。
 - 生产目标是公司 Kubernetes/ECS、普通 VPS、Cloudflare、Vercel Pro 还是其他平台？
 - UI 是否要视觉参考 Joyboy/Fortress，还是只参考业务行为并建立新设计系统？
 - 首个真实支付国家与主体是什么？它决定 Stripe/PayPal/区域支付可用性。
 - 商品、价格、库存、促销、订单、用户分别由哪个系统做真源？
+- 公开 catalog/content 可接受的陈旧窗口和 webhook 能力是什么？它决定 `catalog/content` cache profile 是否需要收紧，而不是决定是否回到隐式缓存。
 
 ## 5. 建议的下一次产出
 
@@ -97,7 +100,7 @@
 
 - ADR（每个关键选择一页）。
 - P0 scope 与页面/领域模型。
-- provider TypeScript contract 草案。
+- port/adapter TypeScript contract 草案。
 - 目录和 import boundary 示例。
 - 初始化命令、依赖精确版本和第一批验收测试。
 

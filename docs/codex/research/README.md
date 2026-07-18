@@ -24,14 +24,17 @@
 4. [E-pig 目标架构与技术选型](./04-e-pig-target-architecture.md)
 5. [第三方、开源替代与免费额度决策](./05-provider-decision-matrix.md)
 6. [实施路线图、验收门槛与待确认项](./06-roadmap-and-open-questions.md)
+7. [Next 16 缓存、购物车与市场路由决策](./07-next16-cache-cart-routing-decisions.md)
 
 ## 第一轮结论
 
 - 继承 Joyboy 的领域边界、服务端优先渲染、市场配置、第三方事件解耦、可观测性和测试意识。
 - 不复制 Nx、双应用、60+ 内部项目、三层拆成独立 package、80+ 路径别名、Redis ISR、完整 Storybook/Chromatic、Datadog + Sentry 双监控等企业级成本。
-- E-pig 第一阶段采用单个 Next.js 应用、按业务垂直切片、provider adapter、mock provider、Docker 标准部署和可选 SaaS 插件。
+- E-pig 第一阶段采用单个 Next.js 应用、按业务垂直切片、port/adapter、mock adapter、Docker 标准部署和可选 SaaS integration。
 - P0 不依赖付费 CMS、搜索、个性化、客服、忠诚度和营销平台。支付只接 Stripe sandbox；生产支付、税务、物流和订单真源必须由后端/provider 承担。
-- 第三方 SDK 不允许散落在页面或业务组件中，统一经过 `integrations` 适配层和环境开关。
+- 第三方 SDK 不允许散落在页面或业务组件中：会决定业务结果的实现统一经过 `adapters`，可降级副作用经过 `integrations`。
+- P0 启用 Next 16 Cache Components，但只显式缓存公开、共享、稳定的数据；私有和交易数据默认 request-time。
+- 公开 URL 不是预设的 `[market]/[locale]`。单市场 P0 默认无前缀；多市场单语言可参考 Koala 的市场子域模式。
 
 ## 结论状态
 
