@@ -1,7 +1,11 @@
 # EVAL DEFINITION: E-pig quality hooks
 
 验证 `scripts/quality/diff-check.sh` 与 `scripts/quality/post-edit-check.sh` 的行为是否符合预期。
-当前为**人工执行清单**：每个用例描述输入 fixture 的注入方式与预期 exit code / 输出标记，逐条手工执行核对。后续再写自动化运行器（fixture 注入 → 断言 → 还原的沙箱模式）。
+
+**已自动化（进 CI）：** `pnpm test:harness-evals` → `scripts/quality/run-post-edit-evals.mjs`  
+覆盖 post-edit 的 `silent-on-unrelated-file`、`warns-on-env-file`（stdin → stdout / exit 0）。
+
+其余条目仍为**人工执行清单**；diff-check 类需 git fixture，后续再扩自动化。
 
 ---
 
@@ -76,16 +80,81 @@ Negative case: 同样的 process.env 出现在 src/platform/config/env.ts 中不
 
 ---
 
+## check-component-companions.mjs
+
+```
+[CAPABILITY EVAL: companions-warn-missing-spec]
+Fixture: 工作区改动触及 src/modules/catalog/components/product-card.tsx（或临时 touch），且同目录无 product-card.spec.*
+Success Criteria:
+  - [ ] `pnpm quality:companions` 输出含 CF-2 / missing spec
+  - [ ] 默认 warn：exit code = 0
+  - [ ] logs/component-folder-companions.json 存在且 violation_count >= 1
+```
+
+```
+[CAPABILITY EVAL: companions-cf1-unlisted-flat]
+Fixture: 新建未登记扁平文件 src/modules/catalog/components/tmp-cf1-flat.tsx（勿写入 legacyFlatFiles）
+Success Criteria:
+  - [ ] `pnpm quality:companions` 输出含 CF-1
+  - [ ] 默认 warn：exit code = 0
+  - [ ] 删除该文件后重跑不再报该路径
+```
+
+```
+[CAPABILITY EVAL: page-placement-signature-warn]
+Fixture: 新建 src/app/_components/tmp-dump.tsx（合法 TS，无 ESLint error）
+Success Criteria:
+  - [ ] `pnpm quality:diff` 输出含 `[WARN][signature-scan]` 与 page-workflow-guide / modules
+  - [ ] exit code = 0（warn 不阻断）
+  - [ ] 删除该文件后重跑恢复
+```
+
+```
+[CAPABILITY EVAL: companions-error-blocks]
+Fixture: 同上；执行 `pnpm quality:companions -- --level=error`
+Success Criteria:
+  - [ ] exit code = 1
+  - [ ] 输出含 missing companions
+```
+
+```
+[CAPABILITY EVAL: companions-report-all]
+Fixture: 无要求；执行 `pnpm quality:companions -- --report-all`
+Success Criteria:
+  - [ ] 扫描 happy-dog + allowlist modules
+  - [ ] exit code = 0（warn）
+  - [ ] 对缺 stories 的 happy-dog 组件报 CF-3（若适用）
+```
+
+```
+[CAPABILITY EVAL: companions-via-quality-diff]
+Fixture: 有任意 .ts/.tsx 变更；执行 `pnpm quality:diff`
+Success Criteria:
+  - [ ] 输出含 companions 汇总行（`[companions]`）
+  - [ ] 默认不因 companions warn 使 quality:diff 失败
+```
+
+---
+
 ## post-edit-check.sh
 
 执行方式：用管道注入 hook JSON：`echo '{"tool_input":{"file_path":"<path>"}}' | bash scripts/quality/post-edit-check.sh`，核对输出与 exit code（**全部用例 exit code 都必须是 0**——hook 从不阻断）。
 
 ```
-[CAPABILITY EVAL: silent-on-unrelated-file]
-Fixture: file_path = "src/modules/catalog/product-card.tsx"
+[CAPABILITY EVAL: warns-on-component-impl]
+Fixture: file_path = "src/modules/catalog/components/product-card.tsx"
 Success Criteria:
-  - [ ] 无任何输出
+  - [ ] 输出含 "[WARN] [Companions]"
+  - [ ] 输出含 component-workflow-guide.md 或 quality:companions
   - [ ] exit code = 0
+```
+
+```
+[CAPABILITY EVAL: silent-on-unrelated-file]  ← AUTOMATED (pnpm test:harness-evals)
+Fixture: file_path = "src/shared/lib/money.ts"
+Success Criteria:
+  - [x] 无任何输出
+  - [x] exit code = 0
 ```
 
 ```
@@ -97,12 +166,12 @@ Success Criteria:
 ```
 
 ```
-[CAPABILITY EVAL: warns-on-env-file]
+[CAPABILITY EVAL: warns-on-env-file]  ← AUTOMATED (pnpm test:harness-evals)
 Fixture: file_path = "src/platform/config/env.ts"
 Success Criteria:
-  - [ ] 输出含 "[WARN] [Quality] 该文件涉及架构敏感面"
-  - [ ] 输出列出 NEXT_PUBLIC_* / process.env / Hard Rules 提示
-  - [ ] exit code = 0
+  - [x] 输出含 "[WARN] [Quality] 该文件涉及架构敏感面"
+  - [x] 输出列出 NEXT_PUBLIC_* / process.env / Hard Rules 提示
+  - [x] exit code = 0
 ```
 
 ```
@@ -134,4 +203,5 @@ Success Criteria:
 ## 备注
 
 - fallback 类用例（fallback-*）执行后务必还原语法错误 fixture，避免污染后续验证。
-- 自动化方向：把 fixture 构造 / 断言 / 还原写成 `run-evals.sh`，每个用例独立临时分支或临时文件沙箱，汇总 pass/fail 表。
+- 已落地：`scripts/quality/run-post-edit-evals.mjs`（CI step `Harness evals (post-edit)`）。
+- 后续可扩：companions CF-1 fixture、diff-check 签名用例（需临时文件沙箱）。

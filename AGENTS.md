@@ -29,7 +29,9 @@ pnpm lint           # eslint .（flat config，含 no-restricted-imports 边界�
 pnpm typecheck      # tsc --noEmit
 pnpm test           # vitest run（纯逻辑 node；组件测试文件显式 jsdom）
 pnpm test:watch     # vitest watch 模式
-pnpm quality:diff   # bash scripts/quality/diff-check.sh（git diff 定向质量检查）
+pnpm test:harness-evals # post-edit-check harness 回归（stdin/stdout；进 CI）
+pnpm quality:diff   # bash scripts/quality/diff-check.sh（git diff 定向质量检查；含 companions warn）
+pnpm quality:companions # 组件文件夹 companion 检查（.spec/.stories/.md；默认 warn）
 pnpm docs:check     # 校验 package scripts、README market marker 与 registry 同步
 pnpm smoke:runtime-market # 用 SG 启动同一 standalone，验证运行时 market 未被 AU 构建值污染
 
@@ -215,6 +217,13 @@ adapter / integration 划分判定：
 
 - 组件：PascalCase 函数，放在 kebab-case 文件里（`product-card.tsx`）。
 - 测试：`*.spec.ts` / `*.spec.tsx`，与被测文件同目录（co-located）。
+
+**页面与组件开发闭环（Phase 2 起）：**
+
+- 开发/改页面：先按 DDD 定主 owning domain 与协作 domain，业务组件放入 `src/modules/<domain>/components/`，`src/app/**` 只做路由与编排。入口：`docs/engineering/page-workflow-guide.md`。
+- 定域后的每个业务/基础组件走组件流程：`docs/engineering/component-workflow-guide.md`（文件夹契约 + companions）。
+- 高频/有状态业务组件与 happy-dog 采用「一组件一文件夹」：`tsx` + `.md` + `.spec` +（基础组件强制）`.stories`；旧扁平迁到时再改，禁止一次性全仓搬家。
+- 契约 / Harness / 落地：同目录 `component-folder-contract.md`、`component-folder-harness.md`、`component-folder-contract-rollout.md`。
 
 **import 顺序：**
 

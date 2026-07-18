@@ -37,6 +37,14 @@ jobs:
       - name: Documentation sync
         run: pnpm docs:check
 
+      # harness 自身回归（post-edit stdin/stdout；谁来测测试者）
+      - name: Harness evals (post-edit)
+        run: pnpm test:harness-evals
+
+      # warn-only：companions 默认 exit 0；升 COMPANIONS_LEVEL=error 前用全量盘点暴露债
+      - name: Component companions (warn)
+        run: pnpm quality:companions -- --report-all
+
       - name: Unit tests
         run: pnpm test
 

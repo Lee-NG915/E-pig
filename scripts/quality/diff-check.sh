@@ -137,6 +137,12 @@ if [[ -n "$SRC_FILES" ]]; then
   fi
 fi
 
+# 页面落点：业务 UI 不得堆进 app/_components 或 src/components（warn，见 page-workflow-guide）
+PAGE_DUMP=$(echo "$FILES" | grep -E '^src/app/_components/|^src/components/' || true)
+if [[ -n "$PAGE_DUMP" ]]; then
+  SIGNATURE_RESULT="${SIGNATURE_RESULT}"$'[WARN][signature-scan] Business UI belongs in src/modules/<domain>/components (page-workflow-guide.md):\n'"$PAGE_DUMP"$'\n'
+fi
+
 if [[ -n "$SIGNATURE_RESULT" ]]; then
   RESULT="${RESULT}${RESULT:+$'\n'}${SIGNATURE_RESULT}"
 fi
@@ -158,7 +164,23 @@ if [[ "$ESLINT_EXIT" -ne 0 && -z "$RESULT" ]]; then
   exit 1
 fi
 
+# H1 Gate：组件 companion 检查（默认 warn，不阻断；COMPANIONS_LEVEL=error 时才失败）
+COMPANIONS_LEVEL_EFFECTIVE="${COMPANIONS_LEVEL:-warn}"
+set +e
+node scripts/quality/check-component-companions.mjs --level="$COMPANIONS_LEVEL_EFFECTIVE"
+COMPANIONS_EXIT=$?
+set -e
+
 if [[ -z "$RESULT" ]]; then
+  if [[ "$COMPANIONS_LEVEL_EFFECTIVE" == "error" && "$COMPANIONS_EXIT" -ne 0 ]]; then
+    write_summary "error" \
+      "[ERR] Component companions check failed (COMPANIONS_LEVEL=error)." \
+      "Add missing .spec/.stories/.md beside the component||See docs/engineering/component-workflow-guide.md||pnpm quality:companions" \
+      "$FALLBACK_TRIGGERED" "high" \
+      "component companion files missing for changed component(s)" \
+      "Run pnpm quality:companions, add companions, then rerun pnpm quality:diff"
+    exit 1
+  fi
   echo "[OK] All quality checks passed."
   write_summary "success" "[OK] All quality checks passed." "" "$FALLBACK_TRIGGERED" "high" "" ""
   exit 0
@@ -207,6 +229,10 @@ if [[ "$ERROR_COUNT" -gt 0 ]]; then
   echo "  Root cause hint: lint rule violation or fallback high-risk signature match."
   echo "  Safe retry: pnpm quality:diff"
   echo "  Stop condition: if the same error repeats 3 times, escalate to manual investigation."
+  exit 1
+fi
+
+if [[ "$COMPANIONS_LEVEL_EFFECTIVE" == "error" && "$COMPANIONS_EXIT" -ne 0 ]]; then
   exit 1
 fi
 

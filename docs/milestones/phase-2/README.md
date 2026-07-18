@@ -4,6 +4,8 @@
 
 状态：proposal
 
+实现时建议先读 `docs/engineering/page-workflow-guide.md`（定域落 module），再按 `component-workflow-guide.md` 交付组件。
+
 ## 1. Phase 目标
 
 在 Phase 1 Home demo 与 mock Catalog/Cart 之上，复现参考工程 **浏览 → 详情 → 搜索 → 服务端购物车** 的核心顾客路径（对应参考工程 `product` / `search` / `cart` 与 Web 的 PLP/PDP/search/cart 路由），并补齐 Cache Components 与 SEO/图片的生产级基线。

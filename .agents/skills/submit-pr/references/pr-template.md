@@ -1,53 +1,72 @@
 # PR Body Template (Submit PR)
 
-创建或更新 PR 时，body 必须包含以下六个段落。
+**Canonical（GitHub 网页提 PR 共用）：** 仓库根 `.github/PULL_REQUEST_TEMPLATE.md`。  
+本文件是 skill 侧说明；创建/更新 PR 时 body 必须与 canonical **同结构**（含 AI Test / Review Record）。
 
-## Full Template (with placeholders)
+## Full Template
+
+与 `.github/PULL_REQUEST_TEMPLATE.md` 一致，填入实际内容后提交：
 
 ```markdown
 ## 🤔 what this PR does？
 
-<本次改动摘要，来自 commit 历史或任务上下文；一句话或要点列表>
+<本次改动摘要>
 
 ## ✔️ how to verify it?
 
-<列出已实际跑过的验证及结果，例如：>
-- `pnpm typecheck` — PASS
-- `pnpm lint` — PASS
-- `pnpm test` — PASS（<n> passed）
-- `pnpm build` — PASS / NOT RUN（原因）
-- 手动验证：<步骤 1. 2. 3. …，含预期结果>
+- `pnpm typecheck` — PASS / NOT RUN（原因）
+- `pnpm lint` — …
+- `pnpm test` — …
+- `pnpm test:harness-evals` — …
+- `pnpm quality:diff` — …
+- `pnpm build` — …
+- 手动验证：…
 
 ## 💻 preview link or screenshot
 
-<本地 URL（如 http://localhost:3000/cart）或截图说明；无 UI 改动可写 (n/a)>
+<URL / 截图 / (n/a)>
 
 ## 🔗 related pr & ticket
 
-- Links: <关联 PR / issue / 文档链接，或 (none)>
+- Links: <… 或 (none)>
 - Branch: `<branch_name>`
 
 ## 🗒️ Special notes for reviews
 
-<给评审人的特别提示；无可写 (none)>
+<… 或 (none)>
+
+## AI Test Record
+
+- Behavior changed: …
+- Tests added/updated: …
+- Tests run: …
+- Result: PASS / FAIL / PARTIAL / NOT RUN
+- Failures or gaps: …
+- Next risk: …
+
+## AI Review Record
+
+- Review focus: … 或 (n/a — Dual-AI not required)
+- Findings: …
+- Residual risks: …
 
 ## ☑️ checklist
 
-⚠️ Please self-review and check all items. ⚠️
-
 - [x] Self-tested; verified locally
 - [x] No new console errors or lint errors
-- [x] Follows AGENTS.md conventions (Hard Rules checked if touching env/market/adapter/contract)
+- [x] Follows AGENTS.md Hard Rules (if touching env/market/adapter/contract/cache)
+- [x] Companion files synced when changing components (`pnpm quality:companions`) or N/A
+- [x] AI Test Record filled (or explicit exemption)
 - [x] done
 ```
 
 ## Section Reference
 
-| Section                    | Description                                                                 |
-| -------------------------- | --------------------------------------------------------------------------- |
-| what this PR does          | 一句话或要点列表概括本 PR 做什么                                             |
-| how to verify it           | **已实际执行**的验证命令与结果；没跑的显式写 NOT RUN + 原因；加手动验证步骤 |
-| preview link or screenshot | 本地 URL 或截图说明；无 UI 改动写 (n/a)                                      |
-| related pr & ticket        | 关联链接（或 (none)）+ 当前分支名（反引号包裹）                              |
-| Special notes for reviews  | 可选；架构敏感面改动（env/market/adapter/contract）在此说明                  |
-| checklist                  | 自检项，必须全部勾选                                                         |
+| Section | Description |
+| --- | --- |
+| what this PR does | 一句话或要点列表 |
+| how to verify it | **已实际执行**的验证；没跑写 NOT RUN + 原因 |
+| preview / related / Special notes | 同前 |
+| AI Test Record | 行为变更必填；纯文档可写 `Behavior changed: none (docs-only)` |
+| AI Review Record | Dual-AI 时必填；否则 `(n/a — Dual-AI not required)` |
+| checklist | 自检项，必须勾选 |

@@ -36,13 +36,15 @@ git branch --show-current
 ### 3. 组装标题与 body
 
 - 标题：`{type}: {summary}`，summary 从 commit 历史（`git log <base>..HEAD --oneline`）或本次任务上下文提炼。
-- body：必须完整包含六段，见 **`references/pr-template.md`**：
-  1. `## 🤔 what this PR does？` — 本次改动摘要
-  2. `## ✔️ how to verify it?` — 列出**已实际跑过**的验证及结果（`pnpm typecheck` / `pnpm lint` / `pnpm test` / `pnpm build` / `pnpm quality:diff`），没跑的要写明 NOT RUN 及原因
-  3. `## 💻 preview link or screenshot` — 本地 URL（如 `http://localhost:3000/...`）或截图说明
-  4. `## 🔗 related pr & ticket` — 关联 PR / issue / 文档链接；没有则写 `(none)`，并附 Branch 行
-  5. `## 🗒️ Special notes for reviews` — 评审注意事项（可选）
-  6. `## ☑️ checklist` — 自检清单（至少 `- [x] done`）
+- body：必须与 **`.github/PULL_REQUEST_TEMPLATE.md`**（canonical）同结构，说明见 **`references/pr-template.md`**：
+  1. `## 🤔 what this PR does？`
+  2. `## ✔️ how to verify it?` — 已跑命令含 `pnpm test:harness-evals`（若改了 quality hooks）
+  3. `## 💻 preview link or screenshot`
+  4. `## 🔗 related pr & ticket`
+  5. `## 🗒️ Special notes for reviews`
+  6. `## AI Test Record` — 行为变更必填
+  7. `## AI Review Record` — Dual-AI 时必填，否则 `(n/a — Dual-AI not required)`
+  8. `## ☑️ checklist`
 
 ### 4. 创建或更新 PR
 
@@ -54,7 +56,7 @@ git branch --show-current
 创建/更新后立即校验：
 
 - 标题是否匹配 `^(feat|fix|chore|docs|refactor|test|perf|build|ci|style|revert)(\(.+\))?!?: .+`
-- body 是否含全部六段标题
+- body 是否含模板各段标题（含 `## AI Test Record` 与 `## AI Review Record`）
 
 不符合 → 立即 `gh pr edit` 纠正后再返回，不得把格式错误的 PR 留给用户。
 

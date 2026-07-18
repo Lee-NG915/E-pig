@@ -54,7 +54,19 @@ if echo "$FILE" | grep -qiE "(\.agents/|AGENTS\.md|docs/codex/research/)"; then
   exit 0
 fi
 
-# --- 守卫 2：架构敏感面相关性过滤 ---
+# --- 守卫 2：组件 companion 提醒（不阻断）---
+if echo "$FILE" | grep -qiE "(packages/happy-dog/src/components/|src/modules/[^/]+/components/)"; then
+  if echo "$FILE" | grep -qiE "\.(tsx|ts)$" && ! echo "$FILE" | grep -qiE "\.(spec|stories|mock)\.(tsx|ts)$"; then
+    echo ""
+    echo "[WARN] [Companions] 组件实现被编辑，请同步同目录 companion（.md / .spec / .stories）"
+    echo "  File: $FILE"
+    echo "  流程: docs/engineering/component-workflow-guide.md"
+    echo "  检查: pnpm quality:companions"
+    echo ""
+  fi
+fi
+
+# --- 守卫 3：架构敏感面相关性过滤 ---
 if ! echo "$FILE" | grep -qiE "(env|market|adapter|contract|registry|secret|payment|checkout)"; then
   exit 0
 fi

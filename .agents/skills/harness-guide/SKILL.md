@@ -92,6 +92,7 @@ rg --files scripts/quality .agents/rules .github/workflows
 | ----------------- | ------------------------------------------------------------------- | -------------------------------------- | ------ |
 | Import 边界       | AGENTS.md Spec + ESLint no-restricted-imports + diff-check + CI | 缺量化与规则回归用例 | **推荐第一个** |
 | Env / secret 卫生 | env schema（@t3-oss/env-nextjs）+ diff-check 两条 fallback 签名      | 缺完整 Static 规则与量化                | 推荐   |
+| 组件文件夹契约    | Spec/Static/Gate(warn)/Knowledge：companions（含 CF-1 legacyFlat）+ CI report-all + 页面路径 warn | Gate 升 error；Chromatic/Evaluation 后期 | **H1 warn + CI 盘点已落地**（见 `docs/engineering/component-folder-harness.md`） |
 | 缓存规则          | Hard Rules 已定稿（Spec ✅）                                         | Static（AST 检测 'use cache' 误用）缺失 | 中期   |
 | Market 配置       | typed market registry 约定（Spec ✅）                                | 纯函数单测（Dynamic）随实现补齐         | 中期   |
 | 测试覆盖          | Vitest 已配                                                          | Gate（changed-path 门槛）与量化         | 低优先 |
