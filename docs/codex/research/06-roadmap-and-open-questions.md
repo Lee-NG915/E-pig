@@ -29,12 +29,14 @@
 
 ### Phase 2：浏览与加购
 
+当前状态：**未开始**。粗粒度条目保留；**可交付拆分见** [`docs/milestones/phase-2/`](../../milestones/phase-2/README.md)（M2.1–M2.5 PRD）。
+
 - 在 Phase 1 demo 基础上补齐 production-grade Home、PLP、PDP、搜索 query、variant、server cart。
 - `use cache`/`cacheLife`/`cacheTag` 策略、SEO metadata、canonical/hreflang、structured data、图片策略。
 - 首次 add-to-cart Server Action 懒创建匿名 cart 并签发 cookie；并发请求有幂等测试。
 - MSW/contract tests、核心组件测试。
 
-验收：mock catalog 完成浏览 → 加购；刷新后 cart 恢复；无客户端 hydration warning。
+验收：mock catalog 完成浏览 → 加购；刷新后 cart 恢复；无客户端 hydration warning。子里程碑全部完成后做 Phase 2 总评（phase-review rubric v2）。
 
 ### Phase 3：Checkout 与支付
 
@@ -62,15 +64,15 @@
 
 ## 2. 架构升级门槛
 
-| 决策 | 触发条件 | 之前不要做 |
-| --- | --- | --- |
-| 升 pnpm workspace/Turborepo | 第二 app、跨仓消费或独立发布 | 不预建 20 个空 package |
-| 引入 Redis | cache 一致性/容量数据证明单机/平台 cache 不足 | 不为“以后可能”维护 Redis |
-| 引入 Redux | 多页面复杂客户端状态且 Query/React state 无法清晰表达 | 不复制参考工程的 store/slice |
-| 引入 Storybook | shared UI 达到约 20 个复杂组件或多人视觉协作 | 不让它阻塞 P0 |
-| 独立搜索引擎 | SKU/facet/相关性/延迟超过 provider 能力 | 不先部署 Elasticsearch |
-| 第二监控平台 | Sentry/logger 无法满足已定义 SLO | 不同时接 Datadog |
-| 动态插件系统 | 有外部插件作者或运行时安装需求 | 不把 typed registry 过度设计 |
+| 决策                         | 触发条件                                 | 之前不要做                  |
+| -------------------------- | ------------------------------------ | ---------------------- |
+| 升 pnpm workspace/Turborepo | 第二 app、跨仓消费或独立发布                     | 不预建 20 个空 package      |
+| 引入 Redis                   | cache 一致性/容量数据证明单机/平台 cache 不足       | 不为“以后可能”维护 Redis       |
+| 引入 Redux                   | 多页面复杂客户端状态且 Query/React state 无法清晰表达 | 不复制参考工程的 store/slice   |
+| 引入 Storybook               | shared UI 达到约 20 个复杂组件或多人视觉协作        | 不让它阻塞 P0               |
+| 独立搜索引擎                     | SKU/facet/相关性/延迟超过 provider 能力       | 不先部署 Elasticsearch     |
+| 第二监控平台                     | Sentry/logger 无法满足已定义 SLO            | 不同时接 Datadog           |
+| 动态插件系统                     | 有外部插件作者或运行时安装需求                      | 不把 typed registry 过度设计 |
 
 ## 3. 你需要重点 Review 的选择
 

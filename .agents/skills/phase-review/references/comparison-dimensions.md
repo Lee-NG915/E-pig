@@ -2,62 +2,74 @@
 
 每个维度给出：参考工程现状（事实来源 `docs/codex/research/01/02/03`，标注节号）、E-pig 现状（本次取证）、判定（胜/平/负）+ 一句理由。
 
-**判定口径**："胜" = 对 E-pig **当前阶段**（轻量、未接后端、AI 协作开发）更有利，不是绝对技术优劣。参考工程在规模化、成熟度上的强项，对现阶段的 E-pig 可能是过度工程——如实分析，但判定时以"对 E-pig 当前目标是否有利"为准。
+## 判定口径（v2，服务「分阶段复现参考工程核心」）
+
+| 判定 | 含义 |
+| --- | --- |
+| **胜** | 在**本阶段目标内**，E-pig 用更可持续的方式达到了与参考工程**同等或更清晰**的核心意图（例如：同样的依赖方向，更低的拆包成本；同样的显式缓存意图，更现代的 API）。 |
+| **平** | 有意取舍或阶段差距：核心意图部分对齐，或文档已记录「本阶段不做」；**不能**仅因「没做参考工程的重设施」就判胜。 |
+| **负** | 本阶段**应该**覆盖的参考工程核心能力缺失、名存实亡，或实现与已定稿 ADR/Hard Rules 冲突。 |
+
+**明确禁止：**
+
+- 把「没有 Nx / 没有 Redis / 没有 E2E / 没有 Chromatic」直接判胜——除非本阶段清单本来就不包含，且轻量替代已完整兑现意图。
+- 把「功能完整度」以外的维度全部判胜来抬 D 分。
+
+「对当前阶段有利」仍然成立，但「有利」= **更利于逼近参考工程核心的正确路径**，不是 **更少代码就算赢**。
 
 ## 维度列表（10 个）
 
 1. **架构形态与依赖边界**
-   - 参考工程：Nx 20 + pnpm workspace，60+ 项目，components/services/domain 三层强制拆包，`@nx/enforce-module-boundaries` error 级约束（01 §1、§2.1）
-   - E-pig：单 Next app，`modules → core contracts ← adapters` 单向依赖，ESLint `no-restricted-imports` 强制 + diff-check 兜底
-   - 典型判定：E-pig 胜（继承"方向"不继承"每层独立发布单元"，简单功能不用跨 3 个 package）
+   - 参考工程：Nx 20 + 60+ 项目，三层拆包，`enforce-module-boundaries`（01 §1、§2.1）
+   - E-pig：单 app + 可选 workspace 组件包；`modules → contracts ← adapters`；ESLint + diff-check
+   - 典型：意图对齐且成本更低 → 胜；边界可被绕过 → 负
 
 2. **渲染与缓存模型**
-   - 参考工程：Next.js 14 App Router，SSR/ISR 隐式缓存 + Redis cache handler（01 §4）
-   - E-pig：Next.js 16 `cacheComponents`，PPR 静态壳 + Suspense 动态区，显式 `'use cache'` 策略（07）
-   - 判定口径：模型现代化 + 边界清晰 vs 生态成熟度
+   - 参考工程：Next 14 隐式 ISR + Redis handler（01 §4）
+   - E-pig：Next 16 `cacheComponents` + 显式 `'use cache'`（07）
+   - 有策略文档且代码边界清晰 → 胜；仍无策略却声称 PPR 完成 → 平/负
 
 3. **多市场机制**
-   - 参考工程：SG/US/AU/CA/UK 五市场，`.env.development.{market}` + 构建前脚本注入（01 §4、§5.3）
-   - E-pig：typed market registry（au/sg/us）+ env 只做选择，host 纯函数可单测
-   - 判定口径：配置治理 vs 市场覆盖面（覆盖少是负，机制清晰是胜——按当前阶段需要权衡）
+   - 参考工程：五市场 env + 构建前脚本（01 §4、§5.3）
+   - E-pig：typed registry + host 纯函数
+   - 机制可测 → 胜面；覆盖/runtime 解析未完成 → 与胜面冲抵多为平
 
 4. **状态管理与数据获取**
-   - 参考工程：Redux Toolkit + RTK Query + next-redux-wrapper + SWR（01 §3）
-   - E-pig：RSC 服务端数据 + 局部 client state（demo cart 在 localStorage）
-   - 判定口径：P0 阶段无全局 client store 是减法还是欠债——结合验收标准判断
+   - 参考工程：Redux + RTK Query + SWR（01 §3）
+   - E-pig：RSC + 局部 client state；cart/checkout 规划 TanStack Query
+   - P0 减法且 demo 自洽 → 平或有限胜；该进 server cart 仍停在 localStorage → 对 Phase 2+ 判负
 
 5. **UI 与设计系统**
-   - 参考工程：Fortress 内部库（MUI Joy/Material + Emotion）+ Storybook + Chromatic（01 §3，08）
-   - E-pig：Tailwind 4 + shadcn/ui 源码组件，无 Storybook
-   - 判定口径：轻量可改 vs 视觉协作设施缺失（对照 06 §2 升级门槛：~20 复杂组件前不引入）
+   - 参考工程：Fortress（MUI Joy）+ Storybook + Chromatic（01 §3）
+   - E-pig：Tailwind 4 + shadcn + `@e-pig/happy-dog` + Storybook（08）
+   - **Storybook/页面必须有运行时渲染证据**才能谈胜；仅有包脚手架或 build 通过 → 最多平；error overlay → 负
 
 6. **测试与质量门**
-   - 参考工程：Jest + Testing Library + MSW + Playwright/Cucumber E2E + Husky/lint-staged（01 §3）
-   - E-pig：Vitest + co-located spec、diff-check 定向门禁、doc-sync、hooks + 人工评测清单；无 E2E
-   - 判定口径：E2E 缺失如实判负或平，AI 工作流门禁是加分项
+   - 参考工程：Jest + MSW + Playwright/Cucumber（01 §3）
+   - E-pig：Vitest + TL + diff-check/doc-sync/smoke；E2E 按 Phase 引入
+   - 门禁链完整 → 平/小胜；缺本阶段要求的 contract/MSW/E2E → 负
 
 7. **AI 协作工程治理**
-   - 参考工程：有质量脚本与评测框架原始资产（docs/agent-skills-migration-audit.md）
-   - E-pig：迁移并适配后的 AGENTS.md + rules + skills + hooks + evals，且已修原件缺陷（ESLint 9 formatter、无 rg 环境回退、untracked 文件门禁漏洞）
-   - 典型判定：E-pig 胜（适配修复后更贴合当前工具链）
+   - 参考工程：原始 scripts/evals 资产
+   - E-pig：AGENTS/rules/skills/hooks/evals + phase-review
+   - 适配且真能拦住问题 → 胜；评分虚高却漏运行时缺陷 → 平或负（治理失效）
 
 8. **可观测性**
-   - 参考工程：Sentry + Datadog RUM/trace + Pino + web-vitals + 自定义观测 ESLint 插件（01 §5.2）
-   - E-pig：结构化 logger + consent 门控 + analytics facade（事件不进第三方）
-   - 判定口径：现阶段"够用且不绑定 SaaS" vs 生产级洞察缺失
+   - 参考工程：Sentry + Datadog + Pino + web-vitals（01 §5.2）
+   - E-pig：logger + consent + analytics facade
+   - Phase 1–2 通常平；声称生产级却无错误上报 → 负
 
 9. **部署与运维**
-   - 参考工程：20 个按市场的 GitHub workflow、release-please、Nx release、Docker standalone（01 §6）
-   - E-pig：单 CI（typecheck/lint/test/build）+ Dockerfile standalone
-   - 判定口径：满足当前规模 vs 发布自动化差距
+   - 参考工程：多 workflow + release-please + Docker（01 §6）
+   - E-pig：单 CI + Dockerfile standalone
+   - 脚手架在但从未真实执行 → 平（不得因「有文件」判胜）
 
-10. **功能完整度**
-    - 参考工程：真实 PLP/PDP/搜索/多支付 checkout/订单/CMS/促销/归因（01 §2.2、§3）
-    - E-pig：Home demo + mock catalog/cart
-    - 典型判定：E-pig 负（必须有至少一个负维度；这是阶段差距而非缺陷，但如实记负）
+10. **功能完整度（阶段内）**
+    - 对照**本阶段能力清单**，不是对照参考工程全集
+    - 清单内大面积缺失 → 负；清单外缺失 → 不在此维惩罚（放到「易被误认」）
 
 ## 使用注意
 
-- 维度可以随 Phase 演进调整权重与增删（如 Phase 3 后"支付"应独立成维），但一次评审内维度集合固定。
-- 每个维度的"参考工程"列只写 1–2 句要点并标注文档节号，不复制原文段落。
-- 全判胜 = 取证不认真，回去重查；全判负同理。
+- Phase 演进可增删维度（如 Phase 3 增加「支付与幂等」），但单次评审维度集合固定。
+- 参考工程列 1–2 句 + 文档节号；E-pig 列必须能被同报告取证支撑。
+- 全胜或全负 = 取证不合格。
