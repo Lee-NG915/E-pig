@@ -25,6 +25,7 @@
 5. [第三方、开源替代与免费额度决策](./05-provider-decision-matrix.md)
 6. [实施路线图、验收门槛与待确认项](./06-roadmap-and-open-questions.md)
 7. [Next 16 缓存、购物车与市场路由决策](./07-next16-cache-cart-routing-decisions.md)
+8. [happy-dog 基础组件库（shadcn + Theme + Storybook）](./08-shadcn-theme-component-library.md)
 
 ## 第一轮结论
 

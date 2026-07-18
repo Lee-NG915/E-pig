@@ -6,8 +6,8 @@ import { Minus, Plus, ShoppingBag } from "lucide-react";
 import { setCartOpen, setQuantity, useCartStore } from "@/modules/cart/lib/cart-store";
 import { useCartMarket } from "./cart-market-context";
 import { formatPrice } from "@/shared/lib/money";
-import { Button } from "@/shared/ui/button";
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/shared/ui/sheet";
+import { Button } from "@e-pig/happy-dog/components/button";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@e-pig/happy-dog/components/sheet";
 
 export function CartSheet() {
   const market = useCartMarket();

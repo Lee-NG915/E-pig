@@ -12,10 +12,10 @@
   },
   "iconLibrary": "lucide",
   "aliases": {
-    "components": "@/shared/ui",
-    "utils": "@/shared/lib/utils",
-    "ui": "@/shared/ui",
-    "lib": "@/shared/lib",
+    "components": "@e-pig/happy-dog/components",
+    "utils": "@e-pig/happy-dog/lib/utils",
+    "ui": "@e-pig/happy-dog/components",
+    "lib": "@e-pig/happy-dog/lib",
     "hooks": "@/shared/lib/hooks"
   }
 }

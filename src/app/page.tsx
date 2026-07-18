@@ -11,8 +11,8 @@ import { ProductCard } from "@/modules/catalog/components/product-card";
 import { SiteFooter } from "@/modules/content/components/site-footer";
 import { SiteHeader } from "@/modules/content/components/site-header";
 import { getCapabilities } from "@/platform/registry";
-import { Badge } from "@/shared/ui/badge";
-import { Button } from "@/shared/ui/button";
+import { Badge } from "@e-pig/happy-dog/components/badge";
+import { Button } from "@e-pig/happy-dog/components/button";
 
 // Cache Components 渲染模型（docs/codex/research/07 §2）：
 // RootLayout 只输出当前 markets 共有的 base language `en`；region-specific

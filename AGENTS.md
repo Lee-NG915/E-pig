@@ -5,7 +5,7 @@
 
 ## Overview
 
-E-pig 是轻量电商前端：单 Next.js 16.2 App（App Router + `cacheComponents: true` + Turbopack）+ React 19 + TypeScript 6 strict + Tailwind CSS 4 + shadcn/ui 源码模式 + pnpm 10 + Vitest 4。不使用 monorepo 任务编排、独立可观测性 SaaS、Storybook，也没有多区域环境分支。
+E-pig 是轻量电商前端：单 Next.js 16.2 App（App Router + `cacheComponents: true` + Turbopack）+ React 19 + TypeScript 6 strict + Tailwind CSS 4 + shadcn/ui 源码模式 + pnpm 10 + Vitest 4。不使用 monorepo 任务编排、独立可观测性 SaaS，也没有多区域环境分支。业务 App 不强制 Storybook；基础组件库 `@e-pig/happy-dog` 使用 Storybook 作为文档与演示环境。
 
 **Node：** 24 LTS（`.nvmrc` / `engines` 固定） | **包管理：** pnpm 10.34.5（`packageManager` 精确固定）
 
@@ -32,6 +32,11 @@ pnpm test:watch     # vitest watch 模式
 pnpm quality:diff   # bash scripts/quality/diff-check.sh（git diff 定向质量检查）
 pnpm docs:check     # 校验 package scripts、README market marker 与 registry 同步
 pnpm smoke:runtime-market # 用 SG 启动同一 standalone，验证运行时 market 未被 AU 构建值污染
+
+# happy-dog 基础组件库
+pnpm storybook       # 启动 packages/happy-dog Storybook（端口 6006）
+pnpm build-storybook # 构建静态 Storybook
+pnpm happy-dog:test  # 运行 happy-dog 独立测试
 ```
 
 跑单个测试文件：
@@ -168,9 +173,13 @@ src/
     ui/                 # shadcn/ui 组件与通用 UI
     lib/                # 跨域工具
 public/
+packages/
+  happy-dog/             # @e-pig/happy-dog：shadcn 基础组件、Theme tokens、Storybook
 tests/e2e/              # 预留（P0 暂无 E2E 设施）
 docs/
 ```
+
+`src/app` 与 `src/modules` 可依赖 `@e-pig/happy-dog`；happy-dog 不得反向依赖 App、modules、adapters、integrations 或 platform。基础组件新增与迁移优先落在 `packages/happy-dog/src/components`，并同步基础 stories。
 
 ## Architecture
 

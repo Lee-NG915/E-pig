@@ -20,9 +20,13 @@
     "test:watch": "vitest",
     "quality:diff": "bash scripts/quality/diff-check.sh",
     "docs:check": "node scripts/quality/check-doc-sync.mjs",
-    "smoke:runtime-market": "node scripts/smoke/runtime-market.mjs"
+    "smoke:runtime-market": "node scripts/smoke/runtime-market.mjs",
+    "storybook": "pnpm --filter @e-pig/happy-dog storybook",
+    "build-storybook": "pnpm --filter @e-pig/happy-dog build-storybook",
+    "happy-dog:test": "pnpm --filter @e-pig/happy-dog test"
   },
   "dependencies": {
+    "@e-pig/happy-dog": "workspace:*",
     "@radix-ui/react-dialog": "1.1.19",
     "@radix-ui/react-slot": "1.3.0",
     "@t3-oss/env-nextjs": "^0.13.11",

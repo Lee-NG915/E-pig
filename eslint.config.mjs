@@ -103,5 +103,21 @@ export default defineConfig([
       ],
     },
   },
-  globalIgnores([".next/**", "out/**", "build/**", "next-env.d.ts"]),
+  {
+    files: ["packages/happy-dog/src/**/*.ts", "packages/happy-dog/src/**/*.tsx"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["@/app/*", "@/modules/*", "@/adapters/*", "@/integrations/*", "@/platform/*"],
+              message: "happy-dog 是独立基础组件包，不得依赖 App 或业务/适配/集成/平台层。",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  globalIgnores([".next/**", "out/**", "build/**", "**/storybook-static/**", "next-env.d.ts"]),
 ]);

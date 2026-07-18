@@ -5,7 +5,7 @@ import { ShoppingBag } from "lucide-react";
 
 import { useCartMarket } from "@/modules/cart/components/cart-market-context";
 import { setCartOpen, useCartStore } from "@/modules/cart/lib/cart-store";
-import { Button } from "@/shared/ui/button";
+import { Button } from "@e-pig/happy-dog/components/button";
 
 export function SiteHeader() {
   const market = useCartMarket();
