@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 
+import Link from "next/link";
 import { connection } from "next/server";
 
 import { CartMarketProvider } from "@/modules/cart/components/cart-market-context/cart-market-context";
@@ -26,7 +27,11 @@ import { Badge } from "@e-pig/happy-dog/components/badge";
 async function MarketProductGrid() {
   await connection();
   const { catalog, market } = getCapabilities();
-  const productList = await catalog.listProducts();
+  const [productList, collections] = await Promise.all([
+    catalog.listProducts(),
+    catalog.listCollections(),
+  ]);
+  const firstCollection = collections[0];
 
   return (
     <CartMarketProvider
@@ -40,6 +45,14 @@ async function MarketProductGrid() {
           <h2 className="mt-3 max-w-2xl font-display text-4xl leading-tight tracking-[-0.03em] sm:text-5xl">
             Good pieces make everyday life feel lighter.
           </h2>
+          {firstCollection ? (
+            <Link
+              href={`/collections/${firstCollection.handle}`}
+              className="mt-4 inline-block text-sm font-medium underline underline-offset-4 transition-colors hover:text-muted-foreground"
+            >
+              Shop {firstCollection.title}
+            </Link>
+          ) : null}
         </div>
         <Badge variant="outline" className="w-fit">
           {market.name} · {market.currency}

@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { Plus } from "lucide-react";
 
 import type { ProductListItem } from "@/core/contracts/commerce/catalog";
@@ -12,16 +13,24 @@ import { formatPrice } from "@/shared/lib/money";
 
 export function ProductCard({ product, locale }: { product: ProductListItem; locale: string }) {
   const market = useCartMarket();
+  const productHref = `/products/${product.slug}`;
+
   return (
     <article className="group">
       <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-secondary">
-        <Image
-          src={product.image}
-          alt={product.name}
-          fill
-          sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
-          className="object-cover transition-transform duration-500 group-hover:scale-[1.025]"
-        />
+        <Link
+          href={productHref}
+          aria-label={product.name}
+          className="block h-full w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        >
+          <Image
+            src={product.image}
+            alt={product.name}
+            fill
+            sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
+            className="object-cover transition-transform duration-500 group-hover:scale-[1.025]"
+          />
+        </Link>
         {product.badge ? (
           <Badge variant="secondary" className="absolute left-3 top-3 bg-background/90 backdrop-blur">
             {product.badge}
@@ -39,7 +48,14 @@ export function ProductCard({ product, locale }: { product: ProductListItem; loc
       <div className="mt-4 flex items-start justify-between gap-4">
         <div>
           <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">{product.category}</p>
-          <h3 className="mt-1 font-medium">{product.name}</h3>
+          <h3 className="mt-1 font-medium">
+            <Link
+              href={productHref}
+              className="hover:text-muted-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            >
+              {product.name}
+            </Link>
+          </h3>
           <p className="mt-1 text-sm text-muted-foreground">{product.colour}</p>
         </div>
         <div className="shrink-0 text-right text-sm">

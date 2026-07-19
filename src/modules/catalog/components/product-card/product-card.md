@@ -10,7 +10,8 @@
 ## 状态矩阵
 | 状态 | 触发 | 可见结果 |
 | --- | --- | --- |
-| default | 正常商品数据 | 渲染图片、类目、名称、颜色与现价；加购按钮可用，aria-label 为 "Add <name> to bag" |
+| default | 正常商品数据 | 渲染图片、类目、名称、颜色与现价；图片与名称均可点击跳转 PDP；加购按钮可用，aria-label 为 "Add <name> to bag" |
+| 可进入 PDP | `product.slug` 非空 | 图片与标题均链向 `/products/<slug>` |
 | 有徽标 | `product.badge` 非空 | 图片左上角叠加徽标文案 |
 | 无徽标 | `product.badge` 为空/缺省 | 不渲染徽标 |
 | 有划线价 | `product.compareAt` 非空 | 现价下方显示划线原价 |
@@ -19,7 +20,6 @@
 
 ## 非目标
 - 缺货/库存禁用态（P0 mock 数据无库存概念）。
-- 跳转 PDP（详情页路由尚未存在）。
 - 价格/库存数据缓存（价格区域按 Hard Rules 走 request-time，不进共享缓存）。
 
 ## 依赖

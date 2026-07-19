@@ -78,6 +78,16 @@ describe("ProductCard", () => {
     ).toBeTruthy();
   });
 
+  it("图片与标题均链向 /products/<slug>", () => {
+    renderCard();
+
+    const links = screen.getAllByRole("link", { name: product.name });
+    expect(links.length).toBe(2);
+    links.forEach((link) => {
+      expect(link.getAttribute("href")).toBe(`/products/${product.slug}`);
+    });
+  });
+
   it("点击加购按钮把商品放入当前 market 的购物袋并打开抽屉", async () => {
     const user = userEvent.setup();
     renderCard();
