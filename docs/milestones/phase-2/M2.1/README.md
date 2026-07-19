@@ -19,5 +19,6 @@ PRD：[../M2.1-home-plp.md](../M2.1-home-plp.md)
 ## 当前状态
 
 - Align：契约已冻结（见 contracts.md）
-- 实现：按 TASKS.md 推进
-- 关门：全部必做 task `done` 后人手动 `phase-review`
+- 实现：T00–T04 **done**（分支已推送）
+- 溯源：ISSUE-001 已修并写入防再发
+- 关门：可人手动触发 `phase-review` 评 M2.1；通过后写 `retros/milestone.md` 再开 M2.2 分支
