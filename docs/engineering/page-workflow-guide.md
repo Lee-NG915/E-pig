@@ -1,6 +1,6 @@
 # 页面对话开发流程指南
 
-更新日期：2026-07-18
+更新日期：2026-07-19
 
 状态：active
 
@@ -46,6 +46,18 @@
 ```
 
 **禁止短路：** 在 `src/app/**` 里堆业务状态机、长列表卡片实现、或直接 import `@/adapters/*`。
+
+### 2.1 缓存 shell 与动态岛（Saleor Paper 改编）
+
+新建/改页面时显式标出边界：
+
+| 形态 | 做法 |
+| --- | --- |
+| Static browse | 缓存数据在 data 边界 `'use cache'` + `applyCacheProfile`；页面直接渲染 shell，**无 page-level Suspense** |
+| Hybrid | 缓存 shell 急切渲染；仅 `searchParams` / cookies / cart 等动态岛包 `<Suspense>`；骨架是 per-hole，不是整页默认 |
+| Layout | 保持同步；header/footer/cart 等 chrome 各自 Suspense；`<main>` 不被 chrome Suspense 包裹 |
+
+价格 / 库存 / cart / checkout / payment **永不**进入共享 cache（见 `src/shared/lib/cache-manifest.ts` 与 Hard Rules）。
 
 ---
 

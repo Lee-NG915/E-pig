@@ -1,0 +1,130 @@
+• 用户要求只读审查 E-pig 本轮 Saleor 融合 + skills。需要读这些文件：
+  1. .agents/skills/e-pig-dev-loop/SKILL.md
+  2. CONFLICTS.md（可能不存在）
+  3. src/shared/lib/cache-manifest.ts
+  4. src/platform/seo/*.ts
+  5. scripts/e-pig-doctor.mjs
+  6. AGENTS.md 开头 thin router
+
+  需要输出 Findings（blocker/major/minor）+ Verdict。中文简洁。
+
+  我应该先并行读取这些文件。注意 CONFLICTS.md 可能不存在，需要先检查。我已经读取了 e-pig-dev-loop/SKILL.md、cache-manifest.ts、scripts/e-pig-doctor.mjs、AGENTS.md 开头，并且找到了 seo 目录下的文件列表。现在需要读取 src/platform/seo/*.ts 文件。
+
+  注意 CONFLICTS.md 不存在（工具报错）。这是重要的 finding：e-pig-dev-loop/SKILL.md 第 51 行提到"详见同目录 CONFLICTS.md"，但该文件不存在。
+
+  现在读取 seo 下的所有 ts 文件。现在我已经读取了所有相关文件。让我来审查内容并识别问题。
+
+  需要检查的文件：
+  1. `.agents/skills/e-pig-dev-loop/SKILL.md` - 统筹 skill
+  2. `CONFLICTS.md` - 不存在
+  3. `src/shared/lib/cache-manifest.ts` - 缓存清单
+  4. `src/platform/seo/*.ts` - SEO 相关
+  5. `scripts/e-pig-doctor.mjs` - doctor 脚本
+  6. `AGENTS.md` 开头 thin router
+
+   findings：
+
+  ### 关于 e-pig-dev-loop/SKILL.md
+  - 第 51 行引用同目录 `CONFLICTS.md`，但该文件不存在。这是问题。
+  - 其它看起来合理，但"Superpowers 子集"的引用未说明具体内容。
+  - `subagent-driven-development` 在第 48 行提到但没有说明具体是什么 skill。
+
+  ### 关于 CONFLICTS.md
+  - 不存在，但 e-pig-dev-loop/SKILL.md 引用它。
+
+  ### 关于 cache-manifest.ts
+  - 代码结构合理，但有几个问题：
+    - `CacheLifeTier` 类型是 `"minutes" | "hours" | "days"`，但 Next.js 的 cacheLife 除了这些还有其它内建 profile，如 "weeks", "max" 等。这里限制死了，但文档说"Built-in Next.js cacheLife profile names (safe without custom next.config)"，可能故意限制。
+    - `buildCacheTag` 中对 `value` 的检查是 `if (!value)`，这会拒绝空字符串、0 等 falsy 值。不过 slug 可能为空？应该问题不大。
+    - `applyCacheProfile` 接受 `CacheProfile` 对象，但只断言 `profile.id`，不验证它来自 `CACHE_PROFILES`。这个设计允许外部传入自定义 profile，只要 id 不包含禁用词。这与类型系统配合可能允许绕过。
+    - `assertProfileAllowed` 使用 `normalized.includes(forbidden)` 可能过于宽泛。例如 profile id "commerce-inventory-report" 包含 "inventory" 会被禁用，但这不是明确的价格/库存字段缓存。不过可能这是故意严格。
+    - 注释提到" inspired by Saleor Paper's cache-manifest"，符合项目要求 Saleor 模式借鉴但不绑定。
+
+  ### 关于 SEO
+  - hreflang.ts:
+    - `buildHreflangAlternates` 使用 `market.defaultLocale`，但一个 market 可能有多个 locale。hreflang 应该为每个 locale 生成 alternate，而不仅是 defaultLocale。
+    - 只返回 `defaultLocale` 会遗漏同一 market 下的多语言变体。
+    - 使用 `market.hosts[0]` 作为 primaryHost 没有验证 hosts 是否为空。如果 markets.ts 配置错误会崩溃。
+    - 但这些都是 minor，取决于项目当前阶段。
+    - 类型 `HreflangAlternate` 的 host 字段看起来是重复的，因为 href 已经包含 host。
+
+  - json-ld.ts:
+    - `serializeForInlineScript` 只替换 `<` 为 `\\u003c`。标准的 JSON-LD 序列化还需要处理 `-->` 和 `]]>` 等 script 结束序列。Next.js 的 `dangerouslySetInnerHTML` 需要更完整的转义，或最好使用 `next/script` 或框架内置的安全序列化。
+    - `buildProductJsonLd` 返回的字段中，undefined 字段会保留为 undefined，这可能导致 JSON 输出中出现 undefined 值（JSON.stringify 会省略 undefined，但直接展开可能有问题）。
+    - 没有 price / offers 字段，可能故意省略以符合 Hard Rules（价格不缓存），但 product JSON-LD 通常应包含 offers/price。这可能是业务选择。
+
+  - metadata.ts:
+    - `buildPageMetadata` 使用 `input.description ?? defaultDescription`，所以描述总是有值。
+    - openGraph.url 使用 canonicalUrl，但如果没有 canonicalUrl 则 openGraph.url 为 undefined。
+    - title 被截断后用于 title 和 og:title，这是合理的。
+    - 没有 keywords，可能不需要。
+
+  - config.ts:
+    - 简单合理。
+    - `truncateMeta` 中 `Math.max(0, max - 1)` 防止负数。
+
+  - seo.spec.ts:
+    - 测试覆盖基本路径，但缺少：
+      - hreflang 多 locale 测试（如果 market 支持多 locale）
+      - canonical URL path 不带前导 slash 的测试
+      - JSON-LD 缺少字段（undefined）的序列化测试
+      - metadata 的 noIndex 分支
+      - metadata 的 description 默认值
+
+  ### 关于 scripts/e-pig-doctor.mjs
+  - 检查 skills 安装，合理。
+  - 使用 `fs.statSync` 检查 symlink，如果 symlink 指向不存在的目标会抛错，然后 catch 到 broken symlink，这是合理的。
+  - 但 `exists` 函数使用 `fs.accessSync`，对于 symlink 会 follow symlink，如果 symlink 目标不存在则 accessSync 抛错返回 false。这与后面 `fs.statSync` 检查 broken symlink 的逻辑一致。
+  - 没有检查 `e-pig` skill 内部是否有 AGENTS.md（除非存在时才检查 .cursorignore）。
+  - `skills-lock.json` 路径在根目录，但项目是否有该文件不确定。
+  - 脚本没有 Node shebang 可执行权限问题，有 `#!/usr/bin/env node`。
+  - 没有 `type: "module"` 相关，但 .mjs 扩展名确保 ESM。
+  - 使用 `parseArgs` 是 Node 18.3+，项目要求 Node 24，没问题。
+
+  ### 关于 AGENTS.md
+  - 开头 thin router 合理。
+  - 第 13 行提到 `docs/engineering/component-workflow-guide.md`，但需要确认该文件是否存在？不是本次审查范围，但可以注意。
+  - Precedence 顺序与 e-pig-dev-loop/SKILL.md 一致。
+
+  ### Saleor 融合相关
+  - cache-manifest.ts 明确说明 inspired by Saleor Paper，adapted to Hard Rules。
+  - e-pig-doctor.mjs 也提到 Saleor paper-doctor inspired。
+  - 符合"不绑定 Saleor DTO/GraphQL"的要求。
+
+  ### 其他
+  - 需要查看 .cursorignore 是否包含 `.agents/skills/e-pig/AGENTS.md`，因为 e-pig-doctor.mjs 检查这个。这可以是一个 finding。
+
+  让我检查 .cursorignore 和 skills-lock.json 是否存在，以及 markets.ts 的结构（确认 hreflang 多 locale 问题）。现在我看到 markets.ts 中每个 market 只有一个 locale。所以 hreflang.ts 只返回 defaultLocale 在当前配置下没问题，但代码并没有处理多 locale 的情况，这是一个潜在缺陷。不过 markets.ts 的 `locales` 是数组，未来可能扩展。
+
+  现在我可以组织审查结果了。
+
+  需要分类为：
+  - blocker：会导致系统错误、违反 hard rules、引用缺失文件等
+  - major：明显缺陷，但不立即破坏
+  - minor：建议、风格、测试覆盖缺口等
+
+  Findings:
+
+  ### Blocker
+  1. **CONFLICTS.md 缺失但 SKILL.md 引用**：`.agents/skills/e-pig-dev-loop/SKILL.md:53` 说"详见同目录 CONFLICTS.md"，但文件不存在。开发者无法查看冲突表，loop 的权威性受损。
+
+  ### Major
+  1. **cache-manifest.ts 的 profile 绕过风险**：`applyCacheProfile` 接受任意 `CacheProfile` 对象，只检查 id 是否包含禁用词。如果外部传入 `{id:"my-profile", cacheLife:"days", tagPattern:"price:{marketId}"}` 不会被阻止（除非 id 含禁用词）。应该限制为只接受 `CACHE_PROFILES` 中的对象，或同时校验 tagPattern/pathPattern。
+  2. **cache-manifest.ts 的 includes 检查过宽**：`assertProfileAllowed` 用 `normalized.includes(forbidden)` 会误杀合法 id（如 "commerce-inventory-report" 含 inventory）。应改为精确匹配或前缀匹配。
+  3. **seo/json-ld.ts 转义不完整**：只转义 `<`，未处理 `-->` / `]]>` 等 HTML 注释/CDATA 结束序列，存在 XSS 风险。应使用更完整的转义或框架安全序列化。
+  4. **seo/hreflang.ts 不支持 market 多 locale**：每个 market 只返回 defaultLocale 的 alternate。markets.ts 的 `locales` 支持数组，未来扩展多 locale 时需要修改。当前虽可用，但属于设计缺口。
+
+  ### Minor
+  1. **seo.spec.ts 覆盖不足**：缺少 noIndex、description 默认值、canonical path 无前导 slash、多 locale hreflang、JSON-LD undefined 字段行为等测试。
+  2. **seo/hreflang.ts 的 host 字段冗余**：`HreflangAlternate.host` 与 href 中解析出的 host 重复。
+  3. **e-pig-doctor.mjs 未验证 skills-lock.json 的 hash**：只检查存在性，不校验 computedHash。
+  4. **e-pig-doctor.mjs 的 broken symlink 检测**：`exists` 使用 `accessSync` 会 follow symlink，如果目标不存在返回 false，但随后 `fs.statSync(full)` 对 symlink 本身调用时，如果目标不存在会抛出 ENOENT，被 catch 为 broken symlink。逻辑上没问题，但使用 `lstatSync` 更明确。
+  5. **e-pig-dev-loop/SKILL.md 中的 Superpowers 子集未展开**：只提到关闭和按名调用，但未说明哪些 superpowers 子集被允许。
+  6. **cache-manifest.ts 的 CacheLifeTier 限制**：只支持 minutes/hours/days，未使用 Next.js 其他内置 profile（如 weeks/max），如需扩展要改类型。
+
+  Verdict：
+  本轮 Saleor 融合与 skills 搭建方向正确：借鉴 Saleor Paper 的 cache-manifest、paper-doctor 模式，但遵守了 Hard Rules（不绑定 Saleor DTO/GraphQL、价格/库存/购物车/结账/支付不进缓存）。然而存在一个 blocker（CONFLICTS.md 缺失）和几个 major 缺陷（缓存 profile 校验不严、JSON-LD 转义不完整、hreflang 多 locale 缺失）。建议修复 blocker 和 major 后再合入。
+
+  现在用中文简洁输出。
+
+To resume this session: kimi -r session_c682e4b0-c567-41bc-bf01-141d4ebb29dc

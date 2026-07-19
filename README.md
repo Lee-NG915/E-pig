@@ -32,6 +32,8 @@ MARKET=au pnpm dev   # 也可以直接注入
 pnpm typecheck     # tsc --noEmit
 pnpm lint          # eslint（含 modules/shared 依赖方向规则）
 pnpm test          # vitest run
+pnpm verify        # docs:check + typecheck + lint + test（完成门）
+pnpm doctor        # agent/skill 健康检查
 pnpm build         # Turbopack 生产构建（Cache Components）
 pnpm start         # 启动 .next/standalone 生产服务（需先 build）
 pnpm quality:diff  # 对 git diff 中的 TS 文件做定向质量检查
@@ -67,7 +69,9 @@ src/
 
 - `AGENTS.md`：主约定（命令、AI 测试与评审工作流、命名/import 约定、Hard Rules）
 - `.agents/rules/`：always-on 规则（编辑后质量自检循环、文档日期同步）
-- `.agents/skills/`：submit-pr、harness-guide、vercel-react-best-practices
+- `.agents/skills/`：`e-pig-dev-loop`（统筹）、`e-pig`（项目规则）、以及 grill-me / ponytail / impeccable / Superpowers 子集等（见 `skills-lock.json`）
+- `DESIGN.md` / `PRODUCT.md`：给 impeccable 与 UI 任务的提案级契约
 - `scripts/quality/`：diff-check、remediation-loop、check-doc-sync（机器可读 JSON 契约）
+- `pnpm verify` / `pnpm doctor`：完成门与 agent 安装健康检查
 
 架构研究见 [`docs/codex/research`](./docs/codex/research/README.md)。

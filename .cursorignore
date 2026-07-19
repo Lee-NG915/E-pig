@@ -1,0 +1,7 @@
+# Quarantine compiled agent dumps (Saleor Paper pattern).
+# Never auto-load a concatenated mega-AGENTS into the model context.
+.agents/skills/e-pig/AGENTS.md
+
+# Local agent scratch / research outputs
+.tmp/
+logs/

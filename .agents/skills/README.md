@@ -18,10 +18,13 @@ E-pig 的 skill 不是孤立的提示词，它们和仓库的质量门（`.claud
 
 | Skill | 解决什么 | 与本项目的衔接 |
 | --- | --- | --- |
+| `e-pig-dev-loop` | **统筹**：按阶段调度 grill-me / ponytail / tdd / impeccable / Superpowers，消解冲突 | 默认入口；详见 `CONFLICTS.md` |
+| `e-pig` | 项目 on-demand rules（architecture / cache / seo / component / markets） | Saleor Paper 式 thin index；每次只读一条 rule |
 | `submit-pr` | 按 E-pig 约定创建/更新 GitHub PR（分支名解析类型、Conventional Commits 标题、六段 body 模板、建后自纠） | body 的 "how to verify" 段必须列**实际跑过**的 `pnpm typecheck / lint / test / build / quality:diff` 结果，没跑写 NOT RUN |
 | `harness-guide` | 为某个代码领域（import 边界 / env 卫生 / 缓存规则 / market 配置 / 测试覆盖）搭建 8 组件治理 | 落地件就是本仓库已有的 Spec（AGENTS.md Hard Rules）、Static（ESLint no-restricted-imports）、Gate（diff-check.sh + stop-review.sh） |
 | `vercel-react-best-practices` | React 19 / Next.js 16 性能与渲染规则速查（54 条本地筛选规则） | 先应用 E-pig 的 Cache Components、状态管理、CSP 与依赖边界覆盖，再按需读取单条规则；不自动引入示例依赖 |
 | `phase-review` | **仅手动触发**：生成 Phase 完成评审（验收标准逐条取证、未实现清单、质量门实测、与参考工程多维度对比、rubric 评分），报告落盘 `docs/phase-reviews/` | 里程碑时机由人决定，AI 不得自动触发；评审本身也是质量门的消费者（实测 typecheck/lint/test/build/diff-check） |
+| 社区子集 | mattpocock（grill-me/tdd…）、ponytail、impeccable、obra/superpowers 子集 | 经 `skills-lock.json` 安装；自动触发已关闭，由 `e-pig-dev-loop` 点名 |
 
 配套的 always-on 规则在 `.agents/rules/`（编辑后质量自检循环、文档日期同步），经 `AGENTS.md` 顶部 `@include` 加载；`CLAUDE.md` 通过 `@AGENTS.md` 委托。评测用例（人工执行清单）在 `.claude/evals/`。
 

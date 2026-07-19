@@ -1,0 +1,15 @@
+
+│
+●   cursor-cli  Agent detected — installing non-interactively
+[?25l│
+◇  Source: https://github.com/obra/superpowers.git
+[?25h[?25l│
+◒  Cloning repository…[1G[J◐  Cloning repository…[1G[J◓  Cloning repository…[1G[J◑  Cloning repository…[1G[J◒  Cloning repository…[1G[J◐  Cloning repository…[1G[J◓  Cloning repository…[1G[J◑  Cloning repository…[1G[J◒  Cloning repository….[1G[J◐  Cloning repository….[1G[J◓  Cloning repository….[1G[J◑  Cloning repository….[1G[J◒  Cloning repository….[1G[J◐  Cloning repository….[1G[J◓  Cloning repository….[1G[J◑  Cloning repository….[1G[J◒  Cloning repository…..[1G[J◐  Cloning repository…..[1G[J◓  Cloning repository…..[1G[J◇  Repository cloned
+[?25h[?25l│
+[1G[J◇  Found 14 skills
+[?25h│
+●  Selected 7 skills: brainstorming, requesting-code-review, subagent-driven-development, test-driven-development, using-superpowers, verification-before-completion, writing-plans
+│
+■  Invalid agents: claude, agents
+│
+●  Valid agents: aider-desk, amp, antigravity, antigravity-cli, astrbot, autohand-code, augment, bob, claude-code, openclaw, cline, codearts-agent, codebuddy, codemaker, codestudio, codex, command-code, continue, cortex, crush, cursor, deepagents, devin, dexto, droid, eve, firebender, forgecode, gemini-cli, github-copilot, goose, hermes-agent, inference-sh, jazz, junie, iflow-cli, kilo, kimi-code-cli, kiro-cli, kode, lingma, loaf, mcpjam, mistral-vibe, moxby, mux, opencode, openhands, ona, pi, qoder, qoder-cn, qwen-code, replit, reasonix, rovodev, roo, tabnine-cli, terramind, tinycloud, trae, trae-cn, warp, windsurf, zed, zcode, zencoder, zenflow, neovate, pochi, promptscript, adal, universal

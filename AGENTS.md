@@ -3,6 +3,18 @@
 @.agents/rules/doc-freshness.md
 @.agents/rules/quality-self-check.md
 
+## How to get context（thin router）
+
+按问题类型加载，**不要**一次读完全部细则：
+
+1. **项目 Hard Rules / 命令** → 本文件（下文）
+2. **任务深度规则** → `.agents/skills/e-pig/SKILL.md`，再读 **一条** matching `rules/<task>.md`
+3. **开发闭环（社区 skills 调度）** → `.agents/skills/e-pig-dev-loop/SKILL.md`（统筹 grill-me / ponytail / tdd / impeccable / Superpowers 子集）
+4. **页面 / 组件流程** → `docs/engineering/page-workflow-guide.md` → `component-workflow-guide.md`
+5. **设计契约** → 仓库根 `DESIGN.md` + `packages/happy-dog` tokens
+
+**Precedence：** Hard Rules > `e-pig` rules > `e-pig-dev-loop` > 社区 skills。冲突时项目规则胜出。`phase-review` 仅手动触发。
+
 ## Overview
 
 E-pig 是轻量电商前端：单 Next.js 16.2 App（App Router + `cacheComponents: true` + Turbopack）+ React 19 + TypeScript 6 strict + Tailwind CSS 4 + shadcn/ui 源码模式 + pnpm 10 + Vitest 4。不使用 monorepo 任务编排、独立可观测性 SaaS，也没有多区域环境分支。业务 App 不强制 Storybook；基础组件库 `@e-pig/happy-dog` 使用 Storybook 作为文档与演示环境。
@@ -33,6 +45,8 @@ pnpm test:harness-evals # post-edit-check harness 回归（stdin/stdout；进 CI
 pnpm quality:diff   # bash scripts/quality/diff-check.sh（git diff 定向质量检查；含 companions warn）
 pnpm quality:companions # 组件文件夹 companion 检查（.spec/.stories/.md；默认 warn）
 pnpm docs:check     # 校验 package scripts、README market marker 与 registry 同步
+pnpm verify         # docs:check + typecheck + lint + test（完成门）
+pnpm doctor         # agent/skill 安装与 symlink 健康检查
 pnpm smoke:runtime-market # 用 SG 启动同一 standalone，验证运行时 market 未被 AU 构建值污染
 
 # happy-dog 基础组件库

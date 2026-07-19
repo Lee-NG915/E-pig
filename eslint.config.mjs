@@ -119,5 +119,15 @@ export default defineConfig([
       ],
     },
   },
-  globalIgnores([".next/**", "out/**", "build/**", "**/storybook-static/**", "next-env.d.ts"]),
+  globalIgnores([
+    ".next/**",
+    "out/**",
+    "build/**",
+    "**/storybook-static/**",
+    "next-env.d.ts",
+    // Vendored community / agent skills (not app source)
+    ".agents/skills/**",
+    ".claude/skills/**",
+    ".cursor/skills/**",
+  ]),
 ]);

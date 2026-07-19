@@ -22,6 +22,8 @@
     "quality:diff": "bash scripts/quality/diff-check.sh",
     "quality:companions": "node scripts/quality/check-component-companions.mjs",
     "docs:check": "node scripts/quality/check-doc-sync.mjs",
+    "verify": "pnpm docs:check && pnpm typecheck && pnpm lint && pnpm test",
+    "doctor": "node scripts/e-pig-doctor.mjs",
     "smoke:runtime-market": "node scripts/smoke/runtime-market.mjs",
     "storybook": "pnpm --filter @e-pig/happy-dog storybook",
     "build-storybook": "pnpm --filter @e-pig/happy-dog build-storybook",
