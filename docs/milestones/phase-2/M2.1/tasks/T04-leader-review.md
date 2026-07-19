@@ -4,7 +4,7 @@
 - Status: done
 - Agent: claude (review) + cursor (fix)
 - Date: 2026-07-19
-- Commit: （push 后回填）
+- Commit: 0792954
 - PRD 验收映射: #1–#7
 
 ## Summary
