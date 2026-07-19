@@ -4,7 +4,7 @@
 - Status: done
 - Agent: cursor
 - Date: 2026-07-19
-- Commit: （push 后回填）
+- Commit: 0afe24c
 - PRD 验收映射: （流程 task，无产品验收行）
 
 ## Summary
