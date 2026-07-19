@@ -18,6 +18,7 @@ vi.mock("next/image", () => ({
 const market: CartMarket = { id: "component-test", currency: "AUD", locale: "en-AU" };
 const product = {
   id: "alto-modular-sofa",
+  slug: "alto-modular-sofa",
   name: "Alto Modular Sofa",
   description: "A modular sofa",
   category: "Sofas",

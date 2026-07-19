@@ -22,6 +22,7 @@ const market: CartMarket = { id: "product-card-test", currency: "AUD", locale: "
 
 const product: ProductListItem = {
   id: "alto-modular-sofa",
+  slug: "alto-modular-sofa",
   name: "Alto Modular Sofa",
   category: "Sofas",
   colour: "Moss weave",

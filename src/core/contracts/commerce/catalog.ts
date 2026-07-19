@@ -13,6 +13,8 @@ export type Money = {
 
 export type ProductListItem = {
   id: string;
+  /** URL 段；mock 阶段允许 `slug === id` */
+  slug: string;
   name: string;
   category: string;
   price: Money;
@@ -34,6 +36,9 @@ export type Collection = {
 
 export type ListProductsQuery = {
   category?: string;
+  /** 按 `Collection.handle` 过滤；adapter 内映射到 category */
+  collection?: string;
+  sort?: "price-asc" | "price-desc" | "name";
   limit?: number;
 };
 

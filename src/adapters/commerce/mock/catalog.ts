@@ -16,10 +16,15 @@ import { mockProducts, type MockProductRecord } from "./catalog-data";
  * market 在构造时绑定 —— port 方法本身不感知市场。
  */
 export function createMockCatalogAdapter({ market }: { market: Market }): CatalogPort {
+  function categoryToHandle(category: string): string {
+    return category.toLowerCase().replace(/\s+/g, "-");
+  }
+
   function toListItem(record: MockProductRecord): ProductListItem {
     const compareAt = record.compareAtByMarket?.[market.id];
     return {
       id: record.id,
+      slug: record.id,
       name: record.name,
       category: record.category,
       colour: record.colour,
@@ -37,6 +42,25 @@ export function createMockCatalogAdapter({ market }: { market: Market }): Catalo
       let records = mockProducts;
       if (query?.category) {
         records = records.filter((record) => record.category === query.category);
+      }
+      if (query?.collection) {
+        records = records.filter(
+          (record) => categoryToHandle(record.category) === query.collection,
+        );
+      }
+      if (query?.sort) {
+        records = [...records].sort((a, b) => {
+          switch (query.sort) {
+            case "price-asc":
+              return a.priceByMarket[market.id] - b.priceByMarket[market.id];
+            case "price-desc":
+              return b.priceByMarket[market.id] - a.priceByMarket[market.id];
+            case "name":
+              return a.name.localeCompare(b.name);
+            default:
+              return 0;
+          }
+        });
       }
       if (query?.limit !== undefined) {
         records = records.slice(0, query.limit);
@@ -59,7 +83,7 @@ export function createMockCatalogAdapter({ market }: { market: Market }): Catalo
     async listCollections(): Promise<Collection[]> {
       const categories = [...new Set(mockProducts.map((product) => product.category))];
       return categories.map((category) => ({
-        handle: category.toLowerCase().replace(/\s+/g, "-"),
+        handle: categoryToHandle(category),
         title: category,
       }));
     },
