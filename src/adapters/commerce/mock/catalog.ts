@@ -82,10 +82,12 @@ export function createMockCatalogAdapter({ market }: { market: Market }): Catalo
 
     async listCollections(): Promise<Collection[]> {
       const categories = [...new Set(mockProducts.map((product) => product.category))];
-      return categories.map((category) => ({
+      const derived = categories.map((category) => ({
         handle: categoryToHandle(category),
         title: category,
       }));
+      // 显式空集合：使 PLP 空态可经合法 URL 到达（非 notFound）
+      return [...derived, { handle: "coming-soon", title: "Coming Soon" }];
     },
 
     async suggest(query: string): Promise<ProductListItem[]> {

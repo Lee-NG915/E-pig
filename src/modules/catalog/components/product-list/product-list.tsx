@@ -1,10 +1,12 @@
 import Link from "next/link";
 
-import type { ListProductsQuery, ProductListItem } from "@/core/contracts/commerce/catalog";
+import type { ProductListItem } from "@/core/contracts/commerce/catalog";
+
+import type { ProductListSort } from "@/modules/catalog/lib/plp-query";
 
 import { ProductCard } from "../product-card/product-card";
 
-export type ProductListSort = NonNullable<ListProductsQuery["sort"]>;
+export type { ProductListSort };
 
 type ProductListProps = {
   products: ProductListItem[];

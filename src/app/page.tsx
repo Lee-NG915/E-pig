@@ -6,6 +6,7 @@ import { connection } from "next/server";
 import { CartMarketProvider } from "@/modules/cart/components/cart-market-context/cart-market-context";
 import { CartSheetMount } from "@/modules/cart/components/cart-sheet-mount/cart-sheet-mount";
 import { ProductCard } from "@/modules/catalog/components/product-card/product-card";
+import { pickHomeCollectionLink } from "@/modules/catalog/lib/plp-query";
 import { HomeBenefits } from "@/modules/content/components/home-benefits/home-benefits";
 import { HomeEditorial } from "@/modules/content/components/home-editorial/home-editorial";
 import { HomeHero } from "@/modules/content/components/home-hero/home-hero";
@@ -31,7 +32,7 @@ async function MarketProductGrid() {
     catalog.listProducts(),
     catalog.listCollections(),
   ]);
-  const firstCollection = collections[0];
+  const homeCollectionLink = pickHomeCollectionLink(collections);
 
   return (
     <CartMarketProvider
@@ -45,12 +46,12 @@ async function MarketProductGrid() {
           <h2 className="mt-3 max-w-2xl font-display text-4xl leading-tight tracking-[-0.03em] sm:text-5xl">
             Good pieces make everyday life feel lighter.
           </h2>
-          {firstCollection ? (
+          {homeCollectionLink ? (
             <Link
-              href={`/collections/${firstCollection.handle}`}
+              href={homeCollectionLink.href}
               className="mt-4 inline-block text-sm font-medium underline underline-offset-4 transition-colors hover:text-muted-foreground"
             >
-              Shop {firstCollection.title}
+              Shop {homeCollectionLink.title}
             </Link>
           ) : null}
         </div>

@@ -78,10 +78,14 @@ describe("mock catalog adapter", () => {
     }
   });
 
-  it("listCollections 从 catalog 派生集合", async () => {
+  it("listCollections 从 catalog 派生集合，并含可到达的空集合", async () => {
     const collections = await sgCatalog.listCollections();
     expect(collections.map((collection) => collection.title)).toContain("Sofas");
     expect(collections.every((collection) => collection.handle.length > 0)).toBe(true);
+    expect(collections.some((collection) => collection.handle === "coming-soon")).toBe(true);
+
+    const empty = await sgCatalog.listProducts({ collection: "coming-soon" });
+    expect(empty).toHaveLength(0);
   });
 
   it("suggest 按名称/类别模糊匹配；空查询抛 validation", async () => {

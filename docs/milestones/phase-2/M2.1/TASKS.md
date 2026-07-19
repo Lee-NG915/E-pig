@@ -8,7 +8,7 @@
 | T01 | Catalog 契约：`slug` / `collection` / `sort` + mock adapter 测试 | kimi | done | [tasks/T01-catalog-contract.md](./tasks/T01-catalog-contract.md) |
 | T02 | PLP 页 `/collections/[slug]` + 列表/空态/排序 + 组件 companions | kimi | done | [tasks/T02-plp.md](./tasks/T02-plp.md) |
 | T03 | Home 入口到 PLP；product-card 链向 `/products/[slug]`；PDP stub | kimi | done | [tasks/T03-home-pdp-link.md](./tasks/T03-home-pdp-link.md) |
-| T04 | Leader Review（Claude）+ `pnpm verify` + 里程碑验收对照 | claude / cursor | todo | — |
+| T04 | Leader Review（Claude）+ `pnpm verify` + 里程碑验收对照 | claude / cursor | done | [tasks/T04-leader-review.md](./tasks/T04-leader-review.md) |
 
 ## 验收映射（PRD §4）
 

@@ -17,8 +17,12 @@ export function SiteHeader() {
       <div className="mx-auto flex h-16 max-w-[1440px] items-center justify-between px-4 sm:px-6 lg:px-8">
         <div className="lg:hidden" aria-hidden="true" />
         <nav className="hidden items-center gap-7 text-sm lg:flex" aria-label="Main navigation">
-          <Link href="#collection" className="transition-colors hover:text-muted-foreground">Shop</Link>
-          <Link href="#collection" className="transition-colors hover:text-muted-foreground">Rooms</Link>
+          <Link href="/collections/sofas" className="transition-colors hover:text-muted-foreground">
+            Shop
+          </Link>
+          <Link href="/collections/bedroom" className="transition-colors hover:text-muted-foreground">
+            Rooms
+          </Link>
           <Link href="#about" className="transition-colors hover:text-muted-foreground">Our story</Link>
         </nav>
         <Link href="/" className="absolute left-1/2 -translate-x-1/2 font-display text-2xl font-semibold tracking-[-0.05em]">

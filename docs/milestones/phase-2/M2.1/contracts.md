@@ -43,6 +43,8 @@ P0 仍无 `[market]/[locale]` 段；市场继续 `MARKET` / registry。
 
 `Collection` 保持 `{ handle, title }`；`listCollections()` 为 Home/PLP 导航数据源。
 
+Mock 额外提供空集合 `coming-soon`（无商品），用于演示 PLP 空态；未知 handle → `notFound()`。
+
 ## 3. 缓存 / 边界
 
 - PLP 列表价：**不**进共享 Cache Component（Hard Rules）。

@@ -4,8 +4,7 @@ import { connection } from "next/server";
 import { notFound } from "next/navigation";
 
 import { isAppError } from "@/core/errors/errors";
-import { CartSheet } from "@/modules/cart/components/cart-sheet/cart-sheet";
-import { CartMarketProvider } from "@/modules/cart/components/cart-market-context/cart-market-context";
+import { CartSheetMount } from "@/modules/cart/components/cart-sheet-mount/cart-sheet-mount";
 import { SiteFooter } from "@/modules/content/components/site-footer/site-footer";
 import { SiteHeader } from "@/modules/content/components/site-header/site-header";
 import { getCapabilities } from "@/platform/registry";
@@ -14,21 +13,20 @@ type ProductPageProps = {
   params: Promise<{ slug: string }>;
 };
 
-/** request-time 边界：解析当前 market 并挂载站点 header + 购物车抽屉。 */
-async function MarketHeader() {
+/** request-time 边界：解析当前 market 并挂载站点 header + 单一购物车抽屉。 */
+async function MarketChrome() {
   await connection();
   const { market } = getCapabilities();
   return (
-    <CartMarketProvider
+    <CartSheetMount
       market={{ id: market.id, currency: market.currency, locale: market.defaultLocale }}
     >
       <SiteHeader />
-      <CartSheet />
-    </CartMarketProvider>
+    </CartSheetMount>
   );
 }
 
-/** PDP 占位：展示商品名并标明完整页将在 M2.2 实现。 */
+/** PDP 占位：展示商品名并标明完整页将在 M2.2 实现。mock 阶段 slug === id。 */
 async function ProductDetailStub({ slug }: { slug: string }) {
   await connection();
   const { catalog, market } = getCapabilities();
@@ -77,7 +75,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
   return (
     <div className="min-h-screen">
       <Suspense fallback={<HeaderSkeleton />}>
-        <MarketHeader />
+        <MarketChrome />
       </Suspense>
       <main>
         <Suspense fallback={<ProductSkeleton />}>

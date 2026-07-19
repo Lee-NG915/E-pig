@@ -3,43 +3,42 @@ import { Suspense } from "react";
 import { connection } from "next/server";
 import { notFound } from "next/navigation";
 
-import { CartSheet } from "@/modules/cart/components/cart-sheet/cart-sheet";
-import { CartMarketProvider } from "@/modules/cart/components/cart-market-context/cart-market-context";
-import { ProductList, type ProductListSort } from "@/modules/catalog/components/product-list/product-list";
+import { CartSheetMount } from "@/modules/cart/components/cart-sheet-mount/cart-sheet-mount";
+import { ProductList } from "@/modules/catalog/components/product-list/product-list";
+import {
+  findCollectionByHandle,
+  parseProductListSort,
+  type ProductListSort,
+} from "@/modules/catalog/lib/plp-query";
 import { SiteFooter } from "@/modules/content/components/site-footer/site-footer";
 import { SiteHeader } from "@/modules/content/components/site-header/site-header";
 import { getCapabilities } from "@/platform/registry";
 
-const VALID_SORTS: ProductListSort[] = ["price-asc", "price-desc", "name"];
-
-function isValidSort(value: string | undefined): value is ProductListSort {
-  return VALID_SORTS.includes(value as ProductListSort);
-}
-
 type CollectionPageProps = {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ sort?: string }>;
+  searchParams: Promise<{ sort?: string | string[] }>;
 };
 
-/** request-time 边界：解析当前 market 并挂载站点 header + 购物车抽屉。 */
-async function MarketHeader() {
+/** request-time 边界：解析当前 market 并挂载站点 header + 单一购物车抽屉。 */
+async function MarketChrome() {
   await connection();
   const { market } = getCapabilities();
   return (
-    <CartMarketProvider market={{ id: market.id, currency: market.currency, locale: market.defaultLocale }}>
+    <CartSheetMount
+      market={{ id: market.id, currency: market.currency, locale: market.defaultLocale }}
+    >
       <SiteHeader />
-      <CartSheet />
-    </CartMarketProvider>
+    </CartSheetMount>
   );
 }
 
-/** request-time 边界：按 collection handle 取列表并渲染 PLP。 */
+/** request-time 边界：按 collection handle 取列表并渲染 PLP（价格不进共享 cache）。 */
 async function CollectionProductList({ slug, sort }: { slug: string; sort?: ProductListSort }) {
   await connection();
   const { catalog, market } = getCapabilities();
 
   const collections = await catalog.listCollections();
-  const collection = collections.find((c) => c.handle === slug);
+  const collection = findCollectionByHandle(collections, slug);
   if (!collection) {
     notFound();
   }
@@ -47,10 +46,12 @@ async function CollectionProductList({ slug, sort }: { slug: string; sort?: Prod
   const products = await catalog.listProducts({ collection: slug, sort });
 
   return (
-    <CartMarketProvider market={{ id: market.id, currency: market.currency, locale: market.defaultLocale }}>
-      <ProductList products={products} collection={collection} locale={market.defaultLocale} sort={sort} />
-      <CartSheet />
-    </CartMarketProvider>
+    <ProductList
+      products={products}
+      collection={collection}
+      locale={market.defaultLocale}
+      sort={sort}
+    />
   );
 }
 
@@ -74,12 +75,12 @@ function ProductListSkeleton() {
 export default async function CollectionPage({ params, searchParams }: CollectionPageProps) {
   const { slug } = await params;
   const { sort: rawSort } = await searchParams;
-  const sort = isValidSort(rawSort) ? rawSort : undefined;
+  const sort = parseProductListSort(rawSort);
 
   return (
     <div className="min-h-screen">
       <Suspense fallback={<HeaderSkeleton />}>
-        <MarketHeader />
+        <MarketChrome />
       </Suspense>
       <main>
         <Suspense fallback={<ProductListSkeleton />}>
