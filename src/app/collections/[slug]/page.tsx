@@ -3,12 +3,12 @@ import { Suspense } from "react";
 import { connection } from "next/server";
 import { notFound } from "next/navigation";
 
+import { CartMarketProvider } from "@/modules/cart/components/cart-market-context/cart-market-context";
 import { CartSheetMount } from "@/modules/cart/components/cart-sheet-mount/cart-sheet-mount";
 import { ProductList } from "@/modules/catalog/components/product-list/product-list";
 import {
   findCollectionByHandle,
   parseProductListSort,
-  type ProductListSort,
 } from "@/modules/catalog/lib/plp-query";
 import { SiteFooter } from "@/modules/content/components/site-footer/site-footer";
 import { SiteHeader } from "@/modules/content/components/site-header/site-header";
@@ -32,8 +32,21 @@ async function MarketChrome() {
   );
 }
 
-/** request-time 边界：按 collection handle 取列表并渲染 PLP（价格不进共享 cache）。 */
-async function CollectionProductList({ slug, sort }: { slug: string; sort?: ProductListSort }) {
+/**
+ * request-time 边界：params/searchParams 与列表取数均在 Suspense 内完成。
+ * ProductCard 需要 CartMarketProvider；CartSheet 已由 MarketChrome 单挂载，这里只提供 market context。
+ */
+async function CollectionProductList({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ sort?: string | string[] }>;
+}) {
+  const { slug } = await params;
+  const { sort: rawSort } = await searchParams;
+  const sort = parseProductListSort(rawSort);
+
   await connection();
   const { catalog, market } = getCapabilities();
 
@@ -46,12 +59,16 @@ async function CollectionProductList({ slug, sort }: { slug: string; sort?: Prod
   const products = await catalog.listProducts({ collection: slug, sort });
 
   return (
-    <ProductList
-      products={products}
-      collection={collection}
-      locale={market.defaultLocale}
-      sort={sort}
-    />
+    <CartMarketProvider
+      market={{ id: market.id, currency: market.currency, locale: market.defaultLocale }}
+    >
+      <ProductList
+        products={products}
+        collection={collection}
+        locale={market.defaultLocale}
+        sort={sort}
+      />
+    </CartMarketProvider>
   );
 }
 
@@ -72,11 +89,7 @@ function ProductListSkeleton() {
   );
 }
 
-export default async function CollectionPage({ params, searchParams }: CollectionPageProps) {
-  const { slug } = await params;
-  const { sort: rawSort } = await searchParams;
-  const sort = parseProductListSort(rawSort);
-
+export default function CollectionPage({ params, searchParams }: CollectionPageProps) {
   return (
     <div className="min-h-screen">
       <Suspense fallback={<HeaderSkeleton />}>
@@ -84,7 +97,7 @@ export default async function CollectionPage({ params, searchParams }: Collectio
       </Suspense>
       <main>
         <Suspense fallback={<ProductListSkeleton />}>
-          <CollectionProductList slug={slug} sort={sort} />
+          <CollectionProductList params={params} searchParams={searchParams} />
         </Suspense>
       </main>
       <SiteFooter />

@@ -56,6 +56,8 @@
 | Static browse | 缓存数据在 data 边界 `'use cache'` + `applyCacheProfile`；页面直接渲染 shell，**无 page-level Suspense** |
 | Hybrid | 缓存 shell 急切渲染；仅 `searchParams` / cookies / cart 等动态岛包 `<Suspense>`；骨架是 per-hole，不是整页默认 |
 | Cart chrome | **整页只挂一次** `CartSheetMount`（包 SiteHeader）；禁止在多个 Suspense 岛各挂 `<CartSheet />` |
+| Cart market | 含 `ProductCard` / `useCartMarket` 的岛仍须包 `CartMarketProvider`（可无第二层 CartSheet）；去掉重复 Sheet 时不要连 Provider 一起删 |
+| params / searchParams | 必须在 `<Suspense>` 子树内 `await`；页面根组件保持同步，把 Promise 传给岛（见 Home / PLP） |
 | Layout | 保持同步；header/footer/cart 等 chrome 各自 Suspense；`<main>` 不被 chrome Suspense 包裹 |
 
 价格 / 库存 / cart / checkout / payment **永不**进入共享 cache（见 `src/shared/lib/cache-manifest.ts` 与 Hard Rules）。

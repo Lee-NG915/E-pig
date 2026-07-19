@@ -26,8 +26,10 @@ async function MarketChrome() {
   );
 }
 
-/** PDP 占位：展示商品名并标明完整页将在 M2.2 实现。mock 阶段 slug === id。 */
-async function ProductDetailStub({ slug }: { slug: string }) {
+/** PDP 占位：params 在 Suspense 内解析。mock 阶段 slug === id。 */
+async function ProductDetailStub({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+
   await connection();
   const { catalog, market } = getCapabilities();
 
@@ -69,9 +71,7 @@ function ProductSkeleton() {
   );
 }
 
-export default async function ProductPage({ params }: ProductPageProps) {
-  const { slug } = await params;
-
+export default function ProductPage({ params }: ProductPageProps) {
   return (
     <div className="min-h-screen">
       <Suspense fallback={<HeaderSkeleton />}>
@@ -79,7 +79,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
       </Suspense>
       <main>
         <Suspense fallback={<ProductSkeleton />}>
-          <ProductDetailStub slug={slug} />
+          <ProductDetailStub params={params} />
         </Suspense>
       </main>
       <SiteFooter />
