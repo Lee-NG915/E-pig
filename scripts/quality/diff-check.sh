@@ -127,6 +127,10 @@ if [[ -n "$MODULE_FILES" ]]; then
   if [[ -n "$BOUNDARY_RESULT" ]]; then
     SIGNATURE_RESULT="${SIGNATURE_RESULT}"$'[ERR][signature-scan] src/modules/ importing @/adapters or @/integrations:\n'"$BOUNDARY_RESULT"$'\n'
   fi
+  REL_BOUNDARY_RESULT=$(echo "$MODULE_FILES" | scan_files "['\"](\.{1,2}/)+[^'\"]*(adapters|integrations)/")
+  if [[ -n "$REL_BOUNDARY_RESULT" ]]; then
+    SIGNATURE_RESULT="${SIGNATURE_RESULT}"$'[ERR][signature-scan] src/modules/ importing adapters/integrations via relative path:\n'"$REL_BOUNDARY_RESULT"$'\n'
+  fi
 fi
 
 SRC_FILES=$(echo "$FILES" | grep "^src/" | grep -v "^src/platform/config/env.ts$" || true)
@@ -192,6 +196,14 @@ ERROR_COUNT=$(echo "$RESULT" | grep -cE "(\[Error/|\[ERR\])" 2>/dev/null || true
 WARN_COUNT=$(echo "$RESULT" | grep -cE "(\[Warning/|\[WARN\])" 2>/dev/null || true)
 ERROR_COUNT=${ERROR_COUNT:-0}
 WARN_COUNT=${WARN_COUNT:-0}
+
+# Fail-open 修复：ESLint 退出码非 0 但 RESULT 只有 warning（崩溃/fatal/配置错误）
+# 不得被 WARN-only 结果吞掉 —— 一律视为失败。
+ESLINT_SILENT_FAILURE=false
+if [[ "$ESLINT_EXIT" -ne 0 && "$ERROR_COUNT" -eq 0 ]]; then
+  ESLINT_SILENT_FAILURE=true
+  ERROR_COUNT=1
+fi
 echo "  Errors: $ERROR_COUNT   Warnings: $WARN_COUNT"
 
 NEXT_ACTIONS="Run pnpm quality:diff||Run npx eslint <file> for detailed errors||Escalate after 3 repeated failures"
@@ -213,7 +225,10 @@ fi
 
 ROOT_CAUSE=""
 SAFE_RETRY=""
-if [[ "$ERROR_COUNT" -gt 0 ]]; then
+if [[ "$ESLINT_SILENT_FAILURE" == true ]]; then
+  ROOT_CAUSE="ESLint exited non-zero without rule-level errors (possible crash/fatal); refusing to fail open"
+  SAFE_RETRY="Run 'npx eslint <file>' directly to diagnose; fix the underlying error, then rerun this script"
+elif [[ "$ERROR_COUNT" -gt 0 ]]; then
   ROOT_CAUSE="lint rule violation or fallback high-risk signature match"
   SAFE_RETRY="Run 'npx eslint <file>' for details, fix violations, then rerun this script"
 elif [[ "$WARN_COUNT" -gt 0 ]]; then

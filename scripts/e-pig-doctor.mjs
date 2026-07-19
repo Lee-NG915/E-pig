@@ -6,8 +6,9 @@
  *   1. Canonical skills live under .agents/skills/
  *   2. Required project skills exist (e-pig, e-pig-dev-loop)
  *   3. Community skills from skills-lock.json are present
- *   4. .claude/skills entries resolve (symlink or directory)
- *   5. Compiled AGENTS dump is quarantined via .cursorignore when present
+ *   4. .claude/skills/* are symlinks resolving to .agents/skills/<same name>
+ *   5. Guarded skills (using-superpowers, ponytail) carry disable-model-invocation frontmatter
+ *   6. Compiled AGENTS dump is quarantined via .cursorignore when present
  *
  * Exit 0 on pass; exit 1 on failures. --json for machine output.
  */
@@ -23,6 +24,7 @@ const LOCK_PATH = path.join(ROOT, "skills-lock.json");
 const CURSORIGNORE = path.join(ROOT, ".cursorignore");
 
 const REQUIRED_PROJECT_SKILLS = ["e-pig", "e-pig-dev-loop"];
+const FRONTMATTER_GUARDED_SKILLS = ["using-superpowers", "ponytail"];
 
 function exists(p) {
   try {
@@ -74,15 +76,46 @@ function main() {
 
   if (exists(CLAUDE_SKILLS)) {
     for (const entry of fs.readdirSync(CLAUDE_SKILLS)) {
+      if (entry.startsWith(".")) continue;
       const full = path.join(CLAUDE_SKILLS, entry);
-      try {
-        fs.statSync(full);
-      } catch {
-        errors.push(`.claude/skills/${entry} is a broken symlink/path`);
+      const st = fs.lstatSync(full);
+      if (!st.isSymbolicLink()) {
+        errors.push(
+          `.claude/skills/${entry} must be a symlink to .agents/skills/${entry} (found ${st.isDirectory() ? "directory copy" : "plain file"})`,
+        );
+        continue;
+      }
+      const resolved = path.resolve(CLAUDE_SKILLS, fs.readlinkSync(full));
+      const expected = path.join(AGENTS_SKILLS, entry);
+      if (resolved !== expected) {
+        errors.push(
+          `.claude/skills/${entry} symlink must resolve to .agents/skills/${entry} (got ${fs.readlinkSync(full)})`,
+        );
+        continue;
+      }
+      if (!exists(path.join(full, "SKILL.md"))) {
+        errors.push(`.claude/skills/${entry} resolves to .agents but SKILL.md is missing`);
       }
     }
   } else {
     warnings.push(".claude/skills/ missing");
+  }
+
+  // 防社区 skill 自动触发：frontmatter 必须显式 disable-model-invocation
+  for (const name of FRONTMATTER_GUARDED_SKILLS) {
+    const skillMd = path.join(AGENTS_SKILLS, name, "SKILL.md");
+    if (!exists(skillMd)) {
+      errors.push(`missing guarded skill: .agents/skills/${name}/SKILL.md`);
+      continue;
+    }
+    const frontmatter = fs
+      .readFileSync(skillMd, "utf8")
+      .match(/^---\r?\n([\s\S]*?)\r?\n---/);
+    if (!frontmatter || !frontmatter[1].includes("disable-model-invocation")) {
+      errors.push(
+        `.agents/skills/${name}/SKILL.md frontmatter must contain disable-model-invocation`,
+      );
+    }
   }
 
   const compiledAgents = path.join(AGENTS_SKILLS, "e-pig", "AGENTS.md");

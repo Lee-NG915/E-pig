@@ -32,8 +32,8 @@ Saleor Paper 启发的 **thin index**：深度在 `rules/`，按任务加载一�
 
 ## Critical commands
 
-- `pnpm verify` — 完成门（docs + typecheck + lint + test）
-- `pnpm doctor` — agent/skill 健康检查
+- `pnpm verify` — 完成门（docs + typecheck + lint + test + happy-dog:test + harness-evals + agent-doctor）
+- `pnpm agent-doctor` — agent/skill 健康检查
 - `pnpm quality:companions` / `pnpm quality:diff`
 
 ## Non-goals（明确不从 Saleor 照搬）

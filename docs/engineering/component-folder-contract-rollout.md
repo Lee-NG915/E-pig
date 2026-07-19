@@ -1,6 +1,6 @@
 # 组件文件夹契约 — 落地与基础设施路线图
 
-更新日期：2026-07-18
+更新日期：2026-07-19
 
 状态：active（R0 完成；R1 warn + CI 盘点已落地，error 阻断待升）
 
@@ -33,13 +33,13 @@
 4. 流程入口：`component-workflow-guide.md` + `page-workflow-guide.md`
 5. CI：`pnpm quality:companions -- --report-all`（warn，不阻断 job）
 6. 页面落点签名：`diff-check.sh` 对 `src/app/_components/**`、`src/components/**` 报 **WARN**
+7. `stop-review.sh` 经 `diff-check.sh` 内置 H1 Gate 接 companions（warn；`COMPANIONS_LEVEL=error` 时可阻断）
 
 **仍待：**
 
 1. 默认升 `COMPANIONS_LEVEL=error`（待试点债清零 / 显式豁免后）
 2. Storybook：业务试点 stories 纳入 happy-dog（或根）stories glob
 3. Dual-AI：cart/catalog 改动强制 Test Record + Review Record（AGENTS 已有条款）
-4. `stop-review.sh` 接 companions（仍为待实现）
 
 **验收：** 故意只改 tsx 不同步 spec 时，本地 `pnpm quality:companions` / `quality:diff` 报 warning（error 模式可阻断）；未登记扁平报 CF-1。
 

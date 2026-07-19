@@ -28,8 +28,10 @@ if [[ -n "$RULE_FILES" ]]; then
 fi
 
 # --- 跑核心 diff 检查 ---
+# STOP_REVIEW_DIFF_CHECK_CMD 仅供 harness evals 注入假 diff-check（测 exit 语义），正常调用无需设置。
+DIFF_CHECK_CMD="${STOP_REVIEW_DIFF_CHECK_CMD:-$REPO_ROOT/scripts/quality/diff-check.sh}"
 set +e
-OUTPUT=$(bash "$REPO_ROOT/scripts/quality/diff-check.sh" 2>&1)
+OUTPUT=$(bash "$DIFF_CHECK_CMD" 2>&1)
 EXIT_CODE=$?
 set -e
 
@@ -79,4 +81,9 @@ const payload={
 };
 fs.writeFileSync(process.env.SR_SUMMARY_JSON, JSON.stringify(payload, null, 2) + '\n', 'utf8');"
 
-exit "$EXIT_CODE"
+# Claude Stop hook 阻断语义：diff-check 失败 → block JSON + exit 2；成功/仅 warn → exit 0。
+if [[ "$EXIT_CODE" -ne 0 ]]; then
+  node -e "process.stdout.write(JSON.stringify({decision:'block',reason:process.env.SR_SUMMARY||'diff-check failed'})+'\n')"
+  exit 2
+fi
+exit 0

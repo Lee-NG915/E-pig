@@ -76,11 +76,34 @@ export default defineConfig([
       "no-restricted-imports": [
         "error",
         {
+          paths: [
+            {
+              name: "stripe",
+              message:
+                "modules 不得直接 import 供应商 SDK；支付经 @/core/contracts PaymentPort + adapters 注入。",
+            },
+            {
+              name: "posthog-js",
+              message:
+                "modules 不得直接 import 供应商 SDK；analytics 经 integrations event facade。",
+            },
+          ],
           patterns: [
             {
               group: ["@/adapters/*", "@/integrations/*", "@/platform/registry"],
               message:
                 "modules 只能通过 @/core/contracts 依赖 port；adapter 由 app 层经 platform/registry 组合后注入。",
+            },
+            {
+              // gitignore 语义：** 可匹配 ../ 相对路径段；含本地 adapters/ 目录
+              group: ["**/adapters/**", "**/integrations/**"],
+              message:
+                "modules 禁止经相对路径绕到 adapters/integrations；只能通过 @/core/contracts 依赖 port。",
+            },
+            {
+              group: ["@stripe/*", "@sentry/*"],
+              message:
+                "modules 不得直接 import 供应商 SDK；经 @/core/contracts port + adapters/integrations。",
             },
           ],
         },

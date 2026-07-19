@@ -41,12 +41,12 @@ pnpm lint           # eslint .（flat config，含 no-restricted-imports 边界�
 pnpm typecheck      # tsc --noEmit
 pnpm test           # vitest run（纯逻辑 node；组件测试文件显式 jsdom）
 pnpm test:watch     # vitest watch 模式
-pnpm test:harness-evals # post-edit-check harness 回归（stdin/stdout；进 CI）
+pnpm test:harness-evals # post-edit/stop-hook/边界规则 harness 回归（进 CI）
 pnpm quality:diff   # bash scripts/quality/diff-check.sh（git diff 定向质量检查；含 companions warn）
 pnpm quality:companions # 组件文件夹 companion 检查（.spec/.stories/.md；默认 warn）
 pnpm docs:check     # 校验 package scripts、README market marker 与 registry 同步
-pnpm verify         # docs:check + typecheck + lint + test（完成门）
-pnpm doctor         # agent/skill 安装与 symlink 健康检查
+pnpm verify         # 完成门：docs:check + typecheck + lint + test + happy-dog:test + test:harness-evals + agent-doctor（不含 build/storybook/smoke）
+pnpm agent-doctor   # agent/skill 安装与 symlink 健康检查（原 pnpm doctor，改名避免与 pnpm 内置命令撞名）
 pnpm smoke:runtime-market # 用 SG 启动同一 standalone，验证运行时 market 未被 AU 构建值污染
 
 # happy-dog 基础组件库
