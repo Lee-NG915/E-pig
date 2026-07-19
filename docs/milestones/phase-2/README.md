@@ -1,10 +1,12 @@
 # Phase 2 — 浏览与加购（子里程碑总览）
 
-更新日期：2026-07-18
+更新日期：2026-07-19
 
-状态：proposal
+状态：in-progress
 
-实现时建议先读 `docs/engineering/page-workflow-guide.md`（定域落 module），再按 `component-workflow-guide.md` 交付组件。
+实现时建议先读 `docs/engineering/milestone-delivery-loop.md`（分支 / task 推送 / 溯源），再读 `page-workflow-guide.md`（定域落 module），按 `component-workflow-guide.md` 交付组件。
+
+首个分支：`feat/m2.1-home-plp`；工作区：[M2.1/](./M2.1/)。
 
 ## 1. Phase 目标
 

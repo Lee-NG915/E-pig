@@ -11,7 +11,8 @@
 2. **任务深度规则** → `.agents/skills/e-pig/SKILL.md`，再读 **一条** matching `rules/<task>.md`
 3. **开发闭环（社区 skills 调度）** → `.agents/skills/e-pig-dev-loop/SKILL.md`（统筹 grill-me / ponytail / tdd / impeccable / Superpowers 子集）
 4. **页面 / 组件流程** → `docs/engineering/page-workflow-guide.md` → `component-workflow-guide.md`
-5. **设计契约** → 仓库根 `DESIGN.md` + `packages/happy-dog` tokens
+5. **大里程碑交付** → `docs/engineering/milestone-delivery-loop.md`（分支 / task 推送 / 溯源 / 复盘）
+6. **设计契约** → 仓库根 `DESIGN.md` + `packages/happy-dog` tokens
 
 **Precedence：** Hard Rules > `e-pig` rules > `e-pig-dev-loop` > 社区 skills。冲突时项目规则胜出。`phase-review` 仅手动触发。
 

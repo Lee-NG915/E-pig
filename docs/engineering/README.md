@@ -7,6 +7,10 @@
 对话驱动开发的推荐阅读顺序（闭环）：
 
 ```text
+大里程碑（Phase / M*.*）
+  → milestone-delivery-loop.md      # 分支 / task 推送 / 溯源 / 复盘
+  → e-pig-dev-loop（会话调度）
+
 页面任务
   → page-workflow-guide.md          # DDD 定域 → 组件落 module → app 组装
   → component-workflow-guide.md     # 单组件 md / tsx / spec / stories
@@ -15,6 +19,7 @@
 
 | 文档 | 用途 |
 | --- | --- |
+| [milestone-delivery-loop.md](./milestone-delivery-loop.md) | 里程碑级：分支、task 溯源、复盘 |
 | [page-workflow-guide.md](./page-workflow-guide.md) | 页面级：领域归属与落点 |
 | [component-workflow-guide.md](./component-workflow-guide.md) | 组件级：日常改法与门禁 |
 | [component-folder-contract.md](./component-folder-contract.md) | 组件文件夹契约（行为 Spec） |

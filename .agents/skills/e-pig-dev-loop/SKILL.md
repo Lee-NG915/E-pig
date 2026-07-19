@@ -7,7 +7,7 @@ description: >
   user mentions e-pig-dev-loop / 开发闭环 / 统筹 skill.
 metadata:
   author: e-pig
-  version: "1.0.0"
+  version: "1.1.0"
 ---
 
 # E-pig Dev Loop（统筹 skill）
@@ -31,13 +31,15 @@ metadata:
 | 阶段 | 何时 | 调用 | 不做 |
 | --- | --- | --- | --- |
 | 0. Orient | 任何任务开始 | 读 `AGENTS.md` Hard Rules；需要深度时读 `e-pig` skill 索引 → **一条** matching rule | 不加载编译版巨型文档 |
-| 1. Align | 需求不清 / 新页面 / 新里程碑 | `grill-me` → `grilling` | 不开始写码 |
-| 2. Plan | 中大型或跨模块 | `writing-plans`（可选）；输出文件级计划 | 不装新依赖除非计划批准 |
+| 0b. Milestone | 新 Phase / 新 `M*.*` | 读 `docs/engineering/milestone-delivery-loop.md`；开里程碑分支；维护 `docs/milestones/.../TASKS.md` | 不在杂乱 WIP 分支上开干；不把多 M 混进一支 |
+| 1. Align | 需求不清 / 新页面 / 新里程碑 | `grill-me` → `grilling`；契约写入该里程碑 `contracts.md` | 不开始写码 |
+| 2. Plan | 中大型或跨模块 | `writing-plans`（可选）；输出文件级计划 → task 看板 | 不装新依赖除非计划批准 |
 | 3. YAGNI gate | 即将写实现 | `ponytail` **lite** | 不跳过测试/companions/Hard Rules |
 | 4. Implement | 写代码 | 页面→`page-workflow-guide`；组件→`component-workflow-guide`；逻辑用 `tdd` 或（高风险）`test-driven-development` | modules 不碰 adapters |
 | 5. Design QA | UI/视觉变更 | `impeccable`（先读仓库根 `DESIGN.md` / `PRODUCT.md`） | 不覆盖品牌 token 为紫色渐变 |
-| 6. Verify | 声称完成前 | `pnpm verify`；可选 `verification-before-completion` | 未跑测试不得宣称完成 |
+| 6. Verify | 声称完成前 | `pnpm verify`；可选 `verification-before-completion`；**task 完成 → 交付记录 + commit/push** | 未跑测试不得宣称完成；空口「下次注意」不算溯源 |
 | 7. Review | cart/checkout/支付/跨层 或用户要求 | Dual-AI：`requesting-code-review` 或 `code-review`；保留人类 gate | 不取消 AI Test/Review Record |
+| 8. Trace / Retro | 后续发现前序问题，或里程碑关门 | 写 `retros/issues/*` 或 `retros/milestone.md`；改 skill/eval/PRD 防再发 | 不跳过根因分类 |
 
 ## 高风险任务（强制 Dual-AI 口径）
 
@@ -66,3 +68,4 @@ metadata:
 2. 行为变更有测试 + AI Test Record
 3. 高风险任务有 AI Review Record
 4. UI 变更未引入 Hard Rules / DESIGN.md 禁用模式
+5. **里程碑 task**：`docs/milestones/.../tasks/Txx-*.md` 已写且已 push（见 milestone-delivery-loop）
