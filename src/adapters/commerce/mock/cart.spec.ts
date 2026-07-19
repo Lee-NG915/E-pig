@@ -29,10 +29,10 @@ describe("mock cart adapter", () => {
     const { cart } = setup();
     const created = await cart.createCart({ idempotencyKey: "op-add" });
 
-    await cart.addItem(created.id, { productId: "alto-modular-sofa", quantity: 1 }, { idempotencyKey: "a1" });
+    await cart.addItem(created.id, { productId: "tamarama-modular-sofa", quantity: 1 }, { idempotencyKey: "a1" });
     const updated = await cart.addItem(
       created.id,
-      { productId: "alto-modular-sofa", quantity: 2 },
+      { productId: "tamarama-modular-sofa", quantity: 2 },
       { idempotencyKey: "a2" },
     );
 
@@ -45,7 +45,7 @@ describe("mock cart adapter", () => {
   it("addItem 重放同一幂等键时不重复增加数量", async () => {
     const { cart } = setup();
     const created = await cart.createCart({ idempotencyKey: "op-replay" });
-    const input = { productId: "alto-modular-sofa", quantity: 2 };
+    const input = { productId: "tamarama-modular-sofa", quantity: 2 };
 
     const first = await cart.addItem(created.id, input, { idempotencyKey: "same-add" });
     const replayed = await cart.addItem(created.id, input, { idempotencyKey: "same-add" });
@@ -58,7 +58,7 @@ describe("mock cart adapter", () => {
   it("addItem 并发重放同一幂等键时只执行一次", async () => {
     const { cart } = setup();
     const created = await cart.createCart({ idempotencyKey: "op-concurrent" });
-    const input = { productId: "alto-modular-sofa", quantity: 1 };
+    const input = { productId: "tamarama-modular-sofa", quantity: 1 };
 
     await Promise.all([
       cart.addItem(created.id, input, { idempotencyKey: "concurrent-add" }),
@@ -71,7 +71,7 @@ describe("mock cart adapter", () => {
   it("不同幂等键并发加入同一商品时仍合并为一行", async () => {
     const { cart } = setup();
     const created = await cart.createCart({ idempotencyKey: "op-concurrent-distinct" });
-    const input = { productId: "alto-modular-sofa", quantity: 1 };
+    const input = { productId: "tamarama-modular-sofa", quantity: 1 };
 
     await Promise.all([
       cart.addItem(created.id, input, { idempotencyKey: "concurrent-a" }),
@@ -88,14 +88,14 @@ describe("mock cart adapter", () => {
     const created = await cart.createCart({ idempotencyKey: "op-conflict" });
     await cart.addItem(
       created.id,
-      { productId: "alto-modular-sofa", quantity: 1 },
+      { productId: "tamarama-modular-sofa", quantity: 1 },
       { idempotencyKey: "reused-key" },
     );
 
     await expect(
       cart.addItem(
         created.id,
-        { productId: "nook-coffee-table", quantity: 1 },
+        { productId: "koala-luxe-mattress", quantity: 1 },
         { idempotencyKey: "reused-key" },
       ),
     ).rejects.toMatchObject({ kind: "conflict" });
@@ -106,7 +106,7 @@ describe("mock cart adapter", () => {
     const created = await cart.createCart({ idempotencyKey: "op-invalid" });
 
     await expect(
-      cart.addItem(created.id, { productId: "alto-modular-sofa", quantity: 0 }, { idempotencyKey: "q0" }),
+      cart.addItem(created.id, { productId: "tamarama-modular-sofa", quantity: 0 }, { idempotencyKey: "q0" }),
     ).rejects.toMatchObject({ kind: "validation" });
 
     await expect(
@@ -115,13 +115,13 @@ describe("mock cart adapter", () => {
 
     await cart.addItem(
       created.id,
-      { productId: "alto-modular-sofa", quantity: 1 },
+      { productId: "tamarama-modular-sofa", quantity: 1 },
       { idempotencyKey: "valid-first" },
     );
     await expect(
       cart.addItem(
         created.id,
-        { productId: "alto-modular-sofa", quantity: -1 },
+        { productId: "tamarama-modular-sofa", quantity: -1 },
         { idempotencyKey: "invalid-existing" },
       ),
     ).rejects.toMatchObject({ kind: "validation" });
@@ -132,7 +132,7 @@ describe("mock cart adapter", () => {
     const created = await cart.createCart({ idempotencyKey: "op-update" });
     const withLine = await cart.addItem(
       created.id,
-      { productId: "nook-coffee-table", quantity: 2 },
+      { productId: "koala-luxe-mattress", quantity: 2 },
       { idempotencyKey: "u1" },
     );
 
@@ -146,7 +146,7 @@ describe("mock cart adapter", () => {
   it("applyCoupon DEMO10 产生 10% 折扣；空 code 抛 validation", async () => {
     const { cart } = setup();
     const created = await cart.createCart({ idempotencyKey: "op-coupon" });
-    await cart.addItem(created.id, { productId: "cove-lounge-chair", quantity: 1 }, { idempotencyKey: "c1" });
+    await cart.addItem(created.id, { productId: "suffolk-armchair", quantity: 1 }, { idempotencyKey: "c1" });
 
     const discounted = await cart.applyCoupon(created.id, "demo10", {
       idempotencyKey: "coupon-demo10",

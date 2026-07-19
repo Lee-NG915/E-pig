@@ -54,6 +54,7 @@ pnpm smoke:runtime-market # 用 SG 启动同一 standalone，验证运行时 mar
 pnpm storybook       # 启动 packages/happy-dog Storybook（端口 6006）
 pnpm build-storybook # 构建静态 Storybook
 pnpm happy-dog:test  # 运行 happy-dog 独立测试
+pnpm catalog:fetch-koala # 从 Koala AU 公开 Shopify JSON 刷新本地 mock fixtures（展示字段）
 
 # storybook-host 业务组件库（modules + happy-dog 聚合，端口 6007）
 pnpm storybook:modules       # 启动 packages/storybook-host Storybook

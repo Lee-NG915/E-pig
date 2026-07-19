@@ -15,16 +15,42 @@ import { mockProducts, type MockProductRecord } from "./catalog-data";
  * 与真实 adapter 共用同一套 contract test（04 §9）；替换后端时业务代码零改动。
  * market 在构造时绑定 —— port 方法本身不感知市场。
  */
+const CATEGORY_HANDLES: Record<string, string> = {
+  Sofas: "sofas",
+  Mattresses: "mattresses",
+  "Sofa Beds": "sofa-beds",
+  Armchairs: "armchairs",
+  Tables: "tables",
+  Outdoor: "outdoor",
+  "Living Room": "living-room",
+  Bedroom: "bedroom",
+};
+
+/** fixture 文件名 / 别名 → 类目标题（PLP collection 过滤） */
+const FIXTURE_HANDLE_CATEGORIES: Record<string, string> = {
+  "sofas-couches": "Sofas",
+  sofas: "Sofas",
+  mattresses: "Mattresses",
+  "sofa-beds": "Sofa Beds",
+  armchairs: "Armchairs",
+  "coffee-tables-side-tables": "Tables",
+  tables: "Tables",
+  "outdoor-furniture": "Outdoor",
+  outdoor: "Outdoor",
+  "living-room": "Living Room",
+  bedroom: "Bedroom",
+};
+
 export function createMockCatalogAdapter({ market }: { market: Market }): CatalogPort {
   function categoryToHandle(category: string): string {
-    return category.toLowerCase().replace(/\s+/g, "-");
+    return CATEGORY_HANDLES[category] ?? category.toLowerCase().replace(/\s+/g, "-");
   }
 
   function toListItem(record: MockProductRecord): ProductListItem {
     const compareAt = record.compareAtByMarket?.[market.id];
     return {
       id: record.id,
-      slug: record.id,
+      slug: record.slug,
       name: record.name,
       category: record.category,
       colour: record.colour,
@@ -44,9 +70,11 @@ export function createMockCatalogAdapter({ market }: { market: Market }): Catalo
         records = records.filter((record) => record.category === query.category);
       }
       if (query?.collection) {
-        records = records.filter(
-          (record) => categoryToHandle(record.category) === query.collection,
-        );
+        const category = FIXTURE_HANDLE_CATEGORIES[query.collection];
+        records = records.filter((record) => {
+          if (category && record.category === category) return true;
+          return categoryToHandle(record.category) === query.collection;
+        });
       }
       if (query?.sort) {
         records = [...records].sort((a, b) => {
@@ -69,7 +97,7 @@ export function createMockCatalogAdapter({ market }: { market: Market }): Catalo
     },
 
     async getProduct(id: string): Promise<ProductDetail> {
-      const record = mockProducts.find((product) => product.id === id);
+      const record = mockProducts.find((product) => product.id === id || product.slug === id);
       if (!record) {
         throw new AppError("not_found", `Product not found: ${id}`);
       }

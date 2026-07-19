@@ -86,6 +86,7 @@ describe("ProductCard", () => {
     links.forEach((link) => {
       expect(link.getAttribute("href")).toBe(`/products/${product.slug}`);
     });
+    expect(links[0].classList.contains("relative")).toBe(true);
   });
 
   it("点击加购按钮把商品放入当前 market 的购物袋并打开抽屉", async () => {

@@ -1,0 +1,348 @@
+[
+  {
+    "id": "all-seasons-duvet",
+    "slug": "all-seasons-duvet",
+    "name": "All Seasons Duvet",
+    "category": "Mattresses",
+    "colour": "Double",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/83e5760dce9ee3eafc38e66f632a9a8c.png?v=1725498220",
+    "description": "The All Seasons Duvet is a 300 GSM duvet filled with a blend of 55% Carbon-Zero TENCEL Lyocell and 45% cotton, designed for year-round comfort. The TENCEL Lyocell fibres help regulate temperature by wicking moisture, making it suitable for both warm and cool nights. Available in ",
+    "materials": [
+      "Cotton"
+    ],
+    "priceByMarket": {
+      "au": 245,
+      "sg": 216,
+      "us": 176
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "mattresses",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "balmy-night-duvet",
+    "slug": "balmy-night-duvet",
+    "name": "Balmy Night Duvet",
+    "category": "Mattresses",
+    "colour": "Double",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/d1bc0aee4ade86d0db43f8e9ad052764.png?v=1725498319",
+    "description": "The Balmy Night Duvet is a lightweight duvet designed for warm sleepers and summer nights. It is filled with Clusterloft fibre, a down alternative, and covered in 55% TENCEL Lyocell sourced from sustainably managed forests. The lightweight construction prevents overheating while ",
+    "materials": [
+      "Fibre"
+    ],
+    "priceByMarket": {
+      "au": 165,
+      "sg": 145,
+      "us": 119
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "mattresses",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "deep-fit-great-barrier-mattress-protector",
+    "slug": "deep-fit-great-barrier-mattress-protector",
+    "name": "Deep Fit Great Barrier Mattress Protector",
+    "category": "Mattresses",
+    "colour": "White",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/ed08a02a4cb92c42b69c4a4af511e2a0.png?v=1725499595",
+    "description": "The Deep Fit Great Barrier Mattress Protector is a fully encased, water-resistant mattress protector designed for mattresses up to 37 cm deep (30 cm standard fit, stretches to 37 cm). It features Carbon-Zero TENCEL Lyocell with a TPU backing for waterproof protection and Sanitize",
+    "materials": [],
+    "priceByMarket": {
+      "au": 195,
+      "sg": 172,
+      "us": 140
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "mattresses",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "great-barrier-mattress-protector",
+    "slug": "great-barrier-mattress-protector",
+    "name": "Great Barrier Mattress Protector",
+    "category": "Mattresses",
+    "colour": "White",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/ed08a02a4cb92c42b69c4a4af511e2a0_94d622b3-b20a-411d-8ba9-f75c6aca09e4.png?v=1725499930",
+    "description": "The Great Barrier Mattress Protector is a six-sided, water-resistant protector made from 100% TENCEL Lyocell fibres with a 100% polyurethane TPU backing. The Carbon-Zero TENCEL helps regulate temperature while the TPU barrier prevents liquid seepage into the mattress. It fits sta",
+    "materials": [],
+    "priceByMarket": {
+      "au": 155,
+      "sg": 136,
+      "us": 112
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "mattresses",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "joey-kids-mattress",
+    "slug": "joey-kids-mattress",
+    "name": "Joey Kids Mattress",
+    "category": "Mattresses",
+    "colour": "Cloud White",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/e80d80611b87f806f22adb8894bb5581.png?v=1725499999",
+    "description": "The Joey Kids Mattress is a hybrid mattress designed for children aged 3 to 12. It stands 15 cm tall and combines pressure-reactive pocket springs with Kloudcell foam for balanced comfort and support. The removable top layer is 100% recycled polyester and machine washable, with a",
+    "materials": [
+      "Polyester",
+      "Foam"
+    ],
+    "priceByMarket": {
+      "au": 475,
+      "sg": 418,
+      "us": 342
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "mattresses",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "koala-duvet-2nd-gen",
+    "slug": "koala-duvet-2nd-gen",
+    "name": "Koala Duvet [2nd Gen]",
+    "category": "Mattresses",
+    "colour": "Double",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/KOALA_DUVET_2ND_GEN_Balmy-Nights_Add-to-cart.png?v=1773788172",
+    "description": "The Koala Duvet [2nd Gen] is filled with premium Australian wool treated with Silvadur antimicrobial technology (silver ion-based) to resist bacteria and odour. Available in 200 GSM (Summer) and 300 GSM (All Seasons) weights. It features wave quilting to keep the fill evenly dist",
+    "materials": [
+      "Wool"
+    ],
+    "priceByMarket": {
+      "au": 220,
+      "sg": 194,
+      "us": 158
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "mattresses",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "koala-luxe-mattress",
+    "slug": "koala-luxe-mattress",
+    "name": "Koala Luxe Mattress",
+    "category": "Mattresses",
+    "badge": "Bestseller",
+    "colour": "Double",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/a9a750c0a91699d3049dd23fa97f2487.png?v=1725500206",
+    "description": "The Koala Luxe Mattress is Koala's premium mattress, standing 31 cm tall with a 9cm Copper Kloudcell comfort layer infused with copper for superior heat dissipation. It features phase change material that adapts to body temperature, 7-zone targeted support for personalised pressu",
+    "materials": [],
+    "priceByMarket": {
+      "au": 2090,
+      "sg": 1839,
+      "us": 1505
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "mattresses",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "koala-luxe-mattress-tim-robards",
+    "slug": "koala-luxe-mattress-tim-robards",
+    "name": "Koala Luxe Mattress",
+    "category": "Mattresses",
+    "colour": "Double",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/a9a750c0a91699d3049dd23fa97f2487.png?v=1725500206",
+    "description": "The Koala Luxe Mattress is Koala's premium mattress, standing 31 cm tall with a 9cm Copper Kloudcell comfort layer infused with copper for superior heat dissipation. It features phase change material that adapts to body temperature, 7-zone targeted support for personalised pressu",
+    "materials": [],
+    "priceByMarket": {
+      "au": 2090,
+      "sg": 1839,
+      "us": 1505
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "mattresses",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "koala-mattress",
+    "slug": "koala-mattress",
+    "name": "Koala Mattress",
+    "category": "Mattresses",
+    "badge": "Bestseller",
+    "colour": "Single",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/d25e668c64a3ab5409ea52c703986621.png?v=1725500280",
+    "description": "The Koala Mattress is a 25 cm all-foam mattress with a 7cm Kloudcell comfort layer, flippable firmness (medium-firm or firm, rated 7 out of 10), 3-zone high-density support for shoulders, hips, and feet, and Zero Disturbance technology that absorbs partner movement. The cover is ",
+    "materials": [
+      "Foam"
+    ],
+    "priceByMarket": {
+      "au": 890,
+      "sg": 783,
+      "us": 641
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "mattresses",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "koala-pillow",
+    "slug": "koala-pillow",
+    "name": "Koala Pillow [2nd Gen]",
+    "category": "Mattresses",
+    "badge": "New",
+    "colour": "1 Pillow",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/Pillow2G_Carousel_2xPillows_14.jpg?v=1751334155",
+    "description": "The Koala Pillow [2nd Gen] is a dual-sided pillow with PolarBands heat-dissipating technology for temperature regulation. The summer side is 37% polyethylene and 63% polyester for cooling, while the winter side is 52% recycled polyester, 35% organic cotton, and 13% polyester for ",
+    "materials": [
+      "Polyester",
+      "Cotton"
+    ],
+    "priceByMarket": {
+      "au": 155,
+      "sg": 136,
+      "us": 112
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "mattresses",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "koala-plus-mattress",
+    "slug": "koala-plus-mattress",
+    "name": "Koala Plus Mattress",
+    "category": "Mattresses",
+    "badge": "Bestseller",
+    "colour": "Single",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/d27464d4e65d13ecec51f5e0f2b38924.png?v=1725500317",
+    "description": "The Koala Plus Mattress is a 28 cm cooling mattress with an 8cm Cooling Kloudcell layer, CoolThread cooling yarn that sleeps 13% cooler than leading online brands, flippable firmness (medium-firm or firm, rated 6-7 out of 10), 5-zone high-density support, and a flippable seasonal",
+    "materials": [],
+    "priceByMarket": {
+      "au": 1050,
+      "sg": 924,
+      "us": 756
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "mattresses",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "koala-plus-mattress-performance",
+    "slug": "koala-plus-mattress-performance",
+    "name": "Koala Plus Mattress",
+    "category": "Mattresses",
+    "colour": "Single",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/d27464d4e65d13ecec51f5e0f2b38924.png?v=1725500317",
+    "description": "The Koala Plus Mattress is a 28 cm cooling mattress with an 8cm Cooling Kloudcell layer, CoolThread cooling yarn that sleeps 13% cooler than leading online brands, flippable firmness (medium-firm or firm, rated 6-7 out of 10), 5-zone high-density support, and a flippable seasonal",
+    "materials": [],
+    "priceByMarket": {
+      "au": 1050,
+      "sg": 924,
+      "us": 756
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "mattresses",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "koala-polar-plus-mattress",
+    "slug": "koala-polar-plus-mattress",
+    "name": "Koala Polar+ Mattress",
+    "category": "Mattresses",
+    "colour": "Queen",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/Queen_PolarPlus_Mattress_10.png?v=1736133158",
+    "description": "The Koala Polar+ Mattress is Koala's most advanced cooling mattress, designed for hot sleepers and warm climates. It stands 28 cm tall and features PolarBands thermal technology that absorbs and releases body heat for 8-plus hours, sleeping 5 degrees Celsius cooler than the Koala",
+    "materials": [],
+    "priceByMarket": {
+      "au": 1990,
+      "sg": 1751,
+      "us": 1433
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "mattresses",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "koala-se-mattress",
+    "slug": "koala-se-mattress",
+    "name": "Koala SE Mattress",
+    "category": "Mattresses",
+    "badge": "Bestseller",
+    "colour": "Single",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/a79d6626fd0519cb466ef101d7ce854c.png?v=1725500350",
+    "description": "The Koala SE Mattress is Koala's entry-level all-foam mattress, standing 23 cm tall with a medium-firm feel (rated around 6.5 out of 10). It features bamboo charcoal foam for freshness, Kloudcell technology for responsive support, and a TENCEL Lyocell cover (65% polyester, 35% TE",
+    "materials": [
+      "Polyester",
+      "Foam"
+    ],
+    "priceByMarket": {
+      "au": 650,
+      "sg": 572,
+      "us": 468
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "mattresses",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "snoozytime-mattress",
+    "slug": "snoozytime-mattress",
+    "name": "Koala x Bluey Snoozytime Mattress",
+    "category": "Mattresses",
+    "badge": "New",
+    "colour": "Bluey",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/BLUEY_MATT_B_11.png?v=1760668348",
+    "description": "The Koala x Bluey Snoozytime Mattress is a children's mattress standing 15 cm tall with a 4cm Kloudcell comfort layer and pocket springs for growing bodies. It features a washable topper, water-resistant protective layer, antimicrobial additive to help prevent mould and bacteria,",
+    "materials": [],
+    "priceByMarket": {
+      "au": 475,
+      "sg": 418,
+      "us": 342
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "mattresses",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "snoozytime-pillow",
+    "slug": "snoozytime-pillow",
+    "name": "Koala x Bluey Snoozytime Pillow",
+    "category": "Mattresses",
+    "badge": "New",
+    "colour": "Flamingo Queen",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/BLUEY_PILLOW_FQ_8.png?v=1760669063",
+    "description": "The Koala x Bluey Snoozytime Pillow is a children's pillow with a low 10 cm loft designed for smaller heads and necks. It features CertiPUR-US certified foam, a water-resistant inner layer, and a washable cover with exclusive Bluey-inspired artwork. Safety-tested for young childr",
+    "materials": [
+      "Foam"
+    ],
+    "priceByMarket": {
+      "au": 90,
+      "sg": 79,
+      "us": 65
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "mattresses",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  }
+]

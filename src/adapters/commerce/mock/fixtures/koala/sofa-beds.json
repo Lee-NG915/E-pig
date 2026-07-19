@@ -1,0 +1,227 @@
+[
+  {
+    "id": "byron-sofa-bed",
+    "slug": "byron-sofa-bed",
+    "name": "Byron Sofa Bed [3rd Gen]",
+    "category": "Sofa Beds",
+    "badge": "Bestseller",
+    "colour": "Bronzed Aussie",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/ByronSB_3rdG_Currawong_Grey_8_18984a99-b0de-4c48-8d31-ba8caf933274.png?v=1739506579",
+    "description": "The Byron Sofa Bed [3rd Gen] is a sofa bed with a FlipBed design that converts from sofa to bed in seconds with no clunky mechanisms. It features a Kloudcell sleep surface for responsive, pressure-relieving support, deep plush seats for everyday lounging, and CertiPUR-US certifie",
+    "materials": [],
+    "priceByMarket": {
+      "au": 2390,
+      "sg": 2103,
+      "us": 1721
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "sofa-beds",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "byron-sofa-bed-2nd-gen",
+    "slug": "byron-sofa-bed-2nd-gen",
+    "name": "Byron Sofa Bed [2nd Gen]",
+    "category": "Sofa Beds",
+    "colour": "Blush Sunset (Standard)",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/049acebef94e638933397232f2a16c15.png?v=1725499353",
+    "description": "The Byron Sofa Bed [2nd Gen] is a sofa bed featuring a Kloudcell mattress topper for comfortable overnight sleep and a breathable platform base. It offers deep plush seats for everyday lounging and converts to a bed for guests. It comes with a 5-year warranty and Koala's 120-day ",
+    "materials": [],
+    "priceByMarket": {
+      "au": 2290,
+      "sg": 2015,
+      "us": 1649
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "sofa-beds",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "koala-sofa-bed",
+    "slug": "koala-sofa-bed",
+    "name": "Koala Sofa Bed [4th Gen]",
+    "category": "Sofa Beds",
+    "badge": "Bestseller",
+    "colour": "Australia 01 (Pantone)",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/KSB_4G_CS_Q_9.png?v=1756260460",
+    "description": "The Koala Sofa Bed [4th Gen] is a sofa bed that converts from deep-seat sofa to full-size bed in seconds. It features 60 cm deep seats, an angled backrest with lumbar support, and an integrated Kloudcell topper for mattress-like sleep. The frame is 100% FSC certified poplar plywo",
+    "materials": [],
+    "priceByMarket": {
+      "au": 2590,
+      "sg": 2279,
+      "us": 1865
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "sofa-beds",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "koala-sofa-bed-3rd-gen",
+    "slug": "koala-sofa-bed-3rd-gen",
+    "name": "Koala Sofa Bed [3rd Gen]",
+    "category": "Sofa Beds",
+    "badge": "Bestseller",
+    "colour": "Gum Leaf",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/e5c15fb06f827e390777e02e55a26c87.png?v=1734316893",
+    "description": "The Koala Sofa Bed [3rd Gen] converts from sofa to full-size bed and features CertiPUR-US certified polyurethane foam cushioning wrapped in polyester wadding. Fabric options include textured jacquard pile (100% polyester) and luxe demi boucle (70% polyester, 30% recycled polyeste",
+    "materials": [
+      "Polyester",
+      "Foam",
+      "Fabric"
+    ],
+    "priceByMarket": {
+      "au": 2190,
+      "sg": 1927,
+      "us": 1577
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "sofa-beds",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "koala-sofa-bed-pantone",
+    "slug": "koala-sofa-bed-pantone",
+    "name": "Koala Sofa Bed [4th Gen]",
+    "category": "Sofa Beds",
+    "badge": "Bestseller",
+    "colour": "Australia 01 (Pantone)",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/KSB_4G_Pantone_OB_K_5.webp?v=1783297119",
+    "description": "The Koala Sofa Bed [4th Gen] is a sofa bed that converts from deep-seat sofa to full-size bed in seconds. It features 60 cm deep seats, an angled backrest with lumbar support, and an integrated Kloudcell topper for mattress-like sleep. The frame is 100% FSC certified poplar plywo",
+    "materials": [],
+    "priceByMarket": {
+      "au": 2590,
+      "sg": 2279,
+      "us": 1865
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "sofa-beds",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "playtime-sofa-bed",
+    "slug": "playtime-sofa-bed",
+    "name": "Koala x Bluey Playtime Sofa Bed",
+    "category": "Sofa Beds",
+    "badge": "New",
+    "colour": "Potoroo",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/KSB_BLUEY_P_Q_12.png?v=1759895196",
+    "description": "The Koala x Bluey Playtime Sofa Bed is a kids-friendly sofa bed featuring exclusive Bluey artwork and a simple forward-fold design that flips from cushy sofa to a snuggly sleep cubby with no clunky mechanisms. It includes an integrated Kloudcell topper, exclusive Bluey frame deta",
+    "materials": [],
+    "priceByMarket": {
+      "au": 2490,
+      "sg": 2191,
+      "us": 1793
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "sofa-beds",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "sofa-bed",
+    "slug": "sofa-bed",
+    "name": "OG Sofa Bed",
+    "category": "Sofa Beds",
+    "badge": "Bestseller",
+    "colour": "Vanilla",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/SOFABED_WOODLAND_QUEEN_5_1.webp?v=1727274550",
+    "description": "The OG Sofa Bed is Koala's original sofa bed design, built for everyday comfort and overnight guests. It features CertiPUR-US certified polyurethane foam with a support layer and comfort layer wrapped in polyester wadding. The fabric is a soft-touch blend of 88% polyester and 12%",
+    "materials": [
+      "Polyester",
+      "Foam",
+      "Fabric"
+    ],
+    "priceByMarket": {
+      "au": 1690,
+      "sg": 1487,
+      "us": 1217
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "sofa-beds",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "stunner-sofa-bed",
+    "slug": "stunner-sofa-bed",
+    "name": "Stunner Sofa Bed",
+    "category": "Sofa Beds",
+    "colour": "Limestone",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/ec318943fd1dd7d7dd3fb5d257d57dd1.png?v=1725501151",
+    "description": "The Stunner Sofa Bed is a raised-platform sofa bed that converts from sofa to bed in 6 seconds. It features an integrated Kloudcell topper for mattress-like sleep comfort, with CertiPUR-US certified polyurethane foam cushioning. The frame is plywood with birch veneer and mixed FS",
+    "materials": [
+      "Plywood",
+      "Foam"
+    ],
+    "priceByMarket": {
+      "au": 2290,
+      "sg": 2015,
+      "us": 1649
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "sofa-beds",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "wanda-sofa-bed",
+    "slug": "wanda-sofa-bed",
+    "name": "Wanda Sofa Bed [2nd Gen]",
+    "category": "Sofa Beds",
+    "badge": "Bestseller",
+    "colour": "Bronzed Aussie",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/WSB_1.5G_PM_10.png?v=1765430385",
+    "description": "The Wanda Sofa Bed [2nd Gen] is a 4-in-1 sofa bed that transforms from sofa to chaise, daybed, or queen-sized bed. It features HyperSoft foam cushions that stay plush without sagging, a steel and FSC-certified wood frame, and water-resistant fabrics with PFAS testing. The upholst",
+    "materials": [
+      "Steel",
+      "Foam"
+    ],
+    "priceByMarket": {
+      "au": 3290,
+      "sg": 2895,
+      "us": 2369
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "sofa-beds",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "wanda-sofa-bed-pantone",
+    "slug": "wanda-sofa-bed-pantone",
+    "name": "Wanda Sofa Bed [2nd Gen]",
+    "category": "Sofa Beds",
+    "badge": "Bestseller",
+    "colour": "Australia 01 (Pantone)",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/Wanda_AU-UK_Pantone_7.webp?v=1783311327",
+    "description": "The Wanda Sofa Bed [2nd Gen] is a 4-in-1 sofa bed that transforms from sofa to chaise, daybed, or queen-sized bed. It features HyperSoft foam cushions that stay plush without sagging, a steel and FSC-certified wood frame, and water-resistant fabrics with PFAS testing. The upholst",
+    "materials": [
+      "Steel",
+      "Foam"
+    ],
+    "priceByMarket": {
+      "au": 3290,
+      "sg": 2895,
+      "us": 2369
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "sofa-beds",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  }
+]

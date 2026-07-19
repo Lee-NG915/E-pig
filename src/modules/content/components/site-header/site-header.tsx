@@ -20,7 +20,10 @@ export function SiteHeader() {
           <Link href="/collections/sofas" className="transition-colors hover:text-muted-foreground">
             Shop
           </Link>
-          <Link href="/collections/bedroom" className="transition-colors hover:text-muted-foreground">
+          <Link
+            href="/collections/living-room"
+            className="transition-colors hover:text-muted-foreground"
+          >
             Rooms
           </Link>
           <Link href="#about" className="transition-colors hover:text-muted-foreground">Our story</Link>

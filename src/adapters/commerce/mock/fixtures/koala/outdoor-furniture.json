@@ -1,0 +1,137 @@
+[
+  {
+    "id": "torakina-outdoor-coffee-tables",
+    "slug": "torakina-outdoor-coffee-tables",
+    "name": "Torakina Outdoor Coffee Tables",
+    "category": "Outdoor",
+    "colour": "Soft Moss",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/3fe2d629835e65c8e142b4131861db11.png?v=1725501616",
+    "description": "The Torakina Outdoor Coffee Tables are built for Australian outdoor conditions with FSC 100% solid teak timber tops and double-coated powder-coated steel frames. The square configuration measures 37cm (H) x 100cm (W) x 100cm (L) and weighs 27 kg. Nylon plastic glides reinforced w",
+    "materials": [
+      "Timber",
+      "Steel"
+    ],
+    "priceByMarket": {
+      "au": 750,
+      "sg": 660,
+      "us": 540
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "outdoor-furniture",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "torakina-outdoor-dining-seating",
+    "slug": "torakina-outdoor-dining-seating",
+    "name": "Torakina Outdoor Dining Seating",
+    "category": "Outdoor",
+    "colour": "Soft Moss",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/e45601cf76481eb8e2b784ddc541d070.png?v=1725501645",
+    "description": "The Torakina Outdoor Dining Seating comprises individual dining chairs built for year-round outdoor use in Australian conditions. Each chair features double-coated steel frames for rust protection, teak finishes, and lightweight contoured cushions that fold for easy storage. The ",
+    "materials": [
+      "Steel"
+    ],
+    "priceByMarket": {
+      "au": 800,
+      "sg": 704,
+      "us": 576
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "outdoor-furniture",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "torakina-outdoor-dining-sets",
+    "slug": "torakina-outdoor-dining-sets",
+    "name": "Torakina Outdoor Dining Sets",
+    "category": "Outdoor",
+    "colour": "Soft Moss",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/fa13a7cda679550c50817a11d7446ed5.png?v=1725501756",
+    "description": "The Torakina Outdoor Dining Sets are outdoor dining bundles built for year-round use in Australian weather. Each set combines dining chairs with a table, constructed from triple-coated steel frames and FSC-certified solid teak surfaces. The coated steel resists rust and corrosion",
+    "materials": [
+      "Steel"
+    ],
+    "priceByMarket": {
+      "au": 1980,
+      "sg": 1742,
+      "us": 1426
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "outdoor-furniture",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "torakina-outdoor-dining-tables",
+    "slug": "torakina-outdoor-dining-tables",
+    "name": "Torakina Outdoor Dining Tables",
+    "category": "Outdoor",
+    "colour": "Soft Moss",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/66f21938eeec496633b6eda3f524a7e5.png?v=1725501760",
+    "description": "The Torakina Outdoor Dining Tables feature FSC-certified teak timber tops on triple-coated steel frames with double-coated rust protection. The 4-Seater measures 74cm (H) x 87.5cm (W) x 87.5cm (L) and weighs 21.5 kg. Features include custom-designed wide, self-levelling adjustabl",
+    "materials": [
+      "Timber",
+      "Steel"
+    ],
+    "priceByMarket": {
+      "au": 1350,
+      "sg": 1188,
+      "us": 972
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "outdoor-furniture",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "torakina-outdoor-lounge-chairs",
+    "slug": "torakina-outdoor-lounge-chairs",
+    "name": "Torakina Outdoor Lounge Chairs",
+    "category": "Outdoor",
+    "colour": "Soft Moss",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/5345895de78485128e31b5c5b46db2f8.png?v=1725501810",
+    "description": "The Torakina Outdoor Lounge Chairs are individual outdoor seating pieces built with triple-coated steel frames for rust prevention, teak finishes, and stain-resistant contoured cushions. Each chair measures 78.5cm (H) x 73cm (W) x 194.5cm (L) and weighs 42.7 kg. Cushions are remo",
+    "materials": [
+      "Steel"
+    ],
+    "priceByMarket": {
+      "au": 1350,
+      "sg": 1188,
+      "us": 972
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "outdoor-furniture",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "torakina-outdoor-lounge-sets",
+    "slug": "torakina-outdoor-lounge-sets",
+    "name": "Torakina Outdoor Lounge Sets",
+    "category": "Outdoor",
+    "colour": "Soft Moss",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/041d07346266ec3f6edf1a4ee7de14c2.png?v=1725501870",
+    "description": "The Torakina Outdoor Lounge Sets are outdoor seating bundles designed for relaxed entertaining and everyday use in Australian conditions. Each set pairs lounge chairs with a coffee table, built on powder-coated steel frames with FSC 100% solid teak tabletops and polyurethane foam",
+    "materials": [
+      "Steel",
+      "Foam"
+    ],
+    "priceByMarket": {
+      "au": 3105,
+      "sg": 2732,
+      "us": 2236
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "outdoor-furniture",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  }
+]

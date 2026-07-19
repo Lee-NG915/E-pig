@@ -29,7 +29,8 @@
     "build-storybook": "pnpm --filter @e-pig/happy-dog build-storybook",
     "storybook:modules": "pnpm --filter @e-pig/storybook-host storybook",
     "build-storybook:modules": "pnpm --filter @e-pig/storybook-host build-storybook",
-    "happy-dog:test": "pnpm --filter @e-pig/happy-dog test"
+    "happy-dog:test": "pnpm --filter @e-pig/happy-dog test",
+    "catalog:fetch-koala": "node scripts/catalog/fetch-koala-fixtures.mjs"
   },
   "dependencies": {
     "@e-pig/happy-dog": "workspace:*",

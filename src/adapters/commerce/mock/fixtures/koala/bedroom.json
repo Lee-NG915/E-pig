@@ -1,0 +1,579 @@
+[
+  {
+    "id": "all-seasons-duvet",
+    "slug": "all-seasons-duvet",
+    "name": "All Seasons Duvet",
+    "category": "Bedroom",
+    "colour": "Double",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/83e5760dce9ee3eafc38e66f632a9a8c.png?v=1725498220",
+    "description": "The All Seasons Duvet is a 300 GSM duvet filled with a blend of 55% Carbon-Zero TENCEL Lyocell and 45% cotton, designed for year-round comfort. The TENCEL Lyocell fibres help regulate temperature by wicking moisture, making it suitable for both warm and cool nights. Available in ",
+    "materials": [
+      "Cotton"
+    ],
+    "priceByMarket": {
+      "au": 245,
+      "sg": 216,
+      "us": 176
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "bedroom",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "balmain-bed-base",
+    "slug": "balmain-bed-base",
+    "name": "Balmain Bed Base",
+    "category": "Bedroom",
+    "badge": "Bestseller",
+    "colour": "Warm Ash",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/90cea210fd504673cf81214e4b62ca26.png?v=1725498256",
+    "description": "The Balmain Bed Base is a compact timber bed frame made from FSC-certified ash veneer on poplar plywood with honeycomb interior and powder-coated steel centre rail. Its design eliminates centre support legs, creating over 30 cm of under-bed storage. Available in Single, King Sing",
+    "materials": [
+      "Plywood",
+      "Timber",
+      "Steel"
+    ],
+    "priceByMarket": {
+      "au": 890,
+      "sg": 783,
+      "us": 641
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "bedroom",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "balmain-bedside-table",
+    "slug": "balmain-bedside-table",
+    "name": "Balmain Bedside Table",
+    "category": "Bedroom",
+    "colour": "Warm Ash",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/e3ebe3004e7cf22d8ad59e834dcf084b.png?v=1725498266",
+    "description": "The Balmain Bedside Table is made from FSC-certified ash veneer on poplar plywood in a warm ash finish. It features built-in Qi wireless charging compatible with smartphones from 2017 onwards, push-to-open drawers with no visible handles, smooth high-tech drawer runners, and hidd",
+    "materials": [
+      "Plywood"
+    ],
+    "priceByMarket": {
+      "au": 450,
+      "sg": 396,
+      "us": 324
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "bedroom",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "balmain-floating-bedside-table",
+    "slug": "balmain-floating-bedside-table",
+    "name": "Balmain Floating Bedside Table",
+    "category": "Bedroom",
+    "colour": "Warm Ash",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/54fb2d632822e96058335d1314241fb5.png?v=1725498305",
+    "description": "The Balmain Floating Bedside Table is a clip-on shelf designed exclusively for the Koala Balmain Bed Base. Made from FSC-certified timber in a warm ash finish, it supports up to 12 kg and clips onto either side of the bed in seconds with no tools. Its space-saving design keeps th",
+    "materials": [
+      "Timber"
+    ],
+    "priceByMarket": {
+      "au": 125,
+      "sg": 110,
+      "us": 90
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "bedroom",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "balmy-night-duvet",
+    "slug": "balmy-night-duvet",
+    "name": "Balmy Night Duvet",
+    "category": "Bedroom",
+    "colour": "Double",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/d1bc0aee4ade86d0db43f8e9ad052764.png?v=1725498319",
+    "description": "The Balmy Night Duvet is a lightweight duvet designed for warm sleepers and summer nights. It is filled with Clusterloft fibre, a down alternative, and covered in 55% TENCEL Lyocell sourced from sustainably managed forests. The lightweight construction prevents overheating while ",
+    "materials": [
+      "Fibre"
+    ],
+    "priceByMarket": {
+      "au": 165,
+      "sg": 145,
+      "us": 119
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "bedroom",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "bedside-table",
+    "slug": "bedside-table",
+    "name": "Bedside Table",
+    "category": "Bedroom",
+    "colour": "Warm Ash",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/BedsideTable_6.png?v=1727759880",
+    "description": "The Koala Bedside Table is made from American ash veneer on poplar plywood with solid ash corners, measuring 50cm (H) x 44cm (W) x 40cm (D) and weighing 12.2 kg. It features a soft-close drawer with a 7.5 kg weight limit, internal cable management, and curved edges in a smooth as",
+    "materials": [
+      "Plywood"
+    ],
+    "priceByMarket": {
+      "au": 390,
+      "sg": 343,
+      "us": 281
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "bedroom",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "brunswick-bed-base",
+    "slug": "brunswick-bed-base",
+    "name": "Brunswick Bed Base",
+    "category": "Bedroom",
+    "colour": "Bush Walk",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/a22781cf05b89440e8bd2b8b0ebc56d0.png?v=1725499311",
+    "description": "The Brunswick Bed Base is a solid timber bed frame made from FSC-certified pine with powder-coated steel components. It features four solid slat sections with 4.8 cm spacing, bespoke bumper rails to prevent squeaking and slipping, and under-bed storage space. Available in five si",
+    "materials": [
+      "Timber",
+      "Steel"
+    ],
+    "priceByMarket": {
+      "au": 750,
+      "sg": 660,
+      "us": 540
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "bedroom",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "deep-fit-great-barrier-mattress-protector",
+    "slug": "deep-fit-great-barrier-mattress-protector",
+    "name": "Deep Fit Great Barrier Mattress Protector",
+    "category": "Bedroom",
+    "colour": "White",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/ed08a02a4cb92c42b69c4a4af511e2a0.png?v=1725499595",
+    "description": "The Deep Fit Great Barrier Mattress Protector is a fully encased, water-resistant mattress protector designed for mattresses up to 37 cm deep (30 cm standard fit, stretches to 37 cm). It features Carbon-Zero TENCEL Lyocell with a TPU backing for waterproof protection and Sanitize",
+    "materials": [],
+    "priceByMarket": {
+      "au": 195,
+      "sg": 172,
+      "us": 140
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "bedroom",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "great-barrier-mattress-protector",
+    "slug": "great-barrier-mattress-protector",
+    "name": "Great Barrier Mattress Protector",
+    "category": "Bedroom",
+    "colour": "White",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/ed08a02a4cb92c42b69c4a4af511e2a0_94d622b3-b20a-411d-8ba9-f75c6aca09e4.png?v=1725499930",
+    "description": "The Great Barrier Mattress Protector is a six-sided, water-resistant protector made from 100% TENCEL Lyocell fibres with a 100% polyurethane TPU backing. The Carbon-Zero TENCEL helps regulate temperature while the TPU barrier prevents liquid seepage into the mattress. It fits sta",
+    "materials": [],
+    "priceByMarket": {
+      "au": 155,
+      "sg": 136,
+      "us": 112
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "bedroom",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "joey-bed-base",
+    "slug": "joey-bed-base",
+    "name": "Joey Bed Base",
+    "category": "Bedroom",
+    "colour": "Natural Beech/Green Lagoon",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/Joey_JoeyBed_12_2.webp?v=1728733166",
+    "description": "The Joey Bed Base is a children's bed frame made from FSC-certified timber with a sturdy plywood platform. It measures 199cm (L) x 103cm (W) and weighs 24 kg, with adjustable leg heights — a taller setting at 81 cm and a shorter setting at 63 cm — so it can grow with your child f",
+    "materials": [
+      "Plywood",
+      "Timber"
+    ],
+    "priceByMarket": {
+      "au": 690,
+      "sg": 607,
+      "us": 497
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "bedroom",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "joey-guardrail",
+    "slug": "joey-guardrail",
+    "name": "Joey Guardrail",
+    "category": "Bedroom",
+    "colour": "Green Lagoon",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/Joey_GuardRail_9-4PlQ7wLOU4W1yRPdc6IzW2.png?v=1725433087",
+    "description": "The Joey Guardrail is a safety rail made from FSC certified solid timber, designed exclusively for the Koala Joey Bed Base. It installs at the headboard end only and accommodates mattresses up to 16 cm in height. Two guardrails can be installed per headboard for added safety duri",
+    "materials": [
+      "Timber"
+    ],
+    "priceByMarket": {
+      "au": 100,
+      "sg": 88,
+      "us": 72
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "bedroom",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "joey-kids-mattress",
+    "slug": "joey-kids-mattress",
+    "name": "Joey Kids Mattress",
+    "category": "Bedroom",
+    "colour": "Cloud White",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/e80d80611b87f806f22adb8894bb5581.png?v=1725499999",
+    "description": "The Joey Kids Mattress is a hybrid mattress designed for children aged 3 to 12. It stands 15 cm tall and combines pressure-reactive pocket springs with Kloudcell foam for balanced comfort and support. The removable top layer is 100% recycled polyester and machine washable, with a",
+    "materials": [
+      "Polyester",
+      "Foam"
+    ],
+    "priceByMarket": {
+      "au": 475,
+      "sg": 418,
+      "us": 342
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "bedroom",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "kirribilli-bed-base",
+    "slug": "kirribilli-bed-base",
+    "name": "Kirribilli Bed Base",
+    "category": "Bedroom",
+    "badge": "Bestseller",
+    "colour": "Warm Ash",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/dd7fd6ca5965bfe9762e2360e15188eb.png?v=1725500060",
+    "description": "The Kirribilli Bed Base is a timber bed frame crafted from FSC-certified American Ash in a warm ash finish. It features four panel slats and no centre legs, providing maximum under-bed storage space. The frame supports up to 240 kg and is available in Single, King Single, Double,",
+    "materials": [
+      "Timber"
+    ],
+    "priceByMarket": {
+      "au": 1090,
+      "sg": 959,
+      "us": 785
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "bedroom",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "koala-duvet-2nd-gen",
+    "slug": "koala-duvet-2nd-gen",
+    "name": "Koala Duvet [2nd Gen]",
+    "category": "Bedroom",
+    "colour": "Double",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/KOALA_DUVET_2ND_GEN_Balmy-Nights_Add-to-cart.png?v=1773788172",
+    "description": "The Koala Duvet [2nd Gen] is filled with premium Australian wool treated with Silvadur antimicrobial technology (silver ion-based) to resist bacteria and odour. Available in 200 GSM (Summer) and 300 GSM (All Seasons) weights. It features wave quilting to keep the fill evenly dist",
+    "materials": [
+      "Wool"
+    ],
+    "priceByMarket": {
+      "au": 220,
+      "sg": 194,
+      "us": 158
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "bedroom",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "koala-luxe-mattress",
+    "slug": "koala-luxe-mattress",
+    "name": "Koala Luxe Mattress",
+    "category": "Bedroom",
+    "badge": "Bestseller",
+    "colour": "Double",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/a9a750c0a91699d3049dd23fa97f2487.png?v=1725500206",
+    "description": "The Koala Luxe Mattress is Koala's premium mattress, standing 31 cm tall with a 9cm Copper Kloudcell comfort layer infused with copper for superior heat dissipation. It features phase change material that adapts to body temperature, 7-zone targeted support for personalised pressu",
+    "materials": [],
+    "priceByMarket": {
+      "au": 2090,
+      "sg": 1839,
+      "us": 1505
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "bedroom",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "koala-luxe-mattress-tim-robards",
+    "slug": "koala-luxe-mattress-tim-robards",
+    "name": "Koala Luxe Mattress",
+    "category": "Bedroom",
+    "colour": "Double",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/a9a750c0a91699d3049dd23fa97f2487.png?v=1725500206",
+    "description": "The Koala Luxe Mattress is Koala's premium mattress, standing 31 cm tall with a 9cm Copper Kloudcell comfort layer infused with copper for superior heat dissipation. It features phase change material that adapts to body temperature, 7-zone targeted support for personalised pressu",
+    "materials": [],
+    "priceByMarket": {
+      "au": 2090,
+      "sg": 1839,
+      "us": 1505
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "bedroom",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "koala-mattress",
+    "slug": "koala-mattress",
+    "name": "Koala Mattress",
+    "category": "Bedroom",
+    "badge": "Bestseller",
+    "colour": "Single",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/d25e668c64a3ab5409ea52c703986621.png?v=1725500280",
+    "description": "The Koala Mattress is a 25 cm all-foam mattress with a 7cm Kloudcell comfort layer, flippable firmness (medium-firm or firm, rated 7 out of 10), 3-zone high-density support for shoulders, hips, and feet, and Zero Disturbance technology that absorbs partner movement. The cover is ",
+    "materials": [
+      "Foam"
+    ],
+    "priceByMarket": {
+      "au": 890,
+      "sg": 783,
+      "us": 641
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "bedroom",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "koala-pillow",
+    "slug": "koala-pillow",
+    "name": "Koala Pillow [2nd Gen]",
+    "category": "Bedroom",
+    "badge": "New",
+    "colour": "1 Pillow",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/Pillow2G_Carousel_2xPillows_14.jpg?v=1751334155",
+    "description": "The Koala Pillow [2nd Gen] is a dual-sided pillow with PolarBands heat-dissipating technology for temperature regulation. The summer side is 37% polyethylene and 63% polyester for cooling, while the winter side is 52% recycled polyester, 35% organic cotton, and 13% polyester for ",
+    "materials": [
+      "Polyester",
+      "Cotton"
+    ],
+    "priceByMarket": {
+      "au": 155,
+      "sg": 136,
+      "us": 112
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "bedroom",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "koala-plus-mattress",
+    "slug": "koala-plus-mattress",
+    "name": "Koala Plus Mattress",
+    "category": "Bedroom",
+    "badge": "Bestseller",
+    "colour": "Single",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/d27464d4e65d13ecec51f5e0f2b38924.png?v=1725500317",
+    "description": "The Koala Plus Mattress is a 28 cm cooling mattress with an 8cm Cooling Kloudcell layer, CoolThread cooling yarn that sleeps 13% cooler than leading online brands, flippable firmness (medium-firm or firm, rated 6-7 out of 10), 5-zone high-density support, and a flippable seasonal",
+    "materials": [],
+    "priceByMarket": {
+      "au": 1050,
+      "sg": 924,
+      "us": 756
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "bedroom",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "koala-plus-mattress-performance",
+    "slug": "koala-plus-mattress-performance",
+    "name": "Koala Plus Mattress",
+    "category": "Bedroom",
+    "colour": "Single",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/d27464d4e65d13ecec51f5e0f2b38924.png?v=1725500317",
+    "description": "The Koala Plus Mattress is a 28 cm cooling mattress with an 8cm Cooling Kloudcell layer, CoolThread cooling yarn that sleeps 13% cooler than leading online brands, flippable firmness (medium-firm or firm, rated 6-7 out of 10), 5-zone high-density support, and a flippable seasonal",
+    "materials": [],
+    "priceByMarket": {
+      "au": 1050,
+      "sg": 924,
+      "us": 756
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "bedroom",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "koala-polar-plus-mattress",
+    "slug": "koala-polar-plus-mattress",
+    "name": "Koala Polar+ Mattress",
+    "category": "Bedroom",
+    "colour": "Queen",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/Queen_PolarPlus_Mattress_10.png?v=1736133158",
+    "description": "The Koala Polar+ Mattress is Koala's most advanced cooling mattress, designed for hot sleepers and warm climates. It stands 28 cm tall and features PolarBands thermal technology that absorbs and releases body heat for 8-plus hours, sleeping 5 degrees Celsius cooler than the Koala",
+    "materials": [],
+    "priceByMarket": {
+      "au": 1990,
+      "sg": 1751,
+      "us": 1433
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "bedroom",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "koala-se-mattress",
+    "slug": "koala-se-mattress",
+    "name": "Koala SE Mattress",
+    "category": "Bedroom",
+    "badge": "Bestseller",
+    "colour": "Single",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/a79d6626fd0519cb466ef101d7ce854c.png?v=1725500350",
+    "description": "The Koala SE Mattress is Koala's entry-level all-foam mattress, standing 23 cm tall with a medium-firm feel (rated around 6.5 out of 10). It features bamboo charcoal foam for freshness, Kloudcell technology for responsive support, and a TENCEL Lyocell cover (65% polyester, 35% TE",
+    "materials": [
+      "Polyester",
+      "Foam"
+    ],
+    "priceByMarket": {
+      "au": 650,
+      "sg": 572,
+      "us": 468
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "bedroom",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "paddington-bed-base",
+    "slug": "paddington-bed-base",
+    "name": "Paddington Bed Base",
+    "category": "Bedroom",
+    "colour": "Natural Ash/Silver Fox",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/5050872b307e45b9ffcb4cdc53d82e99.png?v=1725500855",
+    "description": "The Paddington Bed Base is an upholstered bed frame with a padded headboard, built on an FSC-certified timber frame (solid ash, ash veneer, MDF, and plywood) with powder-coated steel centre rail and corner brackets. With 22% recycled polyester, and the mattress platform uses four",
+    "materials": [
+      "Plywood",
+      "Timber",
+      "Steel",
+      "Polyester"
+    ],
+    "priceByMarket": {
+      "au": 1090,
+      "sg": 959,
+      "us": 785
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "bedroom",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "snoozytime-bed-base",
+    "slug": "snoozytime-bed-base",
+    "name": "Koala x Bluey Snoozytime Bed Base",
+    "category": "Bedroom",
+    "badge": "New",
+    "colour": "Bluey",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/BLUEY_BED_C_10.png?v=1760593438",
+    "description": "The Koala x Bluey Snoozytime Bed Base is a children's bed frame made from FSC-certified timber with a sturdy plywood platform and a removable Bluey-design headboard cover. It features adjustable leg heights to grow from toddler to tween, bright Bluey-inspired colours, and optiona",
+    "materials": [
+      "Plywood",
+      "Timber"
+    ],
+    "priceByMarket": {
+      "au": 890,
+      "sg": 783,
+      "us": 641
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "bedroom",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "snoozytime-mattress",
+    "slug": "snoozytime-mattress",
+    "name": "Koala x Bluey Snoozytime Mattress",
+    "category": "Bedroom",
+    "badge": "New",
+    "colour": "Bluey",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/BLUEY_MATT_B_11.png?v=1760668348",
+    "description": "The Koala x Bluey Snoozytime Mattress is a children's mattress standing 15 cm tall with a 4cm Kloudcell comfort layer and pocket springs for growing bodies. It features a washable topper, water-resistant protective layer, antimicrobial additive to help prevent mould and bacteria,",
+    "materials": [],
+    "priceByMarket": {
+      "au": 475,
+      "sg": 418,
+      "us": 342
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "bedroom",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "snoozytime-pillow",
+    "slug": "snoozytime-pillow",
+    "name": "Koala x Bluey Snoozytime Pillow",
+    "category": "Bedroom",
+    "badge": "New",
+    "colour": "Flamingo Queen",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/BLUEY_PILLOW_FQ_8.png?v=1760669063",
+    "description": "The Koala x Bluey Snoozytime Pillow is a children's pillow with a low 10 cm loft designed for smaller heads and necks. It features CertiPUR-US certified foam, a water-resistant inner layer, and a washable cover with exclusive Bluey-inspired artwork. Safety-tested for young childr",
+    "materials": [
+      "Foam"
+    ],
+    "priceByMarket": {
+      "au": 90,
+      "sg": 79,
+      "us": 65
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "bedroom",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  }
+]

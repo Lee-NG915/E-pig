@@ -21,7 +21,7 @@ export function ProductCard({ product, locale }: { product: ProductListItem; loc
         <Link
           href={productHref}
           aria-label={product.name}
-          className="block h-full w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          className="relative block h-full w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         >
           <Image
             src={product.image}
