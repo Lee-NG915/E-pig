@@ -5,4 +5,25 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTr
 const meta = { title: "Components/Sheet", component: Sheet } satisfies Meta<typeof Sheet>;
 export default meta;
 type Story = StoryObj<typeof meta>;
-export const Default: Story = { render: () => <Sheet><SheetTrigger asChild><Button>Open sheet</Button></SheetTrigger><SheetContent><SheetHeader><SheetTitle>Happy Dog</SheetTitle><SheetDescription>A themed sheet component.</SheetDescription></SheetHeader></SheetContent></Sheet> };
+
+function SheetDemo({ side }: { side: "right" | "bottom" }) {
+  return (
+    <Sheet>
+      <SheetTrigger asChild>
+        <Button variant="outline">Open {side} sheet</Button>
+      </SheetTrigger>
+      <SheetContent side={side}>
+        <SheetHeader>
+          <SheetTitle>Happy Dog</SheetTitle>
+          <SheetDescription>A themed sheet component ({side}).</SheetDescription>
+        </SheetHeader>
+      </SheetContent>
+    </Sheet>
+  );
+}
+
+/** Desktop drawer — slides in from the right edge. */
+export const Right: Story = { render: () => <SheetDemo side="right" /> };
+
+/** Mobile cart drawer — slides up from the bottom, 16px top radius. */
+export const Bottom: Story = { render: () => <SheetDemo side="bottom" /> };

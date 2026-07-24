@@ -3,7 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "sideEffects": ["./src/styles/globals.css"],
+  "sideEffects": [
+    "./src/styles/globals.css"
+  ],
   "exports": {
     ".": "./src/index.ts",
     "./globals.css": "./src/styles/globals.css",
@@ -28,8 +30,15 @@
     "react-dom": "^19.0.0"
   },
   "dependencies": {
+    "@radix-ui/react-checkbox": "1.3.9",
     "@radix-ui/react-dialog": "1.1.19",
+    "@radix-ui/react-radio-group": "1.4.5",
+    "@radix-ui/react-select": "2.3.5",
+    "@radix-ui/react-separator": "1.1.13",
     "@radix-ui/react-slot": "1.3.0",
+    "@radix-ui/react-switch": "1.3.5",
+    "@radix-ui/react-tabs": "1.1.19",
+    "@radix-ui/react-tooltip": "1.2.14",
     "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",
     "lucide-react": "1.25.0",

@@ -1,12 +1,12 @@
 ---
 status: proposal
-last-modified: 2026-07-19
+last-modified: 2026-07-24
 register: product
 ---
 
 # E-pig DESIGN.md
 
-提案级设计契约，供 `impeccable` 与人类共同遵守。品牌视觉终稿未冻结；实现以 `packages/happy-dog` tokens 为准。
+提案级设计契约，供 `impeccable` 与人类共同遵守。品牌视觉以 Figma happyDog + `packages/happy-dog` 实现为准。
 
 ## Platform
 
@@ -14,9 +14,12 @@ web
 
 ## Tokens（真源）
 
-- 包：`@e-pig/happy-dog` → `src/theme/{colors,typography,radii,theme}.ts`
-- 语义色：`background` / `foreground` / `primary` / `muted` / `accent` / `border` / `ring`
+- **设计稿序列化真源**：`packages/happy-dog/design-system/happy-dog.design-system.json`（Figma `fsHAaYU2yFhytoqpSXKArW` 抽取）
+- **运行时真源**：`@e-pig/happy-dog` → `src/theme/{colors,typography,radii,theme}.ts` + `globals.css`
+- 语义色：`background` / `foreground` / `primary` / `muted` / `accent` / `border` / `ring`（及 JSON 中的 sale/success/warning/info）
+- Primary CTA = moss-700 `#495133`；页面底 = cream-200 `#FAF7EF`；最深字色 = mono-900 `#1F1F1F`（禁止纯黑）
 - 禁止在业务组件硬编码 hex / 任意 oklch；用 CSS variables / happy-dog 类名
+
 
 ## Brand influence
 

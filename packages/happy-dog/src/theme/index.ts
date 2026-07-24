@@ -1,4 +1,5 @@
-export { defaultColors, semanticColorKeys } from "./colors";
+export { defaultColors, primitives, semanticColorKeys } from "./colors";
+export type { SemanticColorKey, SemanticColors } from "./colors";
 export { defaultRadii } from "./radii";
 export { themeToCssVariables } from "./theme";
 export type { ComponentOverrides, Theme } from "./theme";
