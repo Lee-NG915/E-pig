@@ -1,0 +1,27 @@
+# dependencies
+node_modules/
+
+# next.js
+.next/
+out/
+
+# production builds
+build/
+storybook-static/
+
+# generated files
+next-env.d.ts
+*.tsbuildinfo
+
+# local artifacts (review logs, screenshots, reports)
+logs/
+.tmp/
+
+# local env files
+.env*
+!.env.example
+!.env.*.example
+
+# misc
+.DS_Store
+*.pem
