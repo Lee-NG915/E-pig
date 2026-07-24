@@ -1,0 +1,132 @@
+[
+  {
+    "id": "bangalow-modular-sofa-armchair",
+    "slug": "bangalow-modular-sofa-armchair",
+    "name": "Bangalow Modular Armchair",
+    "category": "Armchairs",
+    "colour": "Green Wattle (Standard)",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/bba282153b51e7af408802f455b43add.png?v=1725498764",
+    "description": "The Bangalow Modular Armchair is available in 1-Seater and 1.5-Seater configurations, built on an FSC-certified timber frame with innovative S-Springs and sculpted premium foam for deep, supportive seating. Covers are removable and washable in a choice of boucle fabrics — Sunset ",
+    "materials": [
+      "Timber",
+      "Foam"
+    ],
+    "priceByMarket": {
+      "au": 1250,
+      "sg": 1100,
+      "us": 900
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "armchairs",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "getaway-armchair",
+    "slug": "getaway-armchair",
+    "name": "Getaway Armchair",
+    "category": "Armchairs",
+    "colour": "Outback (Luxe Edition)",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/0e9d2566d2539e5122570f2627e129d9.png?v=1725499773",
+    "description": "The Getaway Armchair is an oversized armchair with integrated storage, featuring a combination of foam, spring, and microfibre fill for a sink-in feel. Select colour options feature stain-resistant fabric. Covers create a relaxed, wrinkled aesthetic that develops character over t",
+    "materials": [
+      "Foam",
+      "Fabric"
+    ],
+    "priceByMarket": {
+      "au": 1695,
+      "sg": 1492,
+      "us": 1220
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "armchairs",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "suffolk-armchair",
+    "slug": "suffolk-armchair",
+    "name": "Suffolk Armchair",
+    "category": "Armchairs",
+    "colour": "Moon Grey",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/a4b368de6d199a755a68a747c182c051.png?v=1725501187",
+    "description": "The Suffolk Armchair is a compact armchair measuring 75cm (W) x 94cm (D) x 36cm (seat H), with a boxed weight of 18.2 kg. It features cool carbon steel legs and contemporary upholstery with oversized, pillowy cushions. Covers are removable and washable in six colourways including",
+    "materials": [
+      "Steel"
+    ],
+    "priceByMarket": {
+      "au": 790,
+      "sg": 695,
+      "us": 569
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "armchairs",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "tamarama-modular-armchair",
+    "slug": "tamarama-modular-armchair",
+    "name": "Tamarama Modular Armchair",
+    "category": "Armchairs",
+    "colour": "Winter Cream",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/TAM_FW_ARMCHAIR_R_01_PRODUCT_af92b11d-579c-457f-806b-d13e0ce68719.png?v=1778477086",
+    "description": "",
+    "materials": [],
+    "priceByMarket": {
+      "au": 1650,
+      "sg": 1452,
+      "us": 1188
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "armchairs",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "torquay-modular-armchair-pantone",
+    "slug": "torquay-modular-armchair-pantone",
+    "name": "Torquay Modular Armchair",
+    "category": "Armchairs",
+    "badge": "New",
+    "colour": "Australia 01 (Pantone)",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/TMS_PANTONE_ARMCHAIR_R_5.webp?v=1783403175",
+    "description": "The Torquay Modular Armchair is a standalone single-seat module from the Torquay Modular Sofa range. It features deep seats, huggable curves, and exclusive Koala high-loft fabrics that are water-resistant. Covers are removable and washable with Quick-Slip lining. The armchair can",
+    "materials": [],
+    "priceByMarket": {
+      "au": 1600,
+      "sg": 1408,
+      "us": 1152
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "armchairs",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "torquay-modular-sofa-armchair",
+    "slug": "torquay-modular-sofa-armchair",
+    "name": "Torquay Modular Armchair",
+    "category": "Armchairs",
+    "badge": "New",
+    "colour": "Pearl Moon",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/TMS_G1_PM_ARMCHAIR_R_6.png?v=1759804339",
+    "description": "The Torquay Modular Armchair is a standalone single-seat module from the Torquay Modular Sofa range. It features deep seats, huggable curves, and exclusive Koala high-loft fabrics that are water-resistant. Covers are removable and washable with Quick-Slip lining. The armchair can",
+    "materials": [],
+    "priceByMarket": {
+      "au": 1600,
+      "sg": 1408,
+      "us": 1152
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "armchairs",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  }
+]

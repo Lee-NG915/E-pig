@@ -1,0 +1,23 @@
+{
+  "happyDogComponentsDir": "packages/happy-dog/src/components",
+  "moduleComponentDirs": [
+    "src/modules/cart/components",
+    "src/modules/catalog/components"
+  ],
+  "requireMdForModuleFolders": true,
+  "requireStoriesForModuleFolders": true,
+  "legacyFlatFiles": [
+    "packages/happy-dog/src/components/badge.tsx",
+    "packages/happy-dog/src/components/button.tsx",
+    "packages/happy-dog/src/components/sheet.tsx"
+  ],
+  "ignoreFilePatterns": [
+    "**/*.spec.ts",
+    "**/*.spec.tsx",
+    "**/*.stories.tsx",
+    "**/*.stories.ts",
+    "**/*.mock.ts",
+    "**/index.ts",
+    "**/index.tsx"
+  ]
+}

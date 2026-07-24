@@ -13,7 +13,7 @@
 
 ## 2. 推荐矩阵
 
-| 能力 | Joyboy | E-pig P0 | 开源/自建替代 | 开发期是否足够 | 生产决策 |
+| 能力 | 参考工程 | E-pig P0 | 开源/自建替代 | 开发期是否足够 | 生产决策 |
 | --- | --- | --- | --- | --- | --- |
 | Commerce API | 自有后端 | mock + custom REST port | Medusa/Vendure/Payload commerce | 是，完全本地 | 确认业务后选真源 |
 | CMS | Storyblok | local JSON/MDX | Payload MIT 自建 | 是 | 内容团队出现后评估 Payload/Storyblok |

@@ -1,8 +1,8 @@
 # E-pig 目标架构与技术选型
 
-更新日期：2026-07-18
+更新日期：2026-07-19
 
-状态：proposal（Next 16 缓存、购物车、路由和 adapter 边界已根据首轮 review 修订）
+状态：accepted
 
 ## 1. 设计目标
 
@@ -12,7 +12,7 @@
 
 - P0 不做完整 commerce backend、ERP、OMS、库存真源或支付账本。
 - P0 不做 POS、多租户 SaaS、复杂 CMS page builder、实时个性化或数据仓库。
-- 不追求与 Joyboy 文件结构一比一对应。
+- 不追求与参考工程文件结构一比一对应。
 
 ## 2. 推荐基线
 
@@ -214,7 +214,7 @@ Server Component 只能 `await cookies()` 读取 cookie，不能在渲染期间�
 5. 重复提交和并发首加购由 commerce backend/adapter 的 idempotency contract 收敛，不能只靠前端按钮 disabled。
 6. 登录合并购物车由 Server Action/Route Handler 完成，成功后旋转或删除 guest cookie。
 
-外部客户端或纯 HTTP 接入可调用 `POST /api/cart` Route Handler，规则相同。`proxy.ts` 明确禁止创建 cart：它会把一次普通 GET 变成写操作，也会重演 Joyboy “市场路由 + 边缘 cookie + rewrite” 的耦合。
+外部客户端或纯 HTTP 接入可调用 `POST /api/cart` Route Handler，规则相同。`proxy.ts` 明确禁止创建 cart：它会把一次普通 GET 变成写操作，也会重演参考工程“市场路由 + 边缘 cookie + rewrite” 的耦合。
 
 ## 8. 多市场、多语言与公开 URL
 
@@ -308,4 +308,4 @@ const integrations = {
 - 不把 Vercel Hobby 当商业商城生产方案；可用于个人、非商业预览，商业部署走 Docker 或付费/合规平台。
 - 不在第一阶段实现“万能插件市场”；typed adapter 足够且更可测试。
 
-Next 16、Koala、Joyboy 的证据和迁移约束见 [07 Next 16 缓存、购物车与市场路由决策](./07-next16-cache-cart-routing-decisions.md)。
+Next 16、Koala、参考工程的证据和迁移约束见 [07 Next 16 缓存、购物车与市场路由决策](./07-next16-cache-cart-routing-decisions.md)。

@@ -1,0 +1,17 @@
+{
+  "generatedAt": "2026-07-19T09:30:29.695Z",
+  "source": "https://au.koala.com/collections/all/products.json",
+  "sourceCatalogSize": 146,
+  "uniqueHandlesWritten": 87,
+  "total": 129,
+  "counts": {
+    "sofas-couches": 29,
+    "mattresses": 16,
+    "sofa-beds": 10,
+    "armchairs": 6,
+    "coffee-tables-side-tables": 6,
+    "outdoor-furniture": 6,
+    "living-room": 30,
+    "bedroom": 26
+  }
+}

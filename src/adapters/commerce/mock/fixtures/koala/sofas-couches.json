@@ -1,0 +1,653 @@
+[
+  {
+    "id": "bangalow-modular-sofa",
+    "slug": "bangalow-modular-sofa",
+    "name": "Bangalow Modular Sofa",
+    "category": "Sofas",
+    "badge": "New",
+    "colour": "Green Wattle (Standard)",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/ecd9f5d3357467ffae3d088e102b054f.png?v=1725498723",
+    "description": "The Bangalow Modular Sofa is a configurable sofa system built on an FSC-certified timber frame with innovative S-Springs and sculpted premium foam. Deep seats and a supportive profile create a comfortable everyday lounging experience. Covers are removable and washable in four col",
+    "materials": [
+      "Timber",
+      "Foam"
+    ],
+    "priceByMarket": {
+      "au": 1900,
+      "sg": 1672,
+      "us": 1368
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "sofas-couches",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "bangalow-modular-sofa-module",
+    "slug": "bangalow-modular-sofa-module",
+    "name": "Bangalow Modular Sofa Module",
+    "category": "Sofas",
+    "colour": "Green Wattle (Standard)",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/e6077df4957a1c776616766922096db6.png?v=1725499106",
+    "description": "The Bangalow Modular Sofa Module is an individual section of the Bangalow Modular Sofa system, allowing you to build or extend your sofa configuration. Each module features an FSC-certified timber frame with S-Springs and sculpted premium foam. Covers are removable and washable i",
+    "materials": [
+      "Timber",
+      "Foam"
+    ],
+    "priceByMarket": {
+      "au": 750,
+      "sg": 660,
+      "us": 540
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "sofas-couches",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "bangalow-modular-sofa-ottoman",
+    "slug": "bangalow-modular-sofa-ottoman",
+    "name": "Bangalow Modular Ottoman",
+    "category": "Sofas",
+    "colour": "Green Wattle (Standard)",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/09f2f19412f1a151034f1aaa1de0fb9f.png?v=1725499138",
+    "description": "The Bangalow Modular Ottoman is a companion piece for the Bangalow Modular Sofa range, featuring curves and proportions that complement the sofa modules. Covers are removable and washable in four colourways across two premium boucle fabrics. It works as a footrest, additional sea",
+    "materials": [],
+    "priceByMarket": {
+      "au": 450,
+      "sg": 396,
+      "us": 324
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "sofas-couches",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "byron-sofa-bed-ottoman",
+    "slug": "byron-sofa-bed-ottoman",
+    "name": "Byron Sofa Bed Ottoman [3rd Gen]",
+    "category": "Sofas",
+    "colour": "Bronzed Aussie",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/437de84cca18b5d37243db42a7b5d4ea.png?v=1725499384",
+    "description": "The Byron Sofa Bed Ottoman [3rd Gen] is a companion piece for the Byron Sofa Bed 3rd Generation. It features CertiPUR-US certified polyurethane foam cushioning wrapped in polyester wadding, on a frame of 100% FSC certified poplar plywood and MDF. Covers are removable, washable, a",
+    "materials": [
+      "Plywood",
+      "Polyester",
+      "Foam"
+    ],
+    "priceByMarket": {
+      "au": 450,
+      "sg": 396,
+      "us": 324
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "sofas-couches",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "getaway-ottoman",
+    "slug": "getaway-ottoman",
+    "name": "Getaway Ottoman",
+    "category": "Sofas",
+    "colour": "Kakadu",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/91f8872bfa7d65aa87cb03ad7bf70d5c.png?v=1725499792",
+    "description": "The Getaway Ottoman is a storage ottoman that doubles as a footrest, extra seating, or occasional table. It features a hinged lid with generously sized storage space underneath — handy for blankets, toys, or everyday clutter. The ottoman complements all Getaway Sofa sizes and cha",
+    "materials": [],
+    "priceByMarket": {
+      "au": 795,
+      "sg": 700,
+      "us": 572
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "sofas-couches",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "getaway-sofa",
+    "slug": "getaway-sofa",
+    "name": "Getaway Sofa",
+    "category": "Sofas",
+    "colour": "Kakadu (Luxe Edition)",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/4427f09f0589ccf4811dd757af8d63b0.png?v=1725499944",
+    "description": "The Getaway Sofa is a deep-seat sofa with integrated storage drawers and a combination of foam, spring, and fibre cushioning. It measures 165cm (W) x 89cm (D) with a 60cm seat depth and 79.5cm seat height, weighing 79.85kg. Each seat supports up to 120kg and drawers hold up to 20",
+    "materials": [
+      "Foam",
+      "Fibre"
+    ],
+    "priceByMarket": {
+      "au": 1836,
+      "sg": 1616,
+      "us": 1322
+    },
+    "compareAtByMarket": {
+      "au": 2295,
+      "sg": 2020,
+      "us": 1652
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "sofas-couches",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "koala-sofa-bed-ottoman",
+    "slug": "koala-sofa-bed-ottoman",
+    "name": "Koala Sofa Bed Ottoman [3rd Gen]",
+    "category": "Sofas",
+    "badge": "Bestseller",
+    "colour": "Gum Leaf",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/CushyOttoman_Gumleaf_3.png?v=1742437675",
+    "description": "The Koala Sofa Bed Ottoman [3rd Gen] is a companion piece for the Koala Sofa Bed 3rd Generation. It features CertiPUR-US certified polyurethane foam with a comfort layer wrapped in polyester wadding. Fabric options include demi boucle in Penguin Parade, Paperbark, Sunset Rust, an",
+    "materials": [
+      "Polyester",
+      "Foam",
+      "Fabric"
+    ],
+    "priceByMarket": {
+      "au": 450,
+      "sg": 396,
+      "us": 324
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "sofas-couches",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "lounging-sofa",
+    "slug": "lounging-sofa",
+    "name": "Lounging Sofa",
+    "category": "Sofas",
+    "badge": "Bestseller",
+    "colour": "Winter Sky",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/4a15c9c51e398bfb1f062da0f8283fc6.png?v=1725500454",
+    "description": "The Koala Lounging Sofa is a deep, wide sofa with a singular seat cushion designed for stretching out and snuggling up. Cushioning uses CertiPUR-US certified polyurethane foam with a comfort layer wrapped in polyester wadding. Covers are removable and washable, made with at least",
+    "materials": [
+      "Polyester",
+      "Foam"
+    ],
+    "priceByMarket": {
+      "au": 1490,
+      "sg": 1311,
+      "us": 1073
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "sofas-couches",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "lounging-sofa-ottoman",
+    "slug": "lounging-sofa-ottoman",
+    "name": "Lounging Sofa Ottoman",
+    "category": "Sofas",
+    "colour": "Winter Sky",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/32be2480a88e0c310ed21878fa4bbc47.png?v=1725500529",
+    "description": "The Lounging Sofa Ottoman is a companion piece for the Koala Lounging Sofa, featuring timber feet and a classic silhouette that fits most room styles. The covers are fully removable and machine washable, made with at least 20% recycled polyester. It works as a footrest, extra sea",
+    "materials": [
+      "Timber",
+      "Polyester"
+    ],
+    "priceByMarket": {
+      "au": 375,
+      "sg": 330,
+      "us": 270
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "sofas-couches",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "modern-sofa",
+    "slug": "modern-sofa",
+    "name": "Modern Sofa",
+    "category": "Sofas",
+    "badge": "Bestseller",
+    "colour": "Hawky",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/e96c516af8cb8e772aeee17d9fccff25.png?v=1725500694",
+    "description": "The Koala Modern Sofa is a deep-seat sofa built on an FSC mix wood frame (pine, LVL, plywood) with black polypropylene legs. Cushioning uses CertiPUR-US certified polyurethane foam with a comfort layer wrapped in polyester wadding. Fabric options include compositions of 90% polye",
+    "materials": [
+      "Plywood",
+      "Polyester",
+      "Foam",
+      "Fabric"
+    ],
+    "priceByMarket": {
+      "au": 1432,
+      "sg": 1260,
+      "us": 1031
+    },
+    "compareAtByMarket": {
+      "au": 1790,
+      "sg": 1575,
+      "us": 1289
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "sofas-couches",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "modern-sofa-ottoman",
+    "slug": "modern-sofa-ottoman",
+    "name": "Modern Sofa Ottoman",
+    "category": "Sofas",
+    "colour": "Arvo Storm",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/b47ae453be2f92e96eb4ad962463fb1d.png?v=1725500709",
+    "description": "The Modern Sofa Ottoman is a companion piece for the Koala Modern Sofa, built on an FSC mix wood frame (pine, LVL, plywood) with black polypropylene legs. It features luxury boucle fabric with over 20% recycled fibres. Covers are removable and washable. It works as a footrest, ex",
+    "materials": [
+      "Plywood",
+      "Fabric"
+    ],
+    "priceByMarket": {
+      "au": 450,
+      "sg": 396,
+      "us": 324
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "sofas-couches",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "sofa-bed-ottoman",
+    "slug": "sofa-bed-ottoman",
+    "name": "OG Sofa Bed Ottoman",
+    "category": "Sofas",
+    "colour": "Lunar Grey",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/5df4d37df17dbbdb0317512cc76294d7.png?v=1725501093",
+    "description": "The OG Sofa Bed Ottoman is a companion piece for the Koala OG Sofa Bed. It features CertiPUR-US certified polyurethane foam with a support layer and comfort layer wrapped in polyester wadding. The ottoman works as a footrest, extra seating, or additional sleeping space for guests",
+    "materials": [
+      "Polyester",
+      "Foam"
+    ],
+    "priceByMarket": {
+      "au": 350,
+      "sg": 308,
+      "us": 252
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "sofas-couches",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "suffolk-ottoman",
+    "slug": "suffolk-ottoman",
+    "name": "Suffolk Ottoman",
+    "category": "Sofas",
+    "colour": "Moon Grey",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/aa0e29fc6f6ea6706c3d63efda1df1ff.png?v=1725501247",
+    "description": "The Suffolk Ottoman is a companion piece for the Koala Suffolk Sofa and Armchair, designed with the same contemporary aesthetic and oversized, pillowy cushioning. Covers are removable and washable in six colourways including Moon Grey, Winter Sky, Sunset Rust, Sea Foam, Coastal M",
+    "materials": [
+      "Foam"
+    ],
+    "priceByMarket": {
+      "au": 350,
+      "sg": 308,
+      "us": 252
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "sofas-couches",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "suffolk-sofa",
+    "slug": "suffolk-sofa",
+    "name": "Suffolk Sofa",
+    "category": "Sofas",
+    "colour": "Moon Grey",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/0b827db8a76c25393fcf999ebed7fd49.png?v=1725501365",
+    "description": "The Suffolk Sofa is a designer sofa with oversized, pillowy cushions and a beautiful soft-touch outer feel over a supportive inner core. Available as a 3.5-Seater in two sizes. Covers are removable and washable in six colourways — Moon Grey, Winter Sky (100% polyester), Sunset Ru",
+    "materials": [
+      "Polyester"
+    ],
+    "priceByMarket": {
+      "au": 1350,
+      "sg": 1188,
+      "us": 972
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "sofas-couches",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "tamarama-modular-sofa",
+    "slug": "tamarama-modular-sofa",
+    "name": "Tamarama Modular Sofa",
+    "category": "Sofas",
+    "badge": "Bestseller",
+    "colour": "Winter Cream",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/TAM_FW_2S_R_01_PRODUCT_b09ee6dc-1684-4022-a090-8a72294dd978.png?v=1778477102",
+    "description": "The Tamarama Modular Sofa is a modular lounge from Koala designed for relaxed all-day comfort and flexible configurations. It's built on an FSC certified wood frame with heavy-duty S-spring suspension and polypropylene legs, and the cushions combine Koala's HyperCloud foam, polyu",
+    "materials": [
+      "Foam"
+    ],
+    "priceByMarket": {
+      "au": 2600,
+      "sg": 2288,
+      "us": 1872
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "sofas-couches",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "tamarama-modular-sofa-chaise",
+    "slug": "tamarama-modular-sofa-chaise",
+    "name": "Tamarama Modular Sofa",
+    "category": "Sofas",
+    "colour": "Winter Cream",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/TAM_FW_2S_CH_R_01_PRODUCT_1c572be6-d4e8-4227-a41c-c1b0b1c45efb.png?v=1778477110",
+    "description": "The Tamarama Modular Sofa is a modular lounge from Koala designed for relaxed all-day comfort and flexible configurations. It's built on an FSC certified wood frame with heavy-duty S-spring suspension and polypropylene legs, and the cushions combine Koala's HyperCloud foam, polyu",
+    "materials": [
+      "Foam"
+    ],
+    "priceByMarket": {
+      "au": 3100,
+      "sg": 2728,
+      "us": 2232
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "sofas-couches",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "tamarama-modular-sofa-corner",
+    "slug": "tamarama-modular-sofa-corner",
+    "name": "Tamarama Modular Sofa",
+    "category": "Sofas",
+    "colour": "Winter Cream",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/TAM_FW_4S_L_CRN_R_01_PRODUCT_34c053ba-38a9-42a1-986a-aa3361ff79b6.png?v=1778477117",
+    "description": "The Tamarama Modular Sofa is a modular lounge from Koala designed for relaxed all-day comfort and flexible configurations. It's built on an FSC certified wood frame with heavy-duty S-spring suspension and polypropylene legs, and the cushions combine Koala's HyperCloud foam, polyu",
+    "materials": [
+      "Foam"
+    ],
+    "priceByMarket": {
+      "au": 5000,
+      "sg": 4400,
+      "us": 3600
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "sofas-couches",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "tamarama-modular-sofa-section",
+    "slug": "tamarama-modular-sofa-section",
+    "name": "Tamarama Modular Sofa Section",
+    "category": "Sofas",
+    "colour": "Winter Cream",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/TAM_FW_MODULE_R_01_PRODUCT_8523e2c9-f1dc-4350-9a5d-cab890fbcc2d.png?v=1778477095",
+    "description": "",
+    "materials": [],
+    "priceByMarket": {
+      "au": 950,
+      "sg": 836,
+      "us": 684
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "sofas-couches",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "torquay-modular-ottoman",
+    "slug": "torquay-modular-ottoman",
+    "name": "Torquay Modular Ottoman",
+    "category": "Sofas",
+    "colour": "Pearl Moon",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/TMS_G1_PM_OTTOMAN_R_4.png?v=1759822236",
+    "description": "The Torquay Modular Ottoman is a companion piece for the Torquay Modular Sofa range. Covers are removable and machine washable in six colourways across two fabric tiers. It works as a footrest, extra seating, or casual surface. The ottoman integrates with the Torquay modular syst",
+    "materials": [
+      "Fabric"
+    ],
+    "priceByMarket": {
+      "au": 600,
+      "sg": 528,
+      "us": 432
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "sofas-couches",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "torquay-modular-ottoman-pantone",
+    "slug": "torquay-modular-ottoman-pantone",
+    "name": "Torquay Modular Ottoman",
+    "category": "Sofas",
+    "colour": "Australia 01 (Pantone)",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/TMS_PANTONE_OTTO_R_1.webp?v=1783496765",
+    "description": "The Torquay Modular Ottoman is a companion piece for the Torquay Modular Sofa range. Covers are removable and machine washable in six colourways across two fabric tiers. It works as a footrest, extra seating, or casual surface. The ottoman integrates with the Torquay modular syst",
+    "materials": [
+      "Fabric"
+    ],
+    "priceByMarket": {
+      "au": 600,
+      "sg": 528,
+      "us": 432
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "sofas-couches",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "torquay-modular-sofa-chaise",
+    "slug": "torquay-modular-sofa-chaise",
+    "name": "Torquay Modular Sofa",
+    "category": "Sofas",
+    "badge": "New",
+    "colour": "Silver Sand (Luxe edition)",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/TMS_G1_BA_2S_Chaise_Regular_01_f5a603ae-1985-4f4f-a1bf-c2e0b37d3750.png?v=1759803717",
+    "description": "The Torquay Modular Sofa in U-Shape configuration is a large modular sofa with deep seats, generous proportions, and huggable curves. Built with Quick-Lock connectors for easy rearranging, it features exclusive Koala high-loft and buttery-soft fabrics that are water-resistant. Co",
+    "materials": [],
+    "priceByMarket": {
+      "au": 3225,
+      "sg": 2838,
+      "us": 2322
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "sofas-couches",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "torquay-modular-sofa-chaise-pantone",
+    "slug": "torquay-modular-sofa-chaise-pantone",
+    "name": "Torquay Modular Sofa",
+    "category": "Sofas",
+    "badge": "New",
+    "colour": "Australia 01 (Pantone)",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/TMS_PANTONE_2S_CH_R_1.webp?v=1783384058",
+    "description": "The Torquay Modular Sofa in U-Shape configuration is a large modular sofa with deep seats, generous proportions, and huggable curves. Built with Quick-Lock connectors for easy rearranging, it features exclusive Koala high-loft and buttery-soft fabrics that are water-resistant. Co",
+    "materials": [],
+    "priceByMarket": {
+      "au": 3075,
+      "sg": 2706,
+      "us": 2214
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "sofas-couches",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "torquay-modular-sofa-corner",
+    "slug": "torquay-modular-sofa-corner",
+    "name": "Torquay Modular Sofa",
+    "category": "Sofas",
+    "badge": "New",
+    "colour": "Silver Sand (Luxe edition)",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/TMS_G1_PM_4S_CRN_Regular_01_0159f82f-d4e9-489a-9bcd-6ccc77ca291c.png?v=1759803750",
+    "description": "The Torquay Modular Sofa in corner configuration is a large modular sofa with deep seats, generous proportions, and huggable curves. Built with Quick-Lock connectors for easy rearranging, it features exclusive Koala high-loft and buttery-soft fabrics that are water-resistant. Cov",
+    "materials": [],
+    "priceByMarket": {
+      "au": 5225,
+      "sg": 4598,
+      "us": 3762
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "sofas-couches",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "torquay-modular-sofa-corner-pantone",
+    "slug": "torquay-modular-sofa-corner-pantone",
+    "name": "Torquay Modular Sofa",
+    "category": "Sofas",
+    "badge": "New",
+    "colour": "Australia 01 (Pantone)",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/TM_PANTONE_5S_CRN_R_1.webp?v=1783379444",
+    "description": "The Torquay Modular Sofa in corner configuration is a large modular sofa with deep seats, generous proportions, and huggable curves. Built with Quick-Lock connectors for easy rearranging, it features exclusive Koala high-loft and buttery-soft fabrics that are water-resistant. Cov",
+    "materials": [],
+    "priceByMarket": {
+      "au": 4975,
+      "sg": 4378,
+      "us": 3582
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "sofas-couches",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "torquay-modular-sofa-pantone",
+    "slug": "torquay-modular-sofa-pantone",
+    "name": "Torquay Modular Sofa",
+    "category": "Sofas",
+    "badge": "Bestseller",
+    "colour": "Australia 01 (Pantone)",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/TMS_PANTONE_2S_R_6.webp?v=1783304158",
+    "description": "The Torquay Modular Sofa in U-Shape configuration is a large modular sofa with deep seats, generous proportions, and huggable curves. Built with Quick-Lock connectors for easy rearranging, it features exclusive Koala high-loft and buttery-soft fabrics that are water-resistant. Co",
+    "materials": [],
+    "priceByMarket": {
+      "au": 2575,
+      "sg": 2266,
+      "us": 1854
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "sofas-couches",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "torquay-modular-sofa-section",
+    "slug": "torquay-modular-sofa-section",
+    "name": "Torquay Modular Sofa Section",
+    "category": "Sofas",
+    "colour": "Pearl Moon",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/TMS_G1_PM_MODULES_R_1.png?v=1759882491",
+    "description": "The Torquay Modular Sofa Section is an individual module for building or extending a Torquay Modular Sofa. Each section features Quick-Lock connectors for tool-free connection to other sections and Quick-Slip lining for easy cover removal. Available in 80 cm compact or 100 cm roo",
+    "materials": [],
+    "priceByMarket": {
+      "au": 975,
+      "sg": 858,
+      "us": 702
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "sofas-couches",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "torquay-modular-sofa-sofa",
+    "slug": "torquay-modular-sofa-sofa",
+    "name": "Torquay Modular Sofa",
+    "category": "Sofas",
+    "badge": "Bestseller",
+    "colour": "Silver Sand (Luxe edition)",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/TMS_G1_PM_2S_Regular_07.png?v=1759643538",
+    "description": "The Torquay Modular Sofa in U-Shape configuration is a large modular sofa with deep seats, generous proportions, and huggable curves. Built with Quick-Lock connectors for easy rearranging, it features exclusive Koala high-loft and buttery-soft fabrics that are water-resistant. Co",
+    "materials": [],
+    "priceByMarket": {
+      "au": 2725,
+      "sg": 2398,
+      "us": 1962
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "sofas-couches",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "torquay-modular-sofa-u-shape",
+    "slug": "torquay-modular-sofa-u-shape",
+    "name": "Torquay Modular Sofa",
+    "category": "Sofas",
+    "badge": "New",
+    "colour": "Silver Sand (Luxe edition)",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/TMS_G1_PM_U_6S_Regular_01_119e252f-9fb4-4a99-a7d8-da6bfc812dc3.png?v=1759803716",
+    "description": "The Torquay Modular Sofa in U-Shape configuration is a large modular sofa with deep seats, generous proportions, and huggable curves. Built with Quick-Lock connectors for easy rearranging, it features exclusive Koala high-loft and buttery-soft fabrics that are water-resistant. Co",
+    "materials": [],
+    "priceByMarket": {
+      "au": 7725,
+      "sg": 6798,
+      "us": 5562
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "sofas-couches",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "torquay-modular-sofa-u-shape-pantone",
+    "slug": "torquay-modular-sofa-u-shape-pantone",
+    "name": "Torquay Modular Sofa",
+    "category": "Sofas",
+    "badge": "New",
+    "colour": "Australia 01 (Pantone)",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/TMS_PANTONE_U_6S_R_1_d64e40a1-71b4-4b1a-a131-d1ac3994ed7e.webp?v=1783387046",
+    "description": "The Torquay Modular Sofa in U-Shape configuration is a large modular sofa with deep seats, generous proportions, and huggable curves. Built with Quick-Lock connectors for easy rearranging, it features exclusive Koala high-loft and buttery-soft fabrics that are water-resistant. Co",
+    "materials": [],
+    "priceByMarket": {
+      "au": 7375,
+      "sg": 6490,
+      "us": 5310
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "sofas-couches",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  }
+]

@@ -1,0 +1,125 @@
+• Let me analyze this task carefully. It's a read-only research task where I need to:
+
+  1. Read specific files from Saleor Paper storefront clone
+  2. Read specific files from E-pig
+  3. Produce a report file at `/Users/lidonghai/castlery/E-pig/.tmp/leader-briefs/kimi-saleor-fusion-report.md`
+
+  I should use parallel reads since many files are independent. Let me start by reading the required files.
+
+  The user explicitly asked for read-only analysis and only allowed writing the report file. I must not modify E-pig business code or the Saleor clone.
+
+  Let me plan the reads in parallel batches.
+
+• Good, I got the AGENTS.md files and key E-pig files. The rules/*.md glob in Saleor didn't match because the rules are likely under skills/saleor-paper-storefront/rules/. Let me read those and other files.Now I need to read the specific Saleor rules files mentioned in the user's required list:
+  - rules/paper-architecture.md
+  - rules/data-caching.md
+  - rules/ui-design-system.md
+  - rules/seo-metadata.md
+  - rules/checkout-management.md
+
+  Also need to read:
+  - src/lib/cache-manifest.ts (if exists)
+  - src/lib/seo/ directory listing
+  - package.json scripts (verify/doctor/skills)
+
+  Let me read these in parallel.Good. Now I need to read `src/lib/cache-manifest.ts` and the SEO files. Let me also check if the cache manifest exists. And I might want to look at a couple more things like the doctor script and bootstrap script to understand the skill setup. Let me read those.I have a good picture now. Let me also quickly check E-pig's existing skill structure, package.json for comparison, and maybe one or two more files to round out the analysis. I should also check E-pig's env.ts, eslint config, and maybe the component-folder-rollout doc.
+
+  Actually, I have enough for a solid report. But let me get a few more E-pig specifics to make the recommendations concrete:
+  - E-pig package.json scripts
+  - E-pig env.ts (to see env schema)
+  - E-pig eslint.config.mjs maybe
+  - existing .agents/rules files
+
+  These will help me write a concrete "minimum diff" list.I now have comprehensive information. Let me also read the two E-pig .agents/rules files to understand existing rule style, and maybe check the check-doc-sync script.I have all the necessary information. Now I need to write the report to `/Users/lidonghai/castlery/E-pig/.tmp/leader-briefs/kimi-saleor-fusion-report.md`. I should create the directory if it doesn't exist. The report should be in Chinese, pragmatic, no empty talk, covering all four required sections.
+
+  Let me structure the report:
+
+  ### A. Saleor 优秀模式清单
+  Patterns I found:
+  1. Thin AGENTS.md router pointing to skills/rules (avoids 75k compiled doc in context)
+  2. Cache manifest as single source of truth (src/lib/cache-manifest.ts) - applies cacheLife + cacheTag, webhook invalidation planning
+  3. Static/hybrid page boundary model - sync layout + per-slot Suspense, no page-level Suspense for cached shells
+  4. BFF auth pattern via /api/auth/* and HttpOnly cookies
+  5. Two surfaces (storefront + checkout) with session bridge
+  6. Design token system in brand.css with semantic colors, fluid typography, container widths
+  7. SEO helpers centralization (src/lib/seo/) with JSON-LD, OG, hreflang
+  8. Verify/doctor commands for agent health
+  9. Rule files with YAML frontmatter for skill routing
+  10. Shallow step navigation via updateCheckoutQuery (not router.replace)
+  11. Live total before charge pattern
+  12. Skills bootstrap/doctor for agent setup health
+
+  ### B. 可融合到 E-pig 的项
+  Need to classify as 采纳 / 改编 / 拒绝, with落地形态, priority, risk. Must respect hard constraints.
+
+  Things to reject:
+  - Saleor GraphQL/DTO binding (explicitly forbidden)
+  - Two surfaces / checkout surface split (E-pig is single surface P0)
+  - Locale/channel URL routing (E-pig uses host-based market, P0 single market no prefix)
+  - next-intl i18n (E-pig doesn't use it currently)
+  - Saleor-specific webhook event mapping
+  - Client-side urql patterns
+  - BFF auth (E-pig doesn't need yet, but maybe adapt later)
+
+  Things to adopt/adapt:
+  1. Thin AGENTS.md router + skill frontmatter (adopt, docs/skill)
+  2. Cache manifest abstraction (adapt, code scaffold) - but E-pig already has cache rules; we can create a `cache-manifest.ts` for content/navigation/taxonomy tags
+  3. SEO helpers centralization (adopt, code scaffold) - E-pig doesn't seem to have `src/lib/seo/` yet
+  4. Verify + doctor commands (adopt, scripts)
+  5. Design token documentation/brand influence policy (adapt, docs)
+  6. Static layout + per-slot Suspense pattern (adopt, docs/code)
+  7. Page boundary model guidance (adopt, docs)
+  8. Shallow URL state for checkout steps (adapt, code later)
+  9. Live total before payment (adapt, code later)
+
+  ### C. Skill 配置可学点
+  - Thin AGENTS.md as router
+  - On-demand rules loading (one rule per task, avoid compiled AGENTS)
+  - YAML frontmatter for skill routing
+  - Precedence: Paper rules authoritative over external skills
+  - verify/doctor scripts for agent setup health
+  - skills:bootstrap symlinking project skill into .agents/skills
+  - skills-lock.json for external skill lockfile
+  - Quarantine compiled AGENTS.md via .cursorignore
+
+  ### D. 建议本轮直接落地的最小 diff 清单（≤10 文件级任务）
+  Concrete tasks:
+  1. Add `pnpm verify` script to package.json + AGENTS.md (wraps docs:check + typecheck + lint + test)
+  2. Add `pnpm doctor` script + scripts/e-pig-doctor.mjs (check skill symlinks, env, doc sync)
+  3. Create `.agents/skills/e-pig/SKILL.md` with frontmatter + rules index (thin project skill scaffold)
+  4. Add `src/lib/seo/` scaffold (config.ts, metadata.ts, json-ld.ts, hreflang.ts) - but no runtime behavior yet
+  5. Add `src/lib/cache-manifest.ts` scaffold for content/navigation/taxonomy tags - respecting no price/inventory/cart/checkout/payment cache
+  6. Update AGENTS.md to include thin router pattern and pointer to new skill
+  7. Add `.cursorignore` quarantine for compiled docs (if not exists)
+  8. Add rule file for SEO or caching (e.g., `.agents/rules/seo-metadata.md` or in skill rules/)
+  9. Add verify gate to CI workflow (optional but concrete)
+  10. Update check-doc-sync.mjs to check for verify/doctor scripts in AGENTS.md
+
+  Wait, I should check if E-pig already has .cursorignore.NO_CURSORIGNORE
+total 16
+drwxr-xr-x@ 7 lidonghai  staff   224 Jul 18 15:48 .
+drwxr-xr-x@ 4 lidonghai  staff   128 Jul 18 12:06 ..
+-rw-r--r--@ 1 lidonghai  staff  8036 Jul 18 15:52 README.md
+drwxr-xr-x@ 3 lidonghai  staff    96 Jul 18 12:08 harness-guide
+drwxr-xr-x@ 4 lidonghai  staff   128 Jul 18 15:49 phase-review
+drwxr-xr-x@ 4 lidonghai  staff   128 Jul 18 12:07 submit-pr
+drwxr-xr-x@ 4 lidonghai  staff   128 Jul 18 14:11 vercel-react-best-practices
+NO_SRC_LIB
+Good. I confirmed:
+  - No `.cursorignore` exists
+  - No `src/lib/` directory (E-pig uses `src/shared/lib/`)
+  - README exists with MARKET_IDS marker
+
+  I should adjust my recommendations to use `src/shared/lib/` instead of `src/lib/` for SEO/cache helpers, to match E-pig's structure. Or actually, since E-pig's structure uses `src/shared/lib/` for cross-domain utilities, that would be the right place.
+
+  Now I need to write the report. Let me first create the directory, then write the file.
+
+  The report should be comprehensive but pragmatic. Let me write it in Chinese.Now let me write the report file.The report is written. Let me verify it exists and read it quickly to make sure it's complete.     191 /Users/lidonghai/castlery/E-pig/.tmp/leader-briefs/kimi-saleor-fusion-report.md
+# Saleor Paper → E-pig 融合调研报告
+
+> 只读分析，未修改 E-pig 业务代码与 Saleor 克隆。
+> 报告日期：2026-07-19
+
+The task is complete. I wrote the report. No todo list needed since this was a single read-only research task. I should now respond to the user with a brief summary.
+
+To resume this session: kimi -r session_d9755f1d-739e-4fe0-a142-33340037994b

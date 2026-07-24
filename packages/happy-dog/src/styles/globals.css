@@ -1,0 +1,77 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@source "../components";
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-sale: var(--sale);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-info: var(--info);
+  --font-sans: var(--font-sans);
+  --font-display: var(--font-display);
+  /* --radius = lg 12px; derived scale matches contract: xs 4 · sm 8 · md 10 · lg 12 · xl 16 · 2xl 24 */
+  --radius-xs: calc(var(--radius) - 8px);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 12px);
+}
+
+/* Semantic values are oklch conversions of the contract hex (see comment per var). */
+:root {
+  --radius: 0.75rem; /* lg = 12px */
+  --control-sm: 32px;
+  --control-md: 40px;
+  --control-lg: 48px;
+  --background: oklch(0.976 0.011 89.7); /* cream.200 #FAF7EF */
+  --foreground: oklch(0.239 0 0); /* mono.900 #1F1F1F */
+  --card: oklch(0.996 0.003 106.4); /* cream.50 #FEFEFC */
+  --card-foreground: oklch(0.239 0 0); /* mono.900 #1F1F1F */
+  --popover: oklch(0.996 0.003 106.4); /* cream.50 #FEFEFC */
+  --popover-foreground: oklch(0.239 0 0); /* mono.900 #1F1F1F */
+  --primary: oklch(0.419 0.048 120.6); /* moss.700 #495133 */
+  --primary-foreground: oklch(0.996 0.003 106.4); /* cream.50 #FEFEFC */
+  --secondary: oklch(0.959 0.008 114.2); /* moss.50 #F1F2EC */
+  --secondary-foreground: oklch(0.34 0.036 121.3); /* moss.800 #353B26 */
+  --muted: oklch(0.955 0.018 89.4); /* cream.300 #F5F0E3 */
+  --muted-foreground: oklch(0.562 0 0); /* mono.500 #757575 */
+  --accent: oklch(0.957 0.013 41.2); /* persimmon.50 #F9EEEA */
+  --accent-foreground: oklch(0.428 0.105 38.8); /* persimmon.700 #7E371F */
+  --destructive: oklch(0.541 0.148 28.5); /* danger.500 #B5453A */
+  --destructive-foreground: oklch(0.996 0.003 106.4); /* cream.50 #FEFEFC */
+  --border: oklch(0.894 0 0); /* mono.200 #DCDCDC */
+  --input: oklch(0.894 0 0); /* mono.200 #DCDCDC */
+  --ring: oklch(0.565 0.067 120.7); /* moss.500 #707C4F */
+  --sale: oklch(0.588 0.154 38.2); /* persimmon.500 #C65530 */
+  --success: oklch(0.527 0.093 150.4); /* success.500 #3F7A4E */
+  --warning: oklch(0.664 0.128 70.6); /* warning.500 #C4842A */
+  --info: oklch(0.53 0.063 249.1); /* info.500 #4F6F8F */
+  --font-sans: "Avenir Next", Avenir, "Helvetica Neue", Arial, sans-serif;
+  --font-display: Georgia, "Times New Roman", serif;
+}
+
+* { border-color: var(--border); }
+html { scroll-behavior: smooth; }
+body { min-height: 100vh; background: var(--background); color: var(--foreground); font-family: var(--font-sans); text-rendering: optimizeLegibility; }
+button, a { -webkit-tap-highlight-color: transparent; }
+::selection { background: color-mix(in oklab, var(--accent) 65%, white); }

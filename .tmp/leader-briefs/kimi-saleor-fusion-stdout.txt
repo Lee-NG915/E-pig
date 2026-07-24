@@ -1,0 +1,13 @@
+• 开始只读调研，先并行读取 Saleor Paper 与 E-pig 的必读文件。
+
+• 报告已写入：
+
+  `/Users/lidonghai/castlery/E-pig/.tmp/leader-briefs/kimi-saleor-fusion-report.md`
+
+  内容覆盖：
+
+  - **A. Saleor 优秀模式清单**：15 条，含 thin AGENTS router、cache manifest、static/hybrid 页面边界、BFF auth、two surfaces、设计 token 系统、SEO helpers、verify/doctor、skills bootstrap 等，每条附证据路径。
+  - **B. 可融合项表**：采纳 / 改编 / 拒绝分类，列明落地形态、优先级、风险；Saleor GraphQL/DTO、locale/channel 前缀、Nx、two surfaces 等按硬约束拒绝。
+  - **C. Skill 配置可学点**：thin router、rules on-demand、frontmatter 索引、precedence、verify/doctor 分离、skill symlink / lockfile / quarantine。
+  - **D. 最小 diff 清单**：10 个文件级任务，全部不碰业务运行时，聚焦 `pnpm verify`、`pnpm doctor`、project skill 骨架、`.cursorignore`、`src/shared/lib/seo/`、`src/shared/lib/cache-manifest.ts`、cache rule 文档、doc-sync 更新。
+

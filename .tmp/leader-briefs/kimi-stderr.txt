@@ -1,0 +1,146 @@
+• We need do read-only research and produce structured markdown in Chinese, 2500 words max. Need read required files from E-pig and nb-project/collection. Need maybe use Read/Glob/Grep. Since task read-only, not modify. We need collect evidence.
+
+  Let's plan. First read E-pig baseline docs and list skills and rules and scripts. Then read nb-project collection domains. Need identify candidates and assess.
+
+  We can launch parallel reads. Use Read for known paths. Need maybe glob .agents/skills. Also scripts/quality. .github. Then read collection domain files.
+
+  Let's start by reading all required E-pig docs. We can parallel many Reads.Need read skill files. Also need read collection domains. Let's read skill SKILL.md files first 40 lines. Also read rules doc-freshness, quality-self-check maybe. Read collection files: domains/ai-agents.md, devtools.md, frontend.md, design.md. We might also need specific repo evidence within collection like saleor etc. Let's read those files.We have a lot. Need read rules docs for doc-freshness, quality-self-check maybe. Also maybe the .agents/skills README. And maybe scripts/quality files: post-edit-check.sh, diff-check.sh, run-post-edit-evals.mjs to understand harness-evals. But not strictly required for high-level output; though useful.
+
+  Need decide 6-8 candidates. The task says 建议候选可论证增减. We need produce selection table. We must not fabricate evidence. We have collection entries with descriptions. We don't have actual repo contents except E-pig. We may need to fetch some GitHub pages for AGENTS.md/skills presence (saleor/storefront, obra/superpowers, etc). But the task says 收录库 is唯一外部证据源；禁止编造. It doesn't require us to fetch actual repos, but if we want to verify AGENTS.md + skills for saleor/storefront, we might need to fetch. However evidence from collection says saleor/storefront has AGENTS.md and 21 skills. That's the evidence source. We can cite that. We should not make up details beyond collection. We can also fetch if needed to verify specific flow points. But given time, maybe rely on collection descriptions plus E-pig docs.
+
+  Need output: A table with project, similarity 1-5, reason for selection, learnable process points.
+
+  Then B Development process dimensions relative to E-pig: requirement alignment, planning, TDD, code review, component/page workflow, CI gates, visual/E2E. Mark better / E-pig ahead / don't introduce.
+
+  C Agents/Skills dimensions relative to E-pig: skill granularity, mandatory workflow vs on-demand, DESIGN.md, YAGNI, subagent orchestration, PR/review templates, evals. Mark composable vs conflicting.
+
+  D Recommendations up to 8 for leader, each with suggestion, source, ROI, phase, risk. Must be actionable as next iteration tasks, not violate hard rules.
+
+  We need ensure 2500 Chinese characters max. That's not too long. Need concise.
+
+  Need identify candidates. We should select 6-8. Suggested candidates include:
+  - saleor/storefront (AGENTS.md + skills, Next.js 16 headless storefront). Very relevant.
+  - obra/superpowers (methodology skill framework with TDD/subagent/code-review loops). Very relevant.
+  - mattpocock/skills (agent failure mode skills). Relevant.
+  - DietrichGebert/ponytail (YAGNI rule set). Relevant.
+  - pbakaus/impeccable (DESIGN.md + detect rules + hooks for AI design). Relevant.
+  - google-labs-code/design.md (DESIGN.md spec + lint). Relevant.
+  - microsoft/playwright (E2E / Agent MCP). Relevant for E2E.
+  - paperclipai/paperclip or Yeachan-Heo/oh-my-claudecode (multi-agent governance). For process reference.
+  - ant-design/ant-design-pro (Claude skills, contrast).
+
+  Need 6-8. I think choose: saleor/storefront, obra/superpowers, mattpocock/skills, DietrichGebert/ponytail, pbakaus/impeccable, google-labs-code/design.md, microsoft/playwright, paperclipai/paperclip. That's 8. Could include ant-design-pro as contrast. But maybe too many. We need 6-8. The candidates with highest relevance to AI-assisted ecommerce front-end engineering: saleor, superpowers, mattpocock, ponytail, impeccable, design.md, playwright. Maybe paperclip for governance. That's 8. Good.
+
+  Need maybe fetch some actual repo docs to support learnable process points. For example, saleor storefront AGENTS.md and skills; superpowers README; mattpocock skills; ponytail; impeccable; design.md; playwright. Could fetch via GitHub raw? We can use FetchURL. But to save time and avoid browsing, use collection evidence. However for B/C we need compare specifics. We can rely on collection snippets. They include enough: saleor has AGENTS.md + 21 skills, checkout v2, PPR/cache, multi-locale; superpowers has brainstorm→plan→subagent dev→TDD→code-review, RED-GREEN TDD, YAGNI, auto-trigger skills; mattpocock skills are user/model invoked, /grill-me /tdd etc; ponytail has 7-level tradeoff ladder, deterministic rules, /audit; impeccable has PRODUCT.md/DESIGN.md, 44 deterministic detect rules, native hooks, detect CLI JSON; design.md has YAML frontmatter tokens + CLI lint diff export; playwright has MCP accessibility tree, E2E. paperclip has org chart, budget hard stop, atomic task checkout, audit logs.
+
+  We should verify the descriptions are accurate by maybe fetching each GitHub README? But the collection may be enough. The task says 收录库是唯一外部证据源. It doesn't say we cannot fetch, but external evidence source is the collection. We can cite it. But to be safe, we can fetch a couple key ones if we need direct quotes. However the instructions say 禁止编造；证据不足要标明. Collection entries are evidence. We should avoid adding specifics not in collection unless fetched. We can fetch if we want to enrich. But maybe not necessary.
+
+  Need also check E-pig .agents/rules doc-freshness and quality-self-check. Read them. Also maybe check scripts/quality for harness-evals. Let's read these to understand E-pig side fully.Good. We have enough about E-pig. Need also maybe check if saleor/storefront AGENTS.md and skills directory details are in collection: yes. For B/C we can compare.
+
+  Need write final markdown. But let's think about content.
+
+  We are to act as researcher, no modifications. Need structured Markdown. The output sections A-D. Need control under 2500 Chinese characters. Actually 2500字内 probably Chinese characters. We need be concise; tables count. We can aim ~2200-2400 chars.
+
+  First A table. For each of 8 projects, columns: 项目, 相似度(1-5), 为何入选, 可学流程点. We can keep entries short.
+
+  Second B: development process dimensions. Need compare relative to E-pig across dimensions. We can use a table or bullet list with markers. Need mark: 别人更好 / E-pig 已领先 / 现阶段勿引入. Could format as table with dimension, E-pig现状, 外部参照, 结论. But 2500 chars constraint. Maybe bullet list with tags.
+
+  Third C: Agents/Skills dimensions. Similar table/bullets with composable vs conflicting.
+
+  Fourth D: up to 8 recommendations.
+
+  Need ensure Chinese. Keep code/project names original.
+
+  Need not violate hard rules. For D, recommendations must be actionable next iteration tasks, e.g.:
+  1. 引入 YAGNI review skill（ponytail）作为可选技能，减少AI过度工程与依赖安装。ROI高，阶段H2，风险：与强制测试冲突？ Need align.
+  2. 导入 DESIGN.md 规范（google-labs-code/design.md + pbakaus/impeccable）到 happy-dog，用 YAML frontmatter token + 44 deterministic detect rules 做设计系统可机检。ROI高，阶段H2，风险 alpha format.
+  3. 试点 superpowers 的 spec→subagent→TDD→review 闭环到 cart/checkout 高风险任务，补强 Dual-AI 执行。ROI中，阶段H2/H3，风险：subagent编排增加token成本。
+  4. 用 mattpocock/skills 的 /grill-me 做需求对齐，在组件流程前增加快速对齐检查。ROI中，阶段H1，风险：需本地化skill。
+  5. 把 Playwright MCP 纳入 E2E 规划，从 P0 的 Vitest 扩展到 P3 的 E2E Agent 浏览器自动化（accessibility tree）。ROI中，阶段P3，风险：基础设施与维护。
+  6. 参考 paperclip 的成本硬止损与审计日志，为 AI 运行设置 token/时间预算与不可变日志。ROI中，阶段H2，风险：需监控集成。
+  7. 学习 saleor storefront 的 cacheLife 分层 + webhook tag 失效经验，完善 PPR/Cache Components 策略文档。ROI高，阶段H2，风险：与E-pig硬规则（价格/cart不缓存）不冲突，只用于catalog/content。
+  8. 参考 ant-design-pro 的 /pro-upgrade 等 skills 做 happy-dog 组件迁移与升级 skill。 But maybe less relevant. Could skip.
+
+  Better 8 recommendations aligned with sources.
+
+  Let's ensure each recommendation includes: 建议 / 借鉴来源 / ROI / 阶段 / 风险.
+
+  Need maybe include some "E-pig 已领先" items in B/C: e.g., E-pig has component folder contract and harness, while saleor has AGENTS.md but no 8-component harness; E-pig has strict import boundary with ESLint, etc. For code review, E-pig has Dual-AI record and PR template; superpowers has subagent-driven review; maybe external better in subagent orchestration. TDD: E-pig requires tests; superpowers has red-green TDD skill. Planning: E-pig has page/component workflow and DDD; superpowers has brainstorming→writing-plans. Visual/E2E: E-pig has stories but no Chromatic; playwright/impeccable better.
+
+  Agents/Skills dimensions: skill granularity: external skills often fine-grained (/grill-me, /tdd, /ponytail-review) vs E-pig skills coarse (harness-guide, submit-pr, vercel-react). Mandatory workflow vs on-demand: superpowers auto-trigger vs E-pig manual (agent must follow). DESIGN.md: google/impeccable have formal design system context; E-pig component md only behavior. YAGNI: ponytail. Subagent orchestration: superpowers/paperclip/oh-my-claudecode. PR/review templates: E-pig has PR template; superpowers code-review loop; paperclip audit logs. Evals: E-pig has harness evals and companions metrics; teaql-agent-kit (not selected) but we can mention paperclip budget tracking. But only selected projects. We can reference superpowers/pbakaus/playwright.
+
+  Need avoid referencing projects not selected? The task says 筛选6-8个；输出 A table. B/C can use relative to E-pig and selected entries. We can mention others if evidence from collection, but maybe keep to selected.
+
+  Let's plan final structure:
+
+  ### A. 筛选结果表
+
+  | 项目 | 相似度 | 为何入选 | 可学流程点 |
+  |---|---|---|---|
+  | saleor/storefront | 5 | 同为 Next.js 16/RSC headless 电商店面，自带 AGENTS.md + 21 skills | PPR/cacheLife 分层、按 tag webhook 失效、多 locale/channel 路由 |
+  | obra/superpowers | 4 | 方法论级 skill：强制 brainstorm→plan→subagent-dev→TDD→review | RED-GREEN TDD、subagent 两段评审、自动触发工作流 |
+  | mattpocock/skills | 4 | 针对 agent 失效模式的细粒度 coding skills | /grill-me 需求对齐、/tdd 红绿重构、user/model 双层触发 |
+  | DietrichGebert/ponytail | 4 | 专为抑制 AI 过度工程化的 YAGNI 规则集 | 七级取舍阶梯、/ponytail-review 收割过度设计 |
+  | pbakaus/impeccable | 4 | AI 设计检测：PRODUCT.md/DESIGN.md + 44 条确定性规则 + hook | init 生成 DESIGN.md、detect CLI JSON、编辑时拦截 AI slop |
+  | google-labs-code/design.md | 4 | DESIGN.md 结构化设计系统规范 + CLI | YAML frontmatter token、lint diff export Tailwind |
+  | microsoft/playwright | 3 | E2E 标配 + 官方 MCP 供 Agent 操控浏览器 | accessibility tree 确定性控制、Trace Viewer、未来 E2E 旅程 |
+  | paperclipai/paperclip | 3 | 多 agent 团队治理：预算、审计、目标对齐 | 按项目/token 硬止损、原子任务 checkout、不可变审计日志 |
+
+  That's 8.
+
+  ### B. 开发流程维度
+
+  Use bullet list with tags.
+
+  - 需求对齐：mattpocock /grill-me 与 superpowers brainstorming 比 E-pig 的 DDD 模板更能 probing 需求 → 别人更好（可组合）。
+  - 计划：superpowers 的 writing-plans + subagent 拆任务 更系统化；E-pig 有 page/component workflow 指南，但缺少自动化计划 skill → 别人更好。
+  - TDD：E-pig 已要求 behavior change with tests; superpowers RED-GREEN TDD 更仪式化 → 可借鉴但 E-pig 已领先（测试纪律）， superpowers 在 subagent 驱动执行上更好。
+  - Code review：E-pig 有 Dual-AI Record + PR template; superpowers 用 subagent 做 spec 合规+代码质量两段评审；paperclip 提供审计与汇报线 → 别人更好在高风险路径自动化 review，但 E-pig 的硬规则人类 gate（money/security）不应取消。
+  - 组件/页面工作流：E-pig 的 component folder contract + harness (md/tsx/spec/stories) + allowlist 比 saleor/storefront 的 AGENTS.md 更完整 → E-pig 已领先。
+  - CI 门禁：E-pig 已具 typecheck/lint/test/companions/docs-check/harness-evals/build/smoke; saleor storefront 侧重 PPR/cache → E-pig 领先于通用质量链；Playwright 的 E2E 是 E-pig 缺项 → 现阶段勿引入（P0 无 E2E，P3 再规划）。
+  - 视觉/E2E：pbakaus/impeccable + google design.md 提供设计系统机检；E-pig 只有 stories + storybook-host, Chromatic 未做 → 别人更好；Playwright 的 MCP E2E → 未来引入。
+
+  Need include markers.
+
+  ### C. Agents / Skills 维度
+
+  - Skill 粒度：E-pig 偏粗（harness-guide, submit-pr, vercel-react）；mattpocock/skills、ponytail、impeccable 提供细粒度命令 → 可组合叠加。
+  - 强制工作流 vs 按需触发：superpowers 自动触发；E-pig 靠 AGENTS.md 与 rules 默认加载，agent 仍需自律 → 别人在自动编排更好，但会与 E-pig 的 phase-review manual-only 等纪律冲突？ superpowers auto-trigger could conflict with manual-only triggers (phase-review). Mark: 部分冲突，需限定范围.
+  - DESIGN.md：google-labs-code + impeccable 有结构化设计上下文；E-pig component md 只写行为 → 可叠加到 happy-dog，不冲突.
+  - YAGNI：ponytail 明确抑制依赖与包装层，与 E-pig Hard Rules（少依赖、不装未用库）高度一致 → 可组合.
+  - Subagent 编排：superpowers / paperclip / oh-my-claudecode 做多 agent；E-pig 仅 Dual-AI Record，无运行时 subagent → 可借鉴但 现阶段勿全量引入（token/复杂度），可试点 cart/checkout.
+  - PR/评审模板：E-pig 已有 PR template + AI Test/Review Record; superpowers code-review loop 可补全 AI Review 执行 → 可组合.
+  - Evals：E-pig 有 harness-evals + companions metrics; paperclip 的成本/审计、teaql（not selected）等量化治理 → 可叠加 token budget/audit log.
+
+  Mark combos/conflicts.
+
+  ### D. 可落地建议
+
+  Up to 8. Each bullet with sub-fields. Keep concise.
+
+  1. **引入 ponytail 作为可选 coding skill，在组件/工具函数实现前跑 /ponytail-review。** 来源：DietrichGebert/ponytail. ROI：高（降 tokens/LOC/依赖）。阶段：H1-H2（先 happy-dog 试点）。风险：过度抑制可能导致代码可读性下降，需保留测试硬规则。
+  2. **为 happy-dog 引入 DESIGN.md 规范与 44 条 detect 规则。** 来源：google-labs-code/design.md + pbakaus/impeccable. ROI：高（设计系统一致、机检）。阶段：H2。风险：design.md alpha 格式可能变动，需只读引用不锁死。
+  3. **在 cart/checkout 高风险任务试点 superpowers 的 spec→subagent→TDD→review 闭环。** 来源：obra/superpowers. ROI：中（补 Dual-AI 执行）。阶段：H2。风险：token 成本增加，需限定任务大小与预算。
+  4. **在需求对齐环节加入 /grill-me 检查清单。** 来源：mattpocock/skills. ROI：中（减少返工）。阶段：H1。风险：需本地化为 E-pig 组件/页面流程。
+  5. **将 Playwright MCP 纳入 P3 E2E 路线图，先以关键旅程（checkout）试点。** 来源：microsoft/playwright. ROI：中。阶段：P3（P0 不引入）。风险：基础设施与维护成本。
+  6. **为 AI 任务增加 token/时间硬止损与不可变审计日志。** 来源：paperclipai/paperclip. ROI：中（成本可控、可复盘）。阶段：H2。风险：需要轻量实现，避免引入 SaaS。
+  7. **完善 catalog/content 的 PPR/cacheLife 分层与 tag 失效文档/脚本。** 来源：saleor/storefront. ROI：高（与 E-pig cache 硬规则一致，且只用于非价格区）。阶段：H2。风险：避免误用于 cart/checkout/price。
+  8. **升级 PR 模板，在 AI Review Record 中增加 subagent 两段评审 checklist。** 来源：obra/superpowers + E-pig 现有 PR template. ROI：中。阶段：H1。风险：增加模板长度，需保持可执行。
+
+  Need ensure each includes ROI, phase, risk. Good.
+
+  Need maybe note "证据不足要标明" for items not directly in collection? All selected have evidence in collection. For some details like saleor cacheLife分层 and webhook tag invalidation from collection. We can cite.
+
+  Now count approximate Chinese characters. We need under 2500. Let's draft carefully.
+
+  But before final, we should maybe read a bit more about some candidate specifics? We have collection descriptions. Enough.
+
+  We must not modify files. We are only reading. Final answer is markdown.
+
+  Let's craft final response in Chinese. Need keep project names/code original. Include citations maybe not needed, but can mention source. The output format must be strict. We can include section headers exactly.
+
+  Let's estimate characters. Section A table rows maybe ~70 chars each, 8 rows ~600. Section B ~500. Section C ~500. Section D ~800. Total ~2400. Need ensure under 2500. We'll be concise.
+
+  Let's write final.
+
+To resume this session: kimi -r session_63593ae6-b5b4-4476-b111-030007242d9a

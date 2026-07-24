@@ -1,0 +1,415 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "meta": {
+    "name": "happyDog Design System",
+    "version": "1.0.0",
+    "status": "source-of-truth-for-implementation",
+    "tagline": "Calm Modular Living",
+    "figma": {
+      "fileKey": "fsHAaYU2yFhytoqpSXKArW",
+      "fileName": "Test-vibma",
+      "url": "https://www.figma.com/design/fsHAaYU2yFhytoqpSXKArW/Test-vibma",
+      "coverNodeId": "0:1",
+      "extractedAt": "2026-07-24",
+      "note": "Folders in Figma = component pages. Values below are authoritative for happy-dog implementation; do not paste Figma MCP React dumps as final code."
+    },
+    "package": "@e-pig/happy-dog",
+    "storybook": {
+      "packagePort": 6006,
+      "hostPort": 6007,
+      "command": "pnpm --filter @e-pig/happy-dog storybook"
+    }
+  },
+  "foundations": {
+    "colours": {
+      "figmaPage": { "name": "02 Foundations · Colours", "nodeId": "12:2" },
+      "rules": [
+        "No pure black: darkest text is mono-900 #1F1F1F",
+        "Page surfaces lean cream (cream-200 #FAF7EF), not pure white",
+        "Primary CTA uses moss-700 (#495133), not the mid moss-500 swatch alone",
+        "Persimmon is accent / sale energy; haze is cool secondary / info"
+      ],
+      "primitives": {
+        "moss": {
+          "50": "#F1F2EC",
+          "100": "#E4E6D9",
+          "200": "#C8CCB3",
+          "300": "#ADB38D",
+          "400": "#919967",
+          "500": "#707C4F",
+          "600": "#5C6641",
+          "700": "#495133",
+          "800": "#353B26",
+          "900": "#222618"
+        },
+        "persimmon": {
+          "50": "#F9EEEA",
+          "100": "#F3DDD5",
+          "200": "#E7BBA9",
+          "300": "#DA997F",
+          "400": "#CE7754",
+          "500": "#C65530",
+          "600": "#A24628",
+          "700": "#7E371F",
+          "800": "#592815",
+          "900": "#35190D"
+        },
+        "haze": {
+          "50": "#F0F3F5",
+          "100": "#E1E6EC",
+          "200": "#C3CDD9",
+          "300": "#A5B4C5",
+          "400": "#879BB2",
+          "500": "#6C819D",
+          "600": "#586A81",
+          "700": "#455465",
+          "800": "#313D49",
+          "900": "#1E252C"
+        },
+        "cream": {
+          "50": "#FEFEFC",
+          "100": "#FCFBF7",
+          "200": "#FAF7EF",
+          "300": "#F5F0E3",
+          "400": "#EFE8D6",
+          "500": "#E8DFC7"
+        },
+        "mono": {
+          "50": "#F7F7F7",
+          "100": "#EFEFEF",
+          "200": "#DCDCDC",
+          "300": "#BDBDBD",
+          "400": "#989898",
+          "500": "#757575",
+          "600": "#5C5C5C",
+          "700": "#444444",
+          "800": "#2E2E2E",
+          "900": "#1F1F1F"
+        },
+        "success": {
+          "50": "#EDF5EF",
+          "500": "#3F7A4E",
+          "700": "#2B5436"
+        },
+        "warning": {
+          "50": "#FBF3E6",
+          "500": "#C4842A",
+          "700": "#8A5C1D"
+        },
+        "danger": {
+          "50": "#F9ECEA",
+          "500": "#B5453A",
+          "700": "#7E3029"
+        },
+        "info": {
+          "50": "#EEF3F7",
+          "500": "#4F6F8F",
+          "700": "#374E65"
+        }
+      },
+      "semantic": {
+        "background": { "token": "cream.200", "hex": "#FAF7EF", "cssVar": "--background" },
+        "foreground": { "token": "mono.900", "hex": "#1F1F1F", "cssVar": "--foreground" },
+        "card": { "token": "cream.50", "hex": "#FEFEFC", "cssVar": "--card" },
+        "card-foreground": { "token": "mono.900", "hex": "#1F1F1F", "cssVar": "--card-foreground" },
+        "popover": { "token": "cream.50", "hex": "#FEFEFC", "cssVar": "--popover" },
+        "popover-foreground": { "token": "mono.900", "hex": "#1F1F1F", "cssVar": "--popover-foreground" },
+        "primary": { "token": "moss.700", "hex": "#495133", "cssVar": "--primary" },
+        "primary-foreground": { "token": "cream.50", "hex": "#FEFEFC", "cssVar": "--primary-foreground" },
+        "secondary": { "token": "moss.50", "hex": "#F1F2EC", "cssVar": "--secondary" },
+        "secondary-foreground": { "token": "moss.800", "hex": "#353B26", "cssVar": "--secondary-foreground" },
+        "muted": { "token": "cream.300", "hex": "#F5F0E3", "cssVar": "--muted" },
+        "muted-foreground": { "token": "mono.500", "hex": "#757575", "cssVar": "--muted-foreground" },
+        "accent": { "token": "persimmon.50", "hex": "#F9EEEA", "cssVar": "--accent" },
+        "accent-foreground": { "token": "persimmon.700", "hex": "#7E371F", "cssVar": "--accent-foreground" },
+        "destructive": { "token": "danger.500", "hex": "#B5453A", "cssVar": "--destructive" },
+        "destructive-foreground": { "token": "cream.50", "hex": "#FEFEFC", "cssVar": "--destructive-foreground" },
+        "border": { "token": "mono.200", "hex": "#DCDCDC", "cssVar": "--border" },
+        "input": { "token": "mono.200", "hex": "#DCDCDC", "cssVar": "--input" },
+        "ring": { "token": "moss.500", "hex": "#707C4F", "cssVar": "--ring" },
+        "sale": { "token": "persimmon.500", "hex": "#C65530", "cssVar": "--sale" },
+        "success": { "token": "success.500", "hex": "#3F7A4E", "cssVar": "--success" },
+        "warning": { "token": "warning.500", "hex": "#C4842A", "cssVar": "--warning" },
+        "info": { "token": "info.500", "hex": "#4F6F8F", "cssVar": "--info" }
+      }
+    },
+    "spacing": {
+      "figmaPage": { "name": "04 Foundations · Spacing & Radius", "nodeId": "33:2" },
+      "unitPx": [4, 8, 12, 16, 20, 24, 32, 48, 64, 80, 96],
+      "cssVars": {
+        "--spacing-1": "4px",
+        "--spacing-2": "8px",
+        "--spacing-3": "12px",
+        "--spacing-4": "16px",
+        "--spacing-5": "20px",
+        "--spacing-6": "24px",
+        "--spacing-8": "32px",
+        "--spacing-12": "48px",
+        "--spacing-16": "64px",
+        "--spacing-20": "80px",
+        "--spacing-24": "96px"
+      }
+    },
+    "radius": {
+      "figmaPage": { "name": "04 Foundations · Spacing & Radius", "nodeId": "33:2" },
+      "scale": {
+        "none": "0px",
+        "xs": "4px",
+        "sm": "8px",
+        "md": "10px",
+        "lg": "12px",
+        "xl": "16px",
+        "2xl": "24px",
+        "full": "9999px"
+      },
+      "componentDefaults": {
+        "button": "8px–12px (sm→lg)",
+        "card": "12px",
+        "dialogSheet": "16px",
+        "tagFilter": "full"
+      }
+    },
+    "effects": {
+      "figmaPage": { "name": "05 Foundations · Effects", "nodeId": "33:3" },
+      "rules": [
+        "Shadows express elevation only — never decoration",
+        "Product cards default to no shadow",
+        "Popover / Dialog / floating actions use Sm → Md → Lg",
+        "Keyboard focus always uses Focus/Ring (ring token)"
+      ],
+      "tokens": ["shadow-sm", "shadow-md", "shadow-lg", "focus-ring"]
+    },
+    "typography": {
+      "note": "Figma MCP did not expose a dedicated Type page node in this extract; use Inter for UI (from component frames) and keep Georgia/serif display from existing happy-dog theme for brand headlines unless DESIGN.md says otherwise.",
+      "ui": {
+        "family": "Inter",
+        "button": { "weight": 600, "sizePx": 13, "tracking": "tight" }
+      },
+      "display": {
+        "family": "Georgia, ui-serif, serif",
+        "source": "packages/happy-dog existing theme"
+      }
+    },
+    "controlSizes": {
+      "sm": { "heightPx": 32, "cssVar": "--control-sm" },
+      "md": { "heightPx": 40, "cssVar": "--control-md" },
+      "lg": { "heightPx": 48, "cssVar": "--control-lg" }
+    }
+  },
+  "components": {
+    "shadcnCore": [
+      {
+        "id": "button",
+        "figmaPage": "33:6",
+        "componentSetNodeId": "42:36",
+        "priority": "P0",
+        "existsInPackage": true,
+        "variants": {
+          "style": ["Default", "Secondary", "Outline", "Ghost", "Destructive", "Link"],
+          "size": ["Sm", "Md", "Lg"]
+        },
+        "notes": "Align CVA to Figma styles; primary fill = moss-700; heights 32/40/48"
+      },
+      {
+        "id": "badge",
+        "figmaPage": "33:7",
+        "componentSetNodeId": "45:18",
+        "priority": "P0",
+        "existsInPackage": true,
+        "variants": {
+          "style": ["Default", "Secondary", "Outline", "Sale", "Success", "Info"]
+        },
+        "notes": "Add Sale / Success / Info if missing"
+      },
+      {
+        "id": "input",
+        "figmaPage": "33:8",
+        "componentSetNodeId": "48:18",
+        "priority": "P0",
+        "existsInPackage": false,
+        "variants": {
+          "state": ["Default", "Focus", "Error", "Disabled"],
+          "size": ["Sm", "Md"]
+        }
+      },
+      {
+        "id": "checkbox",
+        "figmaPage": "33:9",
+        "componentSetNodeId": "51:12",
+        "priority": "P0",
+        "existsInPackage": false,
+        "variants": {
+          "checked": ["False", "True"],
+          "state": ["Default", "Focus", "Disabled"]
+        }
+      },
+      {
+        "id": "radio-group",
+        "figmaPage": "33:10",
+        "componentSetNodeId": "55:10",
+        "priority": "P0",
+        "existsInPackage": false,
+        "variants": {
+          "selected": ["False", "True"],
+          "state": ["Default", "Focus", "Disabled", "Error"]
+        }
+      },
+      {
+        "id": "switch",
+        "figmaPage": "33:11",
+        "componentSetNodeId": "58:8",
+        "priority": "P0",
+        "existsInPackage": false,
+        "variants": {
+          "checked": ["False", "True"],
+          "state": ["Default", "Focus", "Disabled"]
+        }
+      },
+      {
+        "id": "tabs",
+        "figmaPage": "33:12",
+        "componentSetNodeId": "60:17",
+        "priority": "P1",
+        "existsInPackage": false,
+        "variants": {
+          "variant": ["Underline", "Segmented"],
+          "active": ["False", "True"],
+          "state": ["Default", "Hover", "Disabled"]
+        }
+      },
+      {
+        "id": "card",
+        "figmaPage": "33:13",
+        "componentSetNodeId": "62:6",
+        "priority": "P1",
+        "existsInPackage": false,
+        "variants": { "variant": ["Surface", "Outline"] },
+        "related": [
+          {
+            "id": "card-interactive",
+            "componentSetNodeId": "63:8",
+            "variants": { "state": ["Default", "Hover", "Focus"] }
+          }
+        ]
+      },
+      {
+        "id": "dialog",
+        "figmaPage": "33:14",
+        "componentSetNodeId": "65:18",
+        "priority": "P1",
+        "existsInPackage": false
+      },
+      {
+        "id": "sheet",
+        "figmaPage": "33:14",
+        "componentSetNodeId": "66:20",
+        "priority": "P0",
+        "existsInPackage": true,
+        "variants": { "side": ["Right", "Bottom"] },
+        "notes": "MUST support side=bottom for mobile cart drawer; keep side=right for desktop"
+      },
+      {
+        "id": "tooltip",
+        "figmaPage": "33:15",
+        "componentSetNodeId": "93:26",
+        "priority": "P1",
+        "existsInPackage": false,
+        "variants": { "side": ["Top", "Right", "Bottom", "Left"] }
+      },
+      {
+        "id": "separator",
+        "figmaPage": "33:16",
+        "componentSetNodeId": "70:9",
+        "priority": "P1",
+        "existsInPackage": false,
+        "variants": { "orientation": ["Horizontal", "Vertical"] }
+      },
+      {
+        "id": "skeleton",
+        "figmaPage": "33:17",
+        "componentSetNodeId": "72:11",
+        "priority": "P1",
+        "existsInPackage": false,
+        "variants": { "variant": ["Text", "Media", "Circle", "Swatch"] }
+      }
+    ],
+    "commerce": [
+      {
+        "id": "quantity-stepper",
+        "figmaPage": "73:2",
+        "componentSetNodeId": "73:64",
+        "priority": "P1",
+        "existsInPackage": false
+      },
+      {
+        "id": "choice-card",
+        "figmaPage": "74:2",
+        "componentSetNodeId": "74:64",
+        "priority": "P2",
+        "existsInPackage": false
+      },
+      {
+        "id": "option-swatch",
+        "figmaPage": "75:2",
+        "componentSetNodeId": "75:43",
+        "priority": "P2",
+        "existsInPackage": false,
+        "variants": { "type": ["Text", "Color", "Image"] }
+      },
+      {
+        "id": "select",
+        "figmaPage": "77:2",
+        "componentNodes": ["77:40", "77:50"],
+        "priority": "P1",
+        "existsInPackage": false
+      },
+      {
+        "id": "accordion",
+        "figmaPage": "80:2",
+        "componentSetNodeId": "80:42",
+        "priority": "P2",
+        "existsInPackage": false
+      },
+      {
+        "id": "pagination",
+        "figmaPage": "81:2",
+        "componentNodes": ["81:24", "81:25"],
+        "priority": "P2",
+        "existsInPackage": false
+      }
+    ],
+    "utilities": [
+      {
+        "id": "icon-arrow-right",
+        "figmaPage": "33:18",
+        "componentNodeId": "40:4",
+        "priority": "P2",
+        "existsInPackage": false
+      }
+    ]
+  },
+  "implementationContract": {
+    "do": [
+      "Update packages/happy-dog theme CSS variables to match semantic + primitives above (oklch preferred for runtime; keep hex mapping documented)",
+      "Implement missing components with shadcn/Radix patterns already used by button/badge/sheet",
+      "Co-locate *.stories.tsx for every public component; cover variants from this manifest",
+      "Export new components from package public API",
+      "Keep modules importing only from @e-pig/happy-dog — no Figma dump paths",
+      "Add/adjust Vitest specs for pure variant logic where meaningful; stories are the visual contract"
+    ],
+    "dont": [
+      "Do not paste Figma MCP-generated React/Tailwind as production components",
+      "Do not introduce purple/indigo AI-slop palettes or pure #000",
+      "Do not put product-card default box-shadow",
+      "Do not break existing Button/Badge/Sheet public APIs without aliasing",
+      "Do not edit src/modules to consume every new component in this task — happy-dog + Storybook only"
+    ],
+    "acceptance": [
+      "pnpm --filter @e-pig/happy-dog typecheck (or package equivalent) passes",
+      "pnpm --filter @e-pig/happy-dog test passes",
+      "Storybook builds/starts and lists stories for all P0+P1 components",
+      "Sheet supports side bottom + right",
+      "Token CSS vars match semantic contract (primary=#495133, background cream)"
+    ]
+  }
+}

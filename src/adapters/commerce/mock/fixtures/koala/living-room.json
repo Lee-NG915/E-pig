@@ -1,0 +1,690 @@
+[
+  {
+    "id": "bangalow-modular-sofa-armchair",
+    "slug": "bangalow-modular-sofa-armchair",
+    "name": "Bangalow Modular Armchair",
+    "category": "Living Room",
+    "colour": "Green Wattle (Standard)",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/bba282153b51e7af408802f455b43add.png?v=1725498764",
+    "description": "The Bangalow Modular Armchair is available in 1-Seater and 1.5-Seater configurations, built on an FSC-certified timber frame with innovative S-Springs and sculpted premium foam for deep, supportive seating. Covers are removable and washable in a choice of boucle fabrics — Sunset ",
+    "materials": [
+      "Timber",
+      "Foam"
+    ],
+    "priceByMarket": {
+      "au": 1250,
+      "sg": 1100,
+      "us": 900
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "living-room",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "bangalow-modular-sofa-ottoman",
+    "slug": "bangalow-modular-sofa-ottoman",
+    "name": "Bangalow Modular Ottoman",
+    "category": "Living Room",
+    "colour": "Green Wattle (Standard)",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/09f2f19412f1a151034f1aaa1de0fb9f.png?v=1725499138",
+    "description": "The Bangalow Modular Ottoman is a companion piece for the Bangalow Modular Sofa range, featuring curves and proportions that complement the sofa modules. Covers are removable and washable in four colourways across two premium boucle fabrics. It works as a footrest, additional sea",
+    "materials": [],
+    "priceByMarket": {
+      "au": 450,
+      "sg": 396,
+      "us": 324
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "living-room",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "beach-bum-cushion",
+    "slug": "beach-bum-cushion",
+    "name": "Beach Bum Cushion",
+    "category": "Living Room",
+    "colour": "Australia 01 (Pantone)",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/PANTONE_CUSHION_4.webp?v=1782797866",
+    "description": "Inspired by the Aussie coastline, these beach-themed cushions invite you to bring those lazy arvos into your living spaces. We've paired a machine-washable organic cotton cover with a plush feather-free insert, this comfy cushion has your name all over it.",
+    "materials": [
+      "Cotton"
+    ],
+    "priceByMarket": {
+      "au": 60,
+      "sg": 53,
+      "us": 43
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "living-room",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "byron-sofa-bed",
+    "slug": "byron-sofa-bed",
+    "name": "Byron Sofa Bed [3rd Gen]",
+    "category": "Living Room",
+    "badge": "Bestseller",
+    "colour": "Bronzed Aussie",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/ByronSB_3rdG_Currawong_Grey_8_18984a99-b0de-4c48-8d31-ba8caf933274.png?v=1739506579",
+    "description": "The Byron Sofa Bed [3rd Gen] is a sofa bed with a FlipBed design that converts from sofa to bed in seconds with no clunky mechanisms. It features a Kloudcell sleep surface for responsive, pressure-relieving support, deep plush seats for everyday lounging, and CertiPUR-US certifie",
+    "materials": [],
+    "priceByMarket": {
+      "au": 2390,
+      "sg": 2103,
+      "us": 1721
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "living-room",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "byron-sofa-bed-2nd-gen",
+    "slug": "byron-sofa-bed-2nd-gen",
+    "name": "Byron Sofa Bed [2nd Gen]",
+    "category": "Living Room",
+    "colour": "Blush Sunset (Standard)",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/049acebef94e638933397232f2a16c15.png?v=1725499353",
+    "description": "The Byron Sofa Bed [2nd Gen] is a sofa bed featuring a Kloudcell mattress topper for comfortable overnight sleep and a breathable platform base. It offers deep plush seats for everyday lounging and converts to a bed for guests. It comes with a 5-year warranty and Koala's 120-day ",
+    "materials": [],
+    "priceByMarket": {
+      "au": 2290,
+      "sg": 2015,
+      "us": 1649
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "living-room",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "byron-sofa-bed-ottoman",
+    "slug": "byron-sofa-bed-ottoman",
+    "name": "Byron Sofa Bed Ottoman [3rd Gen]",
+    "category": "Living Room",
+    "colour": "Bronzed Aussie",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/437de84cca18b5d37243db42a7b5d4ea.png?v=1725499384",
+    "description": "The Byron Sofa Bed Ottoman [3rd Gen] is a companion piece for the Byron Sofa Bed 3rd Generation. It features CertiPUR-US certified polyurethane foam cushioning wrapped in polyester wadding, on a frame of 100% FSC certified poplar plywood and MDF. Covers are removable, washable, a",
+    "materials": [
+      "Plywood",
+      "Polyester",
+      "Foam"
+    ],
+    "priceByMarket": {
+      "au": 450,
+      "sg": 396,
+      "us": 324
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "living-room",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "eucalypt-sky-cushion",
+    "slug": "eucalypt-sky-cushion",
+    "name": "Eucalypt Sky Cushion",
+    "category": "Living Room",
+    "colour": "Emerald Breeze",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/EucalyptSky_Cushion_5.png?v=1746056901",
+    "description": "The Eucalypt Sky Cushion is a decorative cushion with a 100% linen cover and recycled fibre fill. It measures 50 x 50 cm and is designed to complement Koala sofas and living spaces. The linen cover adds a natural, textured look. It comes with Koala's standard warranty.",
+    "materials": [
+      "Linen",
+      "Fibre"
+    ],
+    "priceByMarket": {
+      "au": 41,
+      "sg": 36,
+      "us": 30
+    },
+    "compareAtByMarket": {
+      "au": 59,
+      "sg": 52,
+      "us": 42
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "living-room",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "getaway-armchair",
+    "slug": "getaway-armchair",
+    "name": "Getaway Armchair",
+    "category": "Living Room",
+    "colour": "Outback (Luxe Edition)",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/0e9d2566d2539e5122570f2627e129d9.png?v=1725499773",
+    "description": "The Getaway Armchair is an oversized armchair with integrated storage, featuring a combination of foam, spring, and microfibre fill for a sink-in feel. Select colour options feature stain-resistant fabric. Covers create a relaxed, wrinkled aesthetic that develops character over t",
+    "materials": [
+      "Foam",
+      "Fabric"
+    ],
+    "priceByMarket": {
+      "au": 1695,
+      "sg": 1492,
+      "us": 1220
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "living-room",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "getaway-ottoman",
+    "slug": "getaway-ottoman",
+    "name": "Getaway Ottoman",
+    "category": "Living Room",
+    "colour": "Kakadu",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/91f8872bfa7d65aa87cb03ad7bf70d5c.png?v=1725499792",
+    "description": "The Getaway Ottoman is a storage ottoman that doubles as a footrest, extra seating, or occasional table. It features a hinged lid with generously sized storage space underneath — handy for blankets, toys, or everyday clutter. The ottoman complements all Getaway Sofa sizes and cha",
+    "materials": [],
+    "priceByMarket": {
+      "au": 795,
+      "sg": 700,
+      "us": 572
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "living-room",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "kick-back-cushion",
+    "slug": "kick-back-cushion",
+    "name": "Kick Back Cushion",
+    "category": "Living Room",
+    "colour": "Daintree",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/828f4e89e8c920332c06401e993a7fa9.png?v=1725500016",
+    "description": "The Kick Back Cushion features a cotton and linen blend cover with a feather-alternative insert that is machine washable. Designed in Australia and made in India, it adds a relaxed texture to sofas and armchairs. It comes with Koala's standard 1-year homewares warranty.",
+    "materials": [
+      "Linen",
+      "Cotton"
+    ],
+    "priceByMarket": {
+      "au": 29,
+      "sg": 26,
+      "us": 21
+    },
+    "compareAtByMarket": {
+      "au": 49,
+      "sg": 43,
+      "us": 35
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "living-room",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "kirribilli-coffee-table",
+    "slug": "kirribilli-coffee-table",
+    "name": "Kirribilli Coffee Table",
+    "category": "Living Room",
+    "colour": "Warm Ash",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/937f0dcd9aa4d75d816a013d28f89ee3.png?v=1725500101",
+    "description": "The Kirribilli Coffee Table is made from FSC-certified ash veneer on MDF and plywood with contemporary curved edges and a natural ash grain finish. It measures 110cm (L) x 60cm (W) x 36.5cm (H) with a 30 kg top surface weight limit. An accentuated lip prevents items from sliding ",
+    "materials": [
+      "Plywood"
+    ],
+    "priceByMarket": {
+      "au": 495,
+      "sg": 436,
+      "us": 356
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "living-room",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "kirribilli-side-table",
+    "slug": "kirribilli-side-table",
+    "name": "Kirribilli Side Table",
+    "category": "Living Room",
+    "badge": "Bestseller",
+    "colour": "Warm Ash",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/dae17ef2b5aafcec5ffe9cc7ab6a0584.png?v=1725500129",
+    "description": "The Kirribilli Side Table is a round occasional table made from 100% FSC-certified wood in a warm ash finish. It measures 52cm (H) x 45cm (W) x 45cm (D) with a 10 kg weight limit. Contemporary curved edges and an accentuated lip help prevent items from falling off. It works as a ",
+    "materials": [],
+    "priceByMarket": {
+      "au": 350,
+      "sg": 308,
+      "us": 252
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "living-room",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "koala-sofa-bed",
+    "slug": "koala-sofa-bed",
+    "name": "Koala Sofa Bed [4th Gen]",
+    "category": "Living Room",
+    "badge": "Bestseller",
+    "colour": "Australia 01 (Pantone)",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/KSB_4G_CS_Q_9.png?v=1756260460",
+    "description": "The Koala Sofa Bed [4th Gen] is a sofa bed that converts from deep-seat sofa to full-size bed in seconds. It features 60 cm deep seats, an angled backrest with lumbar support, and an integrated Kloudcell topper for mattress-like sleep. The frame is 100% FSC certified poplar plywo",
+    "materials": [],
+    "priceByMarket": {
+      "au": 2590,
+      "sg": 2279,
+      "us": 1865
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "living-room",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "koala-sofa-bed-3rd-gen",
+    "slug": "koala-sofa-bed-3rd-gen",
+    "name": "Koala Sofa Bed [3rd Gen]",
+    "category": "Living Room",
+    "badge": "Bestseller",
+    "colour": "Gum Leaf",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/e5c15fb06f827e390777e02e55a26c87.png?v=1734316893",
+    "description": "The Koala Sofa Bed [3rd Gen] converts from sofa to full-size bed and features CertiPUR-US certified polyurethane foam cushioning wrapped in polyester wadding. Fabric options include textured jacquard pile (100% polyester) and luxe demi boucle (70% polyester, 30% recycled polyeste",
+    "materials": [
+      "Polyester",
+      "Foam",
+      "Fabric"
+    ],
+    "priceByMarket": {
+      "au": 2190,
+      "sg": 1927,
+      "us": 1577
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "living-room",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "koala-sofa-bed-ottoman",
+    "slug": "koala-sofa-bed-ottoman",
+    "name": "Koala Sofa Bed Ottoman [3rd Gen]",
+    "category": "Living Room",
+    "badge": "Bestseller",
+    "colour": "Gum Leaf",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/CushyOttoman_Gumleaf_3.png?v=1742437675",
+    "description": "The Koala Sofa Bed Ottoman [3rd Gen] is a companion piece for the Koala Sofa Bed 3rd Generation. It features CertiPUR-US certified polyurethane foam with a comfort layer wrapped in polyester wadding. Fabric options include demi boucle in Penguin Parade, Paperbark, Sunset Rust, an",
+    "materials": [
+      "Polyester",
+      "Foam",
+      "Fabric"
+    ],
+    "priceByMarket": {
+      "au": 450,
+      "sg": 396,
+      "us": 324
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "living-room",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "koala-sofa-bed-ottoman-4th-gen",
+    "slug": "koala-sofa-bed-ottoman-4th-gen",
+    "name": "Koala Sofa Bed Ottoman [4th Gen]",
+    "category": "Living Room",
+    "badge": "New",
+    "colour": "Australia 01 (Pantone)",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/KSB_4G_CS_O_5.png?v=1756710219",
+    "description": "The Koala Sofa Bed Ottoman [4th Gen] is a versatile companion to the Koala Sofa Bed 4th Generation. It features a flippable top that doubles as a side table, with CertiPUR-US certified polyurethane foam cushioning wrapped in polyester wadding. The frame is 100% FSC certified popl",
+    "materials": [
+      "Polyester",
+      "Foam"
+    ],
+    "priceByMarket": {
+      "au": 550,
+      "sg": 484,
+      "us": 396
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "living-room",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "koala-sofa-bed-ottoman-pantone",
+    "slug": "koala-sofa-bed-ottoman-pantone",
+    "name": "Koala Sofa Bed Ottoman [4th Gen]",
+    "category": "Living Room",
+    "badge": "New",
+    "colour": "Australia 01 (Pantone)",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/KSB_4G_Pantone_OB_O_1.webp?v=1783489156",
+    "description": "The Koala Sofa Bed Ottoman [4th Gen] is a versatile companion to the Koala Sofa Bed 4th Generation. It features a flippable top that doubles as a side table, with CertiPUR-US certified polyurethane foam cushioning wrapped in polyester wadding. The frame is 100% FSC certified popl",
+    "materials": [
+      "Polyester",
+      "Foam"
+    ],
+    "priceByMarket": {
+      "au": 550,
+      "sg": 484,
+      "us": 396
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "living-room",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "koala-sofa-bed-pantone",
+    "slug": "koala-sofa-bed-pantone",
+    "name": "Koala Sofa Bed [4th Gen]",
+    "category": "Living Room",
+    "badge": "Bestseller",
+    "colour": "Australia 01 (Pantone)",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/KSB_4G_Pantone_OB_K_5.webp?v=1783297119",
+    "description": "The Koala Sofa Bed [4th Gen] is a sofa bed that converts from deep-seat sofa to full-size bed in seconds. It features 60 cm deep seats, an angled backrest with lumbar support, and an integrated Kloudcell topper for mattress-like sleep. The frame is 100% FSC certified poplar plywo",
+    "materials": [],
+    "priceByMarket": {
+      "au": 2590,
+      "sg": 2279,
+      "us": 1865
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "living-room",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "koala-x-bluey-snuggletime-cushion",
+    "slug": "koala-x-bluey-snuggletime-cushion",
+    "name": "Koala x Bluey Snuggletime Cushion",
+    "category": "Living Room",
+    "badge": "New",
+    "colour": "Kimjim",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/BLUEY_CUSHION_KIMJIM.png?v=1762401403",
+    "description": "The Koala x Bluey Snuggletime Cushion is a decorative cushion for children aged 3 and over, featuring exclusive squish-quilted Bluey-inspired artwork. The cover is 100% cotton with a plush fill that bounces back after use. It measures 50 x 50 cm and is machine washable. Designed ",
+    "materials": [
+      "Cotton"
+    ],
+    "priceByMarket": {
+      "au": 60,
+      "sg": 53,
+      "us": 43
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "living-room",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "lounging-sofa-ottoman",
+    "slug": "lounging-sofa-ottoman",
+    "name": "Lounging Sofa Ottoman",
+    "category": "Living Room",
+    "colour": "Winter Sky",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/32be2480a88e0c310ed21878fa4bbc47.png?v=1725500529",
+    "description": "The Lounging Sofa Ottoman is a companion piece for the Koala Lounging Sofa, featuring timber feet and a classic silhouette that fits most room styles. The covers are fully removable and machine washable, made with at least 20% recycled polyester. It works as a footrest, extra sea",
+    "materials": [
+      "Timber",
+      "Polyester"
+    ],
+    "priceByMarket": {
+      "au": 375,
+      "sg": 330,
+      "us": 270
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "living-room",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "modern-sofa-ottoman",
+    "slug": "modern-sofa-ottoman",
+    "name": "Modern Sofa Ottoman",
+    "category": "Living Room",
+    "colour": "Arvo Storm",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/b47ae453be2f92e96eb4ad962463fb1d.png?v=1725500709",
+    "description": "The Modern Sofa Ottoman is a companion piece for the Koala Modern Sofa, built on an FSC mix wood frame (pine, LVL, plywood) with black polypropylene legs. It features luxury boucle fabric with over 20% recycled fibres. Covers are removable and washable. It works as a footrest, ex",
+    "materials": [
+      "Plywood",
+      "Fabric"
+    ],
+    "priceByMarket": {
+      "au": 450,
+      "sg": 396,
+      "us": 324
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "living-room",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "native-bliss-cushion",
+    "slug": "native-bliss-cushion",
+    "name": "Native Bliss Cushion",
+    "category": "Living Room",
+    "colour": "Midnight Rosé",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/NativeBliss_Cushion_5.png?v=1746077172",
+    "description": "The Native Bliss Cushion features a 100% linen cover with recycled fibre fill, measuring 50 x 50 cm. The natural linen adds an earthy, textured look to sofas and armchairs. Care instructions recommend a cold delicate wash and line drying in shade. It comes with Koala's standard 1",
+    "materials": [
+      "Linen",
+      "Fibre"
+    ],
+    "priceByMarket": {
+      "au": 41,
+      "sg": 36,
+      "us": 30
+    },
+    "compareAtByMarket": {
+      "au": 59,
+      "sg": 52,
+      "us": 42
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "living-room",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "playtime-ottoman",
+    "slug": "playtime-ottoman",
+    "name": "Koala x Bluey Playtime Ottoman",
+    "category": "Living Room",
+    "badge": "New",
+    "colour": "Potoroo",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/KSB_BLUEY_O_P_6.png?v=1759904897",
+    "description": "The Koala x Bluey Playtime Ottoman is a children's ottoman featuring soft boucle fabric in Bluey-inspired colours (Potoroo, Creek, Kookaburra). It has a soft squishy top for lounging, a sturdy hard surface for tabletop use, and hidden storage for toys, cushions, and throws. The f",
+    "materials": [
+      "Fabric"
+    ],
+    "priceByMarket": {
+      "au": 590,
+      "sg": 519,
+      "us": 425
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "living-room",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "playtime-sofa-bed",
+    "slug": "playtime-sofa-bed",
+    "name": "Koala x Bluey Playtime Sofa Bed",
+    "category": "Living Room",
+    "badge": "New",
+    "colour": "Potoroo",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/KSB_BLUEY_P_Q_12.png?v=1759895196",
+    "description": "The Koala x Bluey Playtime Sofa Bed is a kids-friendly sofa bed featuring exclusive Bluey artwork and a simple forward-fold design that flips from cushy sofa to a snuggly sleep cubby with no clunky mechanisms. It includes an integrated Kloudcell topper, exclusive Bluey frame deta",
+    "materials": [],
+    "priceByMarket": {
+      "au": 2490,
+      "sg": 2191,
+      "us": 1793
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "living-room",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "sofa-bed",
+    "slug": "sofa-bed",
+    "name": "OG Sofa Bed",
+    "category": "Living Room",
+    "badge": "Bestseller",
+    "colour": "Vanilla",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/SOFABED_WOODLAND_QUEEN_5_1.webp?v=1727274550",
+    "description": "The OG Sofa Bed is Koala's original sofa bed design, built for everyday comfort and overnight guests. It features CertiPUR-US certified polyurethane foam with a support layer and comfort layer wrapped in polyester wadding. The fabric is a soft-touch blend of 88% polyester and 12%",
+    "materials": [
+      "Polyester",
+      "Foam",
+      "Fabric"
+    ],
+    "priceByMarket": {
+      "au": 1690,
+      "sg": 1487,
+      "us": 1217
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "living-room",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "sofa-bed-ottoman",
+    "slug": "sofa-bed-ottoman",
+    "name": "OG Sofa Bed Ottoman",
+    "category": "Living Room",
+    "colour": "Lunar Grey",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/5df4d37df17dbbdb0317512cc76294d7.png?v=1725501093",
+    "description": "The OG Sofa Bed Ottoman is a companion piece for the Koala OG Sofa Bed. It features CertiPUR-US certified polyurethane foam with a support layer and comfort layer wrapped in polyester wadding. The ottoman works as a footrest, extra seating, or additional sleeping space for guests",
+    "materials": [
+      "Polyester",
+      "Foam"
+    ],
+    "priceByMarket": {
+      "au": 350,
+      "sg": 308,
+      "us": 252
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "living-room",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "stunner-sofa-bed",
+    "slug": "stunner-sofa-bed",
+    "name": "Stunner Sofa Bed",
+    "category": "Living Room",
+    "colour": "Limestone",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/ec318943fd1dd7d7dd3fb5d257d57dd1.png?v=1725501151",
+    "description": "The Stunner Sofa Bed is a raised-platform sofa bed that converts from sofa to bed in 6 seconds. It features an integrated Kloudcell topper for mattress-like sleep comfort, with CertiPUR-US certified polyurethane foam cushioning. The frame is plywood with birch veneer and mixed FS",
+    "materials": [
+      "Plywood",
+      "Foam"
+    ],
+    "priceByMarket": {
+      "au": 2290,
+      "sg": 2015,
+      "us": 1649
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "living-room",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "suffolk-armchair",
+    "slug": "suffolk-armchair",
+    "name": "Suffolk Armchair",
+    "category": "Living Room",
+    "colour": "Moon Grey",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/a4b368de6d199a755a68a747c182c051.png?v=1725501187",
+    "description": "The Suffolk Armchair is a compact armchair measuring 75cm (W) x 94cm (D) x 36cm (seat H), with a boxed weight of 18.2 kg. It features cool carbon steel legs and contemporary upholstery with oversized, pillowy cushions. Covers are removable and washable in six colourways including",
+    "materials": [
+      "Steel"
+    ],
+    "priceByMarket": {
+      "au": 790,
+      "sg": 695,
+      "us": 569
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "living-room",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "suffolk-ottoman",
+    "slug": "suffolk-ottoman",
+    "name": "Suffolk Ottoman",
+    "category": "Living Room",
+    "colour": "Moon Grey",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/aa0e29fc6f6ea6706c3d63efda1df1ff.png?v=1725501247",
+    "description": "The Suffolk Ottoman is a companion piece for the Koala Suffolk Sofa and Armchair, designed with the same contemporary aesthetic and oversized, pillowy cushioning. Covers are removable and washable in six colourways including Moon Grey, Winter Sky, Sunset Rust, Sea Foam, Coastal M",
+    "materials": [
+      "Foam"
+    ],
+    "priceByMarket": {
+      "au": 350,
+      "sg": 308,
+      "us": 252
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "living-room",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  },
+  {
+    "id": "tamarama-modular-armchair",
+    "slug": "tamarama-modular-armchair",
+    "name": "Tamarama Modular Armchair",
+    "category": "Living Room",
+    "colour": "Winter Cream",
+    "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/TAM_FW_ARMCHAIR_R_01_PRODUCT_af92b11d-579c-457f-806b-d13e0ce68719.png?v=1778477086",
+    "description": "",
+    "materials": [],
+    "priceByMarket": {
+      "au": 1650,
+      "sg": 1452,
+      "us": 1188
+    },
+    "source": {
+      "vendor": "Koala",
+      "collection": "living-room",
+      "scrapedAt": "2026-07-19T09:30:29.695Z"
+    }
+  }
+]
