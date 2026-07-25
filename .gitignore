@@ -44,3 +44,7 @@ next-env.d.ts
 
 # quality scripts runtime logs
 /logs/
+
+# OpenNext / Cloudflare
+.open-next/
+.wrangler/
