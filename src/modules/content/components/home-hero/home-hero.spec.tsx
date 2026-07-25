@@ -12,17 +12,18 @@ vi.mock("next/image", () => ({
 afterEach(cleanup);
 
 describe("HomeHero", () => {
-  it("渲染主标题与两个指向 #collection 的 CTA", () => {
-    render(<HomeHero />);
+  it("渲染主标题与指向市场前缀 PLP 的 CTA", () => {
+    render(<HomeHero marketId="au" />);
 
     expect(
       screen.getByRole("heading", { level: 1, name: "Furniture for slower days." }),
     ).toBeTruthy();
 
-    const cta = screen.getByRole("link", { name: "Shop the collection" });
-    expect(cta.getAttribute("href")).toBe("#collection");
-
-    const roundCta = screen.getByRole("link", { name: "View the collection" });
-    expect(roundCta.getAttribute("href")).toBe("#collection");
+    expect(screen.getByRole("link", { name: /Shop sofas/i }).getAttribute("href")).toBe(
+      "/au/collections/sofas",
+    );
+    expect(screen.getByRole("link", { name: /Explore living/i }).getAttribute("href")).toBe(
+      "/au/collections/living-room",
+    );
   });
 });

@@ -6,7 +6,14 @@ import { withMarketPrefix } from "@/platform/config/market-path";
 
 import type { ProductListSort } from "@/modules/catalog/lib/plp-query";
 
+import { PlpBreadcrumb } from "../plp-breadcrumb/plp-breadcrumb";
 import { ProductCard } from "../product-card/product-card";
+import { PlpSortNav } from "./plp-sort-nav";
+
+export type RelatedCollectionLink = {
+  title: string;
+  href: string;
+};
 
 export type { ProductListSort };
 
@@ -15,47 +22,20 @@ type ProductListProps = {
   collection: { handle: string; title: string };
   marketId: string;
   sort?: ProductListSort;
+  relatedCollections?: RelatedCollectionLink[];
 };
 
-const SORT_OPTIONS: { value: ProductListSort; label: string }[] = [
-  { value: "name", label: "Name" },
-  { value: "price-asc", label: "Price: low to high" },
-  { value: "price-desc", label: "Price: high to low" },
-];
-
-function sortHref(marketId: string, handle: string, value: ProductListSort): string {
-  return `${withMarketPrefix(marketId, `/collections/${handle}`)}?sort=${value}`;
-}
-
-function SortLink({
+export function ProductList({
+  products,
+  collection,
   marketId,
-  handle,
-  option,
-  active,
-}: {
-  marketId: string;
-  handle: string;
-  option: (typeof SORT_OPTIONS)[number];
-  active: boolean;
-}) {
-  return (
-    <Link
-      href={sortHref(marketId, handle, option.value)}
-      className={`text-sm transition-colors ${
-        active
-          ? "font-medium text-foreground underline underline-offset-4"
-          : "text-muted-foreground hover:text-foreground"
-      }`}
-      aria-current={active ? "true" : undefined}
-    >
-      {option.label}
-    </Link>
-  );
-}
-
-export function ProductList({ products, collection, marketId, sort }: ProductListProps) {
+  sort,
+  relatedCollections = [],
+}: ProductListProps) {
   return (
     <div className="mx-auto max-w-[1440px] px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
+      <PlpBreadcrumb marketId={marketId} collectionTitle={collection.title} />
+
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">Collection</p>
@@ -66,19 +46,23 @@ export function ProductList({ products, collection, marketId, sort }: ProductLis
             {products.length} {products.length === 1 ? "piece" : "pieces"}
           </p>
         </div>
-        <nav aria-label="Sort products" className="flex flex-wrap items-center gap-3">
-          <span className="text-sm text-muted-foreground">Sort by:</span>
-          {SORT_OPTIONS.map((option) => (
-            <SortLink
-              key={option.value}
-              marketId={marketId}
-              handle={collection.handle}
-              option={option}
-              active={sort === option.value}
-            />
+        <PlpSortNav marketId={marketId} handle={collection.handle} sort={sort} />
+      </div>
+
+      {relatedCollections.length > 0 ? (
+        <nav aria-label="Related collections" className="mb-10 flex flex-wrap gap-2">
+          {relatedCollections.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              prefetch={false}
+              className="rounded-full border px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:border-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              {item.title}
+            </Link>
           ))}
         </nav>
-      </div>
+      ) : null}
 
       {products.length > 0 ? (
         <div className="grid gap-x-4 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
@@ -94,7 +78,8 @@ export function ProductList({ products, collection, marketId, sort }: ProductLis
           </p>
           <Link
             href={withMarketPrefix(marketId, "/")}
-            className="mt-6 inline-block text-sm font-medium underline underline-offset-4 transition-colors hover:text-muted-foreground"
+            prefetch={false}
+            className="mt-6 inline-block text-sm font-medium underline underline-offset-4 transition-colors hover:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             Back to home
           </Link>

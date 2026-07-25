@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 
+import type { Metadata } from "next";
 import Link from "next/link";
 import { connection } from "next/server";
 
@@ -8,21 +9,44 @@ import { CartSheetMount } from "@/modules/cart/components/cart-sheet-mount/cart-
 import { ProductCard } from "@/modules/catalog/components/product-card/product-card";
 import { pickHomeCollectionLink } from "@/modules/catalog/lib/plp-query";
 import { HomeBenefits } from "@/modules/content/components/home-benefits/home-benefits";
+import { HomeCategories } from "@/modules/content/components/home-categories/home-categories";
 import { HomeEditorial } from "@/modules/content/components/home-editorial/home-editorial";
 import { HomeHero } from "@/modules/content/components/home-hero/home-hero";
 import { SiteFooter } from "@/modules/content/components/site-footer/site-footer";
 import { SiteHeader } from "@/modules/content/components/site-header/site-header";
+import { isMarketId } from "@/platform/config/markets";
+import { withMarketPrefix } from "@/platform/config/market-path";
 import { getCapabilities } from "@/platform/registry";
+import {
+  buildCanonicalUrl,
+  buildPageMetadata,
+  buildWebSiteJsonLd,
+  jsonLdScriptProps,
+  siteName,
+} from "@/platform/seo";
 import { Badge } from "@e-pig/happy-dog/components/badge";
 
 // Home 页定域（docs/engineering/page-workflow-guide.md §8 Home）：
 // 主域 catalog（选品栅格）；协作域 content（站点壳与营销区块）、cart（market context + sheet 挂载）。
 // app 只做路由编排：request-time market 边界 + Suspense + 组合 modules 组件。
-//
-// Cache Components 渲染模型（docs/codex/research/07 §2）：
-// RootLayout 只输出当前 markets 共有的 base language `en`；region-specific
-// market/currency（及 registry 内 defaultLocale）在 request-time Suspense 中解析。
-// 价格/cart 不缓存（AGENTS.md Hard Rules），故取数均在 request-time 边界内。
+
+type HomePageProps = {
+  params: Promise<{ market: string }>;
+};
+
+export async function generateMetadata({ params }: HomePageProps): Promise<Metadata> {
+  const { market: marketParam } = await params;
+  if (!isMarketId(marketParam)) {
+    return buildPageMetadata({ title: siteName, noIndex: true });
+  }
+  const path = withMarketPrefix(marketParam, "/");
+  return buildPageMetadata({
+    title: `${siteName} — Furniture for slower days`,
+    description:
+      "Modular sofas, calm bedrooms and outdoor pieces made for real living — not showrooms.",
+    canonicalUrl: buildCanonicalUrl(marketParam, path),
+  });
+}
 
 /** request-time 区域：读取当前进程 MARKET，经 registry 取 mock adapter 数据。 */
 async function MarketProductGrid() {
@@ -49,7 +73,8 @@ async function MarketProductGrid() {
           {homeCollectionLink ? (
             <Link
               href={homeCollectionLink.href}
-              className="mt-4 inline-block text-sm font-medium underline underline-offset-4 transition-colors hover:text-muted-foreground"
+              prefetch={false}
+              className="mt-4 inline-block text-sm font-medium underline underline-offset-4 transition-colors hover:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               Shop {homeCollectionLink.title}
             </Link>
@@ -80,8 +105,33 @@ async function MarketChrome() {
   );
 }
 
+async function HomeCategoriesSection() {
+  await connection();
+  const { market } = getCapabilities();
+  return <HomeCategories marketId={market.id} />;
+}
+
+async function HomeHeroSection() {
+  await connection();
+  const { market } = getCapabilities();
+  return <HomeHero marketId={market.id} />;
+}
+
+async function HomeJsonLd() {
+  await connection();
+  const { market } = getCapabilities();
+  if (!isMarketId(market.id)) return null;
+  const url = buildCanonicalUrl(market.id, withMarketPrefix(market.id, "/"));
+  const data = buildWebSiteJsonLd({
+    name: siteName,
+    url,
+    description: "Furniture for slower days.",
+  });
+  return <script {...jsonLdScriptProps(data)} />;
+}
+
 function HeaderSkeleton() {
-  return <div className="h-16 border-b bg-background" aria-hidden="true" />;
+  return <div className="h-[6.25rem] border-b bg-background" aria-hidden="true" />;
 }
 
 function ProductGridSkeleton() {
@@ -97,14 +147,36 @@ function ProductGridSkeleton() {
   );
 }
 
+function HeroSkeleton() {
+  return <div className="min-h-[min(88vh,720px)] w-full animate-pulse bg-secondary" aria-hidden="true" />;
+}
+
 export default function HomePage() {
   return (
     <div className="min-h-screen overflow-hidden">
+      <Suspense fallback={null}>
+        <HomeJsonLd />
+      </Suspense>
       <Suspense fallback={<HeaderSkeleton />}>
         <MarketChrome />
       </Suspense>
       <main>
-        <HomeHero />
+        <Suspense fallback={<HeroSkeleton />}>
+          <HomeHeroSection />
+        </Suspense>
+        <Suspense
+          fallback={
+            <div className="mx-auto max-w-[1440px] px-4 py-16 sm:px-6 lg:px-8">
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                {Array.from({ length: 4 }, (_, i) => (
+                  <div key={i} className="aspect-[4/5] animate-pulse rounded-2xl bg-secondary" />
+                ))}
+              </div>
+            </div>
+          }
+        >
+          <HomeCategoriesSection />
+        </Suspense>
         <section
           className="mx-auto max-w-[1440px] px-4 py-20 sm:px-6 lg:px-8 lg:py-28"
           id="collection"

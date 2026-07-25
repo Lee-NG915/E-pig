@@ -6,6 +6,7 @@ const meta = {
   title: "Modules/content/HomeHero",
   component: HomeHero,
   parameters: { layout: "fullscreen" },
+  args: { marketId: "au" },
 } satisfies Meta<typeof HomeHero>;
 
 export default meta;

@@ -6,7 +6,7 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { addItem, getCartSnapshot, setCartOpen, setQuantity } from "@/modules/cart/lib/cart-store";
-import { formatMarketPrice } from "@/shared/lib/money";
+import { formatMarketPrice } from "@/platform/config/format-market-price";
 
 import { CartMarketProvider, type CartMarket } from "../cart-market-context/cart-market-context";
 import { CartSheet } from "./cart-sheet";

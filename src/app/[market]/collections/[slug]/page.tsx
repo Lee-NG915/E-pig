@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 
+import type { Metadata } from "next";
 import { connection } from "next/server";
 import { notFound } from "next/navigation";
 
@@ -12,12 +13,56 @@ import {
 } from "@/modules/catalog/lib/plp-query";
 import { SiteFooter } from "@/modules/content/components/site-footer/site-footer";
 import { SiteHeader } from "@/modules/content/components/site-header/site-header";
+import { pickRelatedCollections } from "@/modules/content/lib/related-collections";
+import { isMarketId } from "@/platform/config/markets";
+import { withMarketPrefix } from "@/platform/config/market-path";
 import { getCapabilities } from "@/platform/registry";
+import {
+  buildCanonicalUrl,
+  buildCollectionJsonLd,
+  buildPageMetadata,
+  jsonLdScriptProps,
+  siteName,
+} from "@/platform/seo";
 
 type CollectionPageProps = {
   params: Promise<{ market: string; slug: string }>;
   searchParams: Promise<{ sort?: string | string[] }>;
 };
+
+export async function generateMetadata({
+  params,
+  searchParams,
+}: CollectionPageProps): Promise<Metadata> {
+  const { market: marketParam, slug } = await params;
+  const { sort: rawSort } = await searchParams;
+  const sort = parseProductListSort(rawSort);
+
+  if (!isMarketId(marketParam)) {
+    return buildPageMetadata({ title: siteName, noIndex: true });
+  }
+
+  await connection();
+  const { catalog } = getCapabilities();
+  const collections = await catalog.listCollections();
+  const collection = findCollectionByHandle(collections, slug);
+
+  if (!collection) {
+    return buildPageMetadata({
+      title: `Collection not found | ${siteName}`,
+      noIndex: true,
+    });
+  }
+
+  const path = withMarketPrefix(marketParam, `/collections/${slug}`);
+  return buildPageMetadata({
+    title: `${collection.title} | ${siteName}`,
+    description: `Shop ${collection.title} — furniture for slower days.`,
+    canonicalUrl: buildCanonicalUrl(marketParam, path),
+    // 排序组合不进索引，避免 SEO 垃圾页
+    noIndex: Boolean(sort),
+  });
+}
 
 /** request-time 边界：解析当前 market 并挂载站点 header + 单一购物车抽屉。 */
 async function MarketChrome() {
@@ -57,23 +102,34 @@ async function CollectionProductList({
   }
 
   const products = await catalog.listProducts({ collection: slug, sort });
+  const relatedCollections = pickRelatedCollections(collections, slug, market.id);
+  const canonicalPath = withMarketPrefix(market.id, `/collections/${slug}`);
+  const jsonLd =
+    isMarketId(market.id) &&
+    buildCollectionJsonLd({
+      name: collection.title,
+      description: `Shop ${collection.title}`,
+      url: buildCanonicalUrl(market.id, canonicalPath),
+    });
 
   return (
     <CartMarketProvider
       market={{ id: market.id, currency: market.currency }}
     >
+      {jsonLd ? <script {...jsonLdScriptProps(jsonLd)} /> : null}
       <ProductList
         products={products}
         collection={collection}
         marketId={market.id}
         sort={sort}
+        relatedCollections={relatedCollections}
       />
     </CartMarketProvider>
   );
 }
 
 function HeaderSkeleton() {
-  return <div className="h-16 border-b bg-background" aria-hidden="true" />;
+  return <div className="h-[6.25rem] border-b bg-background" aria-hidden="true" />;
 }
 
 function ProductListSkeleton() {

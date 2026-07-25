@@ -1,6 +1,6 @@
 # M2.1 Task 看板
 
-更新日期：2026-07-19
+更新日期：2026-07-25
 
 | ID | 标题 | Owner | Status | 交付记录 |
 | --- | --- | --- | --- | --- |
@@ -9,6 +9,12 @@
 | T02 | PLP 页 `/collections/[slug]` + 列表/空态/排序 + 组件 companions | kimi | done | [tasks/T02-plp.md](./tasks/T02-plp.md) |
 | T03 | Home 入口到 PLP；product-card 链向 `/products/[slug]`；PDP stub | kimi | done | [tasks/T03-home-pdp-link.md](./tasks/T03-home-pdp-link.md) |
 | T04 | Leader Review（Claude）+ `pnpm verify` + 里程碑验收对照 | claude / cursor | done | [tasks/T04-leader-review.md](./tasks/T04-leader-review.md) |
+| T05 | 全局双层 Header：Mega Menu + Mobile Drawer + 市场指示 + 工具图标 | cursor | done | [tasks/T05-header-chrome.md](./tasks/T05-header-chrome.md) |
+| T06 | Home 重设计：Hero / 分类入口 / 精选 + SEO metadata | cursor | done | [tasks/T06-home-redesign.md](./tasks/T06-home-redesign.md) |
+| T07 | PLP：Breadcrumb / 布局 / Metadata / JSON-LD / 空态完善 | cursor | done | [tasks/T07-plp-polish.md](./tasks/T07-plp-polish.md) |
+| T08 | Leader+Claude Review + verify | cursor | done | [tasks/T08-leader-review.md](./tasks/T08-leader-review.md) |
+
+增补契约：[contracts-chrome.md](./contracts-chrome.md)
 
 ## 验收映射（PRD §4）
 

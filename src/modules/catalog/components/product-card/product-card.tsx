@@ -10,7 +10,7 @@ import { withMarketPrefix } from "@/platform/config/market-path";
 
 import { useCartMarket } from "@/modules/cart/components/cart-market-context/cart-market-context";
 import { addItem } from "@/modules/cart/lib/cart-store";
-import { formatMarketPrice } from "@/shared/lib/money";
+import { formatMarketPrice } from "@/platform/config/format-market-price";
 import { Badge } from "@e-pig/happy-dog/components/badge";
 import { Button } from "@e-pig/happy-dog/components/button";
 

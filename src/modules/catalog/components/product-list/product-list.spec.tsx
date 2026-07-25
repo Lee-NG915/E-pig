@@ -63,9 +63,10 @@ function renderList(props: { products?: ProductListItem[]; sort?: "price-asc" | 
 }
 
 describe("ProductList", () => {
-  it("渲染集合标题、件数与商品名称", () => {
+  it("渲染面包屑、集合标题、件数与商品名称", () => {
     renderList();
 
+    expect(screen.getByRole("link", { name: "Home" }).getAttribute("href")).toBe("/au");
     expect(screen.getByRole("heading", { name: "Living Room" })).toBeTruthy();
     expect(screen.getByText("2 pieces")).toBeTruthy();
     expect(screen.getByRole("heading", { name: "Alto Modular Sofa" })).toBeTruthy();

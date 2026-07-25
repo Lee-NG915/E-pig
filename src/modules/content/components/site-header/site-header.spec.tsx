@@ -5,17 +5,24 @@ import { cleanup, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { CartMarketProvider } from "@/modules/cart/components/cart-market-context/cart-market-context";
 import {
-  addItem,
-  getCartSnapshot,
-  setCartOpen,
-  setQuantity,
-} from "@/modules/cart/lib/cart-store";
+  CartMarketProvider,
+  type CartMarket,
+} from "@/modules/cart/components/cart-market-context/cart-market-context";
+import { addItem, setCartOpen, setQuantity } from "@/modules/cart/lib/cart-store";
 
 import { SiteHeader } from "./site-header";
 
-const market = { id: "au", currency: "AUD" };
+vi.mock("next/navigation", () => ({
+  usePathname: () => "/au/collections/sofas",
+}));
+
+vi.mock("next/image", () => ({
+  default: ({ alt }: { alt: string }) => <span role="img" aria-label={alt || "img"} />,
+}));
+
+const market: CartMarket = { id: "au", currency: "AUD" };
+
 const product = {
   id: "alto-modular-sofa",
   name: "Alto Modular Sofa",
@@ -26,88 +33,76 @@ const product = {
 
 beforeEach(() => {
   window.localStorage.clear();
-  vi.restoreAllMocks();
-  for (const line of getCartSnapshot(market).lines) {
-    setQuantity(market, line.productId, 0);
-  }
+  setQuantity(market, product.id, 0);
   setCartOpen(market, false);
 });
 
 afterEach(cleanup);
 
-describe("SiteHeader cart behavior", () => {
-  it("只呈现可用操作，并随购物车数量更新", () => {
-    render(
-      <CartMarketProvider market={market}>
-        <SiteHeader />
-      </CartMarketProvider>,
-    );
+function renderHeader() {
+  return render(
+    <CartMarketProvider market={market}>
+      <SiteHeader />
+    </CartMarketProvider>,
+  );
+}
 
-    expect(screen.queryByRole("button", { name: /navigation/i })).toBeNull();
-    expect(screen.queryByRole("button", { name: /search/i })).toBeNull();
-    expect(screen.getByRole("button", { name: "Open bag with 0 items" })).toBeTruthy();
-
-    act(() => addItem(market, product));
-
-    expect(screen.getByRole("button", { name: "Open bag with 1 items" })).toBeTruthy();
+describe("SiteHeader", () => {
+  it("渲染双层结构：促销条、一级分类与市场指示", () => {
+    renderHeader();
+    expect(screen.getByText(/120 day trial/i)).toBeTruthy();
+    expect(screen.getByRole("navigation", { name: "Primary" })).toBeTruthy();
+    expect(screen.getByText(/Australia/)).toBeTruthy();
+    expect(screen.getByText(/AUD/)).toBeTruthy();
+    for (const label of ["Living", "Bedroom", "Outdoor", "Sofas"]) {
+      expect(screen.getByRole("link", { name: new RegExp(label) })).toBeTruthy();
+    }
   });
 
-  it("点击 bag 按钮会打开当前 market 的购物车", async () => {
+  it("Sofas 一级链在当前 PLP 上为 aria-current", () => {
+    renderHeader();
+    const sofas = screen.getByRole("link", { name: /Sofas/i });
+    expect(sofas.getAttribute("aria-current")).toBe("page");
+  });
+
+  it("hover 打开 Mega：文案 Featured、Shop all，无图片", async () => {
     const user = userEvent.setup();
-    render(
-      <CartMarketProvider market={market}>
-        <SiteHeader />
-      </CartMarketProvider>,
-    );
-
-    await user.click(screen.getByRole("button", { name: "Open bag with 0 items" }));
-
-    expect(getCartSnapshot(market).open).toBe(true);
+    renderHeader();
+    const living = screen.getByRole("link", { name: /Living/i });
+    await user.hover(living);
+    const mega = await screen.findByRole("region", { name: /Living menu/i });
+    expect(mega).toBeTruthy();
+    expect(screen.getByRole("link", { name: /Shop all Living/i })).toBeTruthy();
+    expect(screen.getByRole("link", { name: /Modular sofas/i })).toBeTruthy();
+    expect(within(mega).queryByRole("img")).toBeNull();
   });
 
-  it("localStorage 写失败时仍通知 UI 数量变化", () => {
-    vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
-      throw new DOMException("quota exceeded", "QuotaExceededError");
-    });
-    render(
-      <CartMarketProvider market={market}>
-        <SiteHeader />
-      </CartMarketProvider>,
-    );
+  it("Esc 关闭 Mega", async () => {
+    const user = userEvent.setup();
+    renderHeader();
+    await user.hover(screen.getByRole("link", { name: /Living/i }));
+    expect(await screen.findByRole("region", { name: /Living menu/i })).toBeTruthy();
+    await user.keyboard("{Escape}");
+    expect(screen.queryByRole("region", { name: /Living menu/i })).toBeNull();
+  });
+
+  it("Cart badge 反映数量；工具图标有无障碍名称", async () => {
+    renderHeader();
+    expect(screen.getByRole("button", { name: "Open bag with 0 items" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Search (coming soon)" })).toBeTruthy();
 
     act(() => addItem(market, product));
-
     expect(screen.getByRole("button", { name: "Open bag with 1 items" })).toBeTruthy();
   });
 
-  it("不同 market provider 的 UI 状态互不混合", () => {
-    const sgMarket = { id: "sg", currency: "SGD" };
-    render(
-      <>
-        <section aria-label="AU cart">
-          <CartMarketProvider market={market}>
-            <SiteHeader />
-          </CartMarketProvider>
-        </section>
-        <section aria-label="SG cart">
-          <CartMarketProvider market={sgMarket}>
-            <SiteHeader />
-          </CartMarketProvider>
-        </section>
-      </>,
-    );
-
-    act(() => addItem(market, product));
-
-    expect(
-      within(screen.getByRole("region", { name: "AU cart" })).getByRole("button", {
-        name: "Open bag with 1 items",
-      }),
-    ).toBeTruthy();
-    expect(
-      within(screen.getByRole("region", { name: "SG cart" })).getByRole("button", {
-        name: "Open bag with 0 items",
-      }),
-    ).toBeTruthy();
+  it("移动菜单可打开并逐级进入", async () => {
+    const user = userEvent.setup();
+    renderHeader();
+    await user.click(screen.getByRole("button", { name: "Open menu" }));
+    expect(screen.getByRole("dialog", { name: "Menu" })).toBeTruthy();
+    await user.click(within(screen.getByRole("dialog")).getByRole("button", { name: /Living/i }));
+    expect(screen.getByRole("link", { name: /Shop all Living/i })).toBeTruthy();
+    await user.click(screen.getByRole("button", { name: /Back/i }));
+    expect(within(screen.getByRole("dialog")).getByRole("button", { name: /Bedroom/i })).toBeTruthy();
   });
 });

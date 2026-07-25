@@ -1,25 +1,23 @@
 # SiteHeader
 
-## 职责
-站点顶部壳：主导航、品牌标识与当前市场购物袋入口（数量徽标 + 打开抽屉）。
+更新日期：2026-07-25
 
-## 用户故事 / 场景
-- 作为浏览者，我希望随时看到购物袋里有多少件商品，并能一键打开购物袋抽屉。
+## 场景
 
-## 状态矩阵
-| 状态 | 触发 | 可见结果 |
-| --- | --- | --- |
-| 空袋 | 当前 market cart 行数为 0 | bag 按钮 aria-label 为 "Open bag with 0 items"，无数量角标 |
-| 有商品 | 行数量合计为 n（1–9） | aria-label 为 "Open bag with n items"，角标显示 n |
-| 数量超 9 | 合计数量 > 9 | 角标显示 "9+" |
-| 打开抽屉 | 点击 bag 按钮 | 写回当前 market 的 `cart.open = true`，抽屉打开 |
-| 多 market 并存 | 页面挂多个 market provider | 各 header 只反映自己 market 的 cart 数量 |
-| storage 不可用 | localStorage 写入抛错（如 quota） | 内存 cart 仍更新，徽标照常变化 |
+- Desktop：顶栏（促销 + 辅助链 + 市场指示）+ 主栏（Logo、一级分类 Mega Menu、工具图标、Cart）。
+- Mobile：汉堡打开 Drawer，逐级进入分类 / 返回 / Shop all；打开时锁滚动。
+- Mega：hover/focus 打开；**绝对定位浮层**（不推挤页面）；仅文案 Featured 链，无图片；同级切换无闪烁；指针可移入面板；Esc / 外点关闭。
+- 路由变化后关闭所有菜单与 Drawer。
+
+## 状态
+
+| 状态 | 行为 |
+| --- | --- |
+| mega closed | 仅一级链接；Header 高度恒定 |
+| mega open (id) | 浮层面板叠在内容之上，一级 Active |
+| mobile closed / open | Drawer |
+| mobile drill | 显示子级 + Back |
 
 ## 非目标
-- 搜索、账户等未实现的入口不渲染占位按钮。
-- 不做 cart 数据获取（状态来自 cart 域 external store）。
 
-## 依赖
-- 基础组件：`@e-pig/happy-dog` 的 Button
-- cart 域：`useCartMarket`、`useCartStore`、`setCartOpen`
+真实 Search/Account/Wishlist、跨进程市场切换、全量 Prefetch、Mega 内营销图。

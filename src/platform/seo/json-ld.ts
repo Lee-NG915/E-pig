@@ -27,6 +27,40 @@ export function buildProductJsonLd(input: ProductJsonLdInput): Record<string, un
   };
 }
 
+export type CollectionJsonLdInput = {
+  name: string;
+  description?: string;
+  url: string;
+};
+
+export function buildCollectionJsonLd(
+  input: CollectionJsonLdInput,
+): Record<string, unknown> {
+  return {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: input.name,
+    description: input.description,
+    url: input.url,
+  };
+}
+
+export type WebSiteJsonLdInput = {
+  name: string;
+  url: string;
+  description?: string;
+};
+
+export function buildWebSiteJsonLd(input: WebSiteJsonLdInput): Record<string, unknown> {
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: input.name,
+    url: input.url,
+    description: input.description,
+  };
+}
+
 export function jsonLdScriptProps(data: unknown): {
   type: "application/ld+json";
   dangerouslySetInnerHTML: { __html: string };

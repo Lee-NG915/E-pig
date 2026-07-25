@@ -10,7 +10,7 @@ import {
   type CartMarket,
 } from "@/modules/cart/components/cart-market-context/cart-market-context";
 import { getCartSnapshot, setCartOpen, setQuantity } from "@/modules/cart/lib/cart-store";
-import { formatMarketPrice } from "@/shared/lib/money";
+import { formatMarketPrice } from "@/platform/config/format-market-price";
 
 import { ProductCard } from "./product-card";
 

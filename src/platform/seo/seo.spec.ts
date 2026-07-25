@@ -2,9 +2,11 @@ import { describe, expect, it } from "vitest";
 
 import {
   buildCanonicalUrl,
+  buildCollectionJsonLd,
   buildHreflangAlternates,
   buildPageMetadata,
   buildProductJsonLd,
+  buildWebSiteJsonLd,
   serializeForInlineScript,
   truncateMeta,
 } from "./index";
@@ -40,6 +42,13 @@ describe("seo helpers", () => {
     const ld = buildProductJsonLd({ name: "Chair", sku: "c-1" });
     expect(ld["@type"]).toBe("Product");
     expect(ld.sku).toBe("c-1");
+  });
+
+  it("builds collection and website json-ld", () => {
+    expect(buildCollectionJsonLd({ name: "Sofas", url: "https://a/x" })["@type"]).toBe(
+      "CollectionPage",
+    );
+    expect(buildWebSiteJsonLd({ name: "E-pig", url: "https://a/" })["@type"]).toBe("WebSite");
   });
 
   it("emits hreflang for every registry market host", () => {
