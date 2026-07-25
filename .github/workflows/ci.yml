@@ -55,3 +55,32 @@ jobs:
 
       - name: Runtime market smoke (standalone)
         run: pnpm smoke:runtime-market
+
+  deploy:
+    # main 推送且 quality 全绿后自动部署到 Cloudflare Workers；PR 只验证不部署。
+    # 需要的 secret：CLOUDFLARE_API_TOKEN（CF Dashboard → My Profile → API Tokens →
+    # "Edit Cloudflare Workers" 模板，作用域限本账号）。account_id 已固定在 wrangler.jsonc。
+    needs: quality
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    concurrency:
+      group: deploy-cf-main
+      cancel-in-progress: false
+    env:
+      MARKET: au
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build and deploy to Cloudflare Workers
+        run: bash scripts/deploy-cf.sh

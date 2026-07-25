@@ -59,6 +59,11 @@ pnpm catalog:fetch-koala # 从 Koala AU 公开 Shopify JSON 刷新本地 mock fi
 # storybook-host 业务组件库（modules + happy-dog 聚合，端口 6007）
 pnpm storybook:modules       # 启动 packages/storybook-host Storybook
 pnpm build-storybook:modules # 构建 storybook-host 静态 Storybook
+
+# Cloudflare Workers 部署（@opennextjs/cloudflare）
+pnpm preview        # OpenNext 构建 + 本地 workerd 预览（最接近线上运行时）
+pnpm deploy         # bash scripts/deploy-cf.sh：OpenNext 构建 + 部署到 CF Workers（本地需 wrangler 登录态；CI 用 CLOUDFLARE_API_TOKEN）
+pnpm cf-typegen     # 生成 cloudflare-env.d.ts 绑定类型声明
 ```
 
 跑单个测试文件：
