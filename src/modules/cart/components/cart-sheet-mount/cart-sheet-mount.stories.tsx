@@ -12,7 +12,7 @@ import {
 import type { CartMarket } from "../cart-market-context/cart-market-context";
 import { CartSheetMount } from "./cart-sheet-mount";
 
-const market: CartMarket = { id: "sb-cart-sheet-mount", currency: "AUD", locale: "en-AU" };
+const market: CartMarket = { id: "au", currency: "AUD" };
 
 const demoProduct: DemoCartProduct = {
   id: "alto-modular-sofa",

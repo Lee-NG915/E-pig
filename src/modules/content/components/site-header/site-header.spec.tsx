@@ -15,7 +15,7 @@ import {
 
 import { SiteHeader } from "./site-header";
 
-const market = { id: "au", currency: "AUD", locale: "en-AU" };
+const market = { id: "au", currency: "AUD" };
 const product = {
   id: "alto-modular-sofa",
   name: "Alto Modular Sofa",
@@ -81,7 +81,7 @@ describe("SiteHeader cart behavior", () => {
   });
 
   it("不同 market provider 的 UI 状态互不混合", () => {
-    const sgMarket = { id: "sg-provider-test", currency: "SGD", locale: "en-SG" };
+    const sgMarket = { id: "sg", currency: "SGD" };
     render(
       <>
         <section aria-label="AU cart">

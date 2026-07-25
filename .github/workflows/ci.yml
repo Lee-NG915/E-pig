@@ -15,6 +15,8 @@ concurrency:
 jobs:
   quality:
     runs-on: ubuntu-latest
+    env:
+      MARKET: au
     steps:
       - uses: actions/checkout@v4
 

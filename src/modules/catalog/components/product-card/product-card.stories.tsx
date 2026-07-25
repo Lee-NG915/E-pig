@@ -9,7 +9,7 @@ import {
 import { ProductCard } from "./product-card";
 
 /** story 专属 market：与 app（au/sg/us）及其它 story 的 demo cart 互不影响。 */
-const market: CartMarket = { id: "sb-product-card", currency: "AUD", locale: "en-AU" };
+const market: CartMarket = { id: "au", currency: "AUD" };
 
 const product: ProductListItem = {
   id: "alto-modular-sofa",
@@ -24,7 +24,7 @@ const product: ProductListItem = {
 const meta = {
   title: "Modules/catalog/ProductCard",
   component: ProductCard,
-  args: { product, locale: market.locale },
+  args: { product },
   decorators: [
     (Story) => (
       <CartMarketProvider market={market}>

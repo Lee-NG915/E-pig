@@ -15,7 +15,7 @@ import { SiteHeader } from "@/modules/content/components/site-header/site-header
 import { getCapabilities } from "@/platform/registry";
 
 type CollectionPageProps = {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ market: string; slug: string }>;
   searchParams: Promise<{ sort?: string | string[] }>;
 };
 
@@ -25,7 +25,7 @@ async function MarketChrome() {
   const { market } = getCapabilities();
   return (
     <CartSheetMount
-      market={{ id: market.id, currency: market.currency, locale: market.defaultLocale }}
+      market={{ id: market.id, currency: market.currency }}
     >
       <SiteHeader />
     </CartSheetMount>
@@ -40,7 +40,7 @@ async function CollectionProductList({
   params,
   searchParams,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ market: string; slug: string }>;
   searchParams: Promise<{ sort?: string | string[] }>;
 }) {
   const { slug } = await params;
@@ -60,12 +60,12 @@ async function CollectionProductList({
 
   return (
     <CartMarketProvider
-      market={{ id: market.id, currency: market.currency, locale: market.defaultLocale }}
+      market={{ id: market.id, currency: market.currency }}
     >
       <ProductList
         products={products}
         collection={collection}
-        locale={market.defaultLocale}
+        marketId={market.id}
         sort={sort}
       />
     </CartMarketProvider>

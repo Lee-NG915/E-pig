@@ -1,6 +1,6 @@
 # Next 16 缓存、购物车与市场路由决策
 
-更新日期：2026-07-19
+更新日期：2026-07-25
 
 状态：accepted
 
@@ -13,8 +13,9 @@
 | 如何表达缓存 | `'use cache'` + `cacheLife(<profile>)` + `cacheTag(<business-key>)`，三者共同评审 |
 | 谁签发匿名 cart cookie | 首次 `addItem` Server Action；HTTP 客户端可走 `POST /api/cart` Route Handler |
 | `proxy.ts` 做什么 | 轻量 host/路径规范化与 redirect/rewrite；不创建 cart、不取商品、不做完整认证 |
-| 路由默认 | 单市场单语言 P0 无 market/locale 前缀；范围确认后再升级 |
-| Koala 是否可参考 | 可参考“市场子域 + 市场默认语言 + 稳定资源路径”，不复制 Shopify 主题/实现 |
+| 路由默认 | **MUJI 式 `/{market}/...` 路径前缀**（本地必显式 `MARKET`；`/` 与其它市场前缀 308 到本进程市场）。生产可叠加 Koala 式 host→market；多语言时再加可选 `/{market}/{locale}/...` |
+| Koala 是否可参考 | 可参考“稳定资源路径 + 一市场默认语言 + host 表达市场”；本地开发不强制子域 |
+| MUJI 是否可参考 | 可参考“path 表达市场（`/sg/`）”，便于单 host 本地与后续 locale 段 |
 | provider/integration 边界 | 业务流等待结果 → port/adapter；可降级 fan-out → integration |
 | Phase 1 runtime market | standalone 启动时注入 `MARKET`；Root Layout 只声明共有 base language `en`，regional locale/currency 在 request-time Suspense boundaries 中解析 |
 
@@ -97,7 +98,7 @@ PDP Server Component
 - 各市场商品 id/slug、价格、库存和促销可能不同，alternate URL 必须用稳定映射生成。
 - 跨子域 analytics attribution 和 consent 状态需要单独验证。
 
-结论：如果 P0 只有一个市场，先用无前缀路由；如果上线即多市场且一市场一语言，Koala 模式优于 `[market]/[locale]`；如果同一市场有多语言，再在该市场 host 下加显式 locale 路径。
+结论（2026-07-25 修订）：本地与当前阶段采用 **MUJI 式 `/{market}` 前缀**（`planMarketPath` + `src/proxy.ts`），强制进程级 `MARKET`，跨市场 URL 一律 308 回本进程市场——避免单机多子域成本，并为后续 `/{market}/{locale}` 留扩展位。生产上线多市场且一市场一语言时，可叠加 Koala 式 host→market（registry `hosts`），资源路径仍保持 `/collections`、`/products` 语义。同一市场多语言时再加显式 locale 段；不要回到 Joyboy middleware 链。
 
 ## 6. URL 治理验收表
 

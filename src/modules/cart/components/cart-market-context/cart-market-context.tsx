@@ -4,9 +4,8 @@ import { createContext, use } from "react";
 
 import type { CartMarketIdentity } from "@/modules/cart/lib/cart-store";
 
-export type CartMarket = CartMarketIdentity & {
-  locale: string;
-};
+/** 购物车/UI 市场身份：只带 market id + currency；locale 从 registry 按 id 推导。 */
+export type CartMarket = CartMarketIdentity;
 
 const CartMarketContext = createContext<CartMarket | null>(null);
 

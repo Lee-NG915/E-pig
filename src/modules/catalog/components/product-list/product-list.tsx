@@ -2,6 +2,8 @@ import Link from "next/link";
 
 import type { ProductListItem } from "@/core/contracts/commerce/catalog";
 
+import { withMarketPrefix } from "@/platform/config/market-path";
+
 import type { ProductListSort } from "@/modules/catalog/lib/plp-query";
 
 import { ProductCard } from "../product-card/product-card";
@@ -11,7 +13,7 @@ export type { ProductListSort };
 type ProductListProps = {
   products: ProductListItem[];
   collection: { handle: string; title: string };
-  locale: string;
+  marketId: string;
   sort?: ProductListSort;
 };
 
@@ -21,22 +23,24 @@ const SORT_OPTIONS: { value: ProductListSort; label: string }[] = [
   { value: "price-desc", label: "Price: high to low" },
 ];
 
-function sortHref(handle: string, value: ProductListSort): string {
-  return `/collections/${handle}?sort=${value}`;
+function sortHref(marketId: string, handle: string, value: ProductListSort): string {
+  return `${withMarketPrefix(marketId, `/collections/${handle}`)}?sort=${value}`;
 }
 
 function SortLink({
+  marketId,
   handle,
   option,
   active,
 }: {
+  marketId: string;
   handle: string;
   option: (typeof SORT_OPTIONS)[number];
   active: boolean;
 }) {
   return (
     <Link
-      href={sortHref(handle, option.value)}
+      href={sortHref(marketId, handle, option.value)}
       className={`text-sm transition-colors ${
         active
           ? "font-medium text-foreground underline underline-offset-4"
@@ -49,7 +53,7 @@ function SortLink({
   );
 }
 
-export function ProductList({ products, collection, locale, sort }: ProductListProps) {
+export function ProductList({ products, collection, marketId, sort }: ProductListProps) {
   return (
     <div className="mx-auto max-w-[1440px] px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
@@ -67,6 +71,7 @@ export function ProductList({ products, collection, locale, sort }: ProductListP
           {SORT_OPTIONS.map((option) => (
             <SortLink
               key={option.value}
+              marketId={marketId}
               handle={collection.handle}
               option={option}
               active={sort === option.value}
@@ -78,7 +83,7 @@ export function ProductList({ products, collection, locale, sort }: ProductListP
       {products.length > 0 ? (
         <div className="grid gap-x-4 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
           {products.map((product) => (
-            <ProductCard key={product.id} product={product} locale={locale} />
+            <ProductCard key={product.id} product={product} />
           ))}
         </div>
       ) : (
@@ -88,7 +93,7 @@ export function ProductList({ products, collection, locale, sort }: ProductListP
             Check back soon or browse the rest of the shop.
           </p>
           <Link
-            href="/"
+            href={withMarketPrefix(marketId, "/")}
             className="mt-6 inline-block text-sm font-medium underline underline-offset-4 transition-colors hover:text-muted-foreground"
           >
             Back to home

@@ -13,7 +13,7 @@ vi.mock("next/image", () => ({
   default: ({ alt }: { alt: string }) => <span role="img" aria-label={alt || "Product image"} />,
 }));
 
-const market: CartMarket = { id: "cart-sheet-mount-test", currency: "AUD", locale: "en-AU" };
+const market: CartMarket = { id: "au", currency: "AUD" };
 
 const product = {
   id: "alto-modular-sofa",

@@ -37,16 +37,19 @@ describe("findCollectionByHandle", () => {
 });
 
 describe("pickHomeCollectionLink", () => {
-  it("指向首个集合的 PLP", () => {
+  it("指向首个集合的 PLP（带市场前缀）", () => {
     expect(
-      pickHomeCollectionLink([
-        { handle: "sofas", title: "Sofas" },
-        { handle: "tables", title: "Tables" },
-      ]),
-    ).toEqual({ href: "/collections/sofas", title: "Sofas" });
+      pickHomeCollectionLink(
+        [
+          { handle: "sofas", title: "Sofas" },
+          { handle: "tables", title: "Tables" },
+        ],
+        "au",
+      ),
+    ).toEqual({ href: "/au/collections/sofas", title: "Sofas" });
   });
 
   it("无集合时返回 null", () => {
-    expect(pickHomeCollectionLink([])).toBeNull();
+    expect(pickHomeCollectionLink([], "sg")).toBeNull();
   });
 });

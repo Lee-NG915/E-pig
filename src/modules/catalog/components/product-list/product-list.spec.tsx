@@ -16,7 +16,7 @@ vi.mock("next/image", () => ({
   default: ({ alt }: { alt: string }) => <span role="img" aria-label={alt || "Product image"} />,
 }));
 
-const market: CartMarket = { id: "product-list-test", currency: "AUD", locale: "en-AU" };
+const market: CartMarket = { id: "au", currency: "AUD" };
 
 const products: ProductListItem[] = [
   {
@@ -55,7 +55,7 @@ function renderList(props: { products?: ProductListItem[]; sort?: "price-asc" | 
       <ProductList
         products={props.products ?? products}
         collection={collection}
-        locale={market.locale}
+        marketId="au"
         sort={props.sort}
       />
     </CartMarketProvider>,
@@ -76,7 +76,7 @@ describe("ProductList", () => {
     renderList({ products: [] });
 
     expect(screen.getByText("This collection is empty")).toBeTruthy();
-    expect(screen.getByRole("link", { name: "Back to home" }).getAttribute("href")).toBe("/");
+    expect(screen.getByRole("link", { name: "Back to home" }).getAttribute("href")).toBe("/au");
   });
 
   it("渲染排序链接并高亮当前排序", () => {
@@ -85,8 +85,8 @@ describe("ProductList", () => {
     const priceAsc = screen.getByRole("link", { name: "Price: low to high" });
     const nameLink = screen.getByRole("link", { name: "Name" });
 
-    expect(priceAsc.getAttribute("href")).toBe("/collections/living-room?sort=price-asc");
-    expect(nameLink.getAttribute("href")).toBe("/collections/living-room?sort=name");
+    expect(priceAsc.getAttribute("href")).toBe("/au/collections/living-room?sort=price-asc");
+    expect(nameLink.getAttribute("href")).toBe("/au/collections/living-room?sort=name");
     expect(priceAsc.getAttribute("aria-current")).toBe("true");
     expect(nameLink.getAttribute("aria-current")).toBeNull();
   });

@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { serverEnvSchema } from "./env";
 
 describe("env schema", () => {
-  it("MARKET 缺省时回退到 au", () => {
+  it("测试环境 MARKET 缺省时回退到 au", () => {
     expect(serverEnvSchema.MARKET.parse(undefined)).toBe("au");
   });
 

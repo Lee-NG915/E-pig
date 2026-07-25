@@ -17,12 +17,12 @@ function getAvailablePort() {
   });
 }
 
-async function fetchWithRetry(url) {
+async function fetchWithRetry(url, init) {
   let lastError;
   for (let attempt = 0; attempt < 40; attempt += 1) {
     try {
-      const response = await fetch(url);
-      if (response.ok) return response;
+      const response = await fetch(url, init);
+      if (init?.redirect === "manual" || response.ok) return response;
       lastError = new Error(`Unexpected HTTP ${response.status}`);
     } catch (error) {
       lastError = error;
@@ -40,29 +40,55 @@ const child = spawn(process.execPath, [path.resolve(pnpmCli), "start"], {
   cwd: process.cwd(),
   env: { ...process.env, MARKET: "sg", PORT: String(port), HOSTNAME: "127.0.0.1" },
   stdio: ["ignore", "pipe", "pipe"],
+  detached: process.platform !== "win32",
 });
 let output = "";
 child.stdout.on("data", (chunk) => (output += chunk));
 child.stderr.on("data", (chunk) => (output += chunk));
 
 try {
-  const response = await fetchWithRetry(`http://127.0.0.1:${port}/`);
-  const html = await response.text();
+  // 内容断言走规范市场首页（跟随 redirect 亦可）。
+  const home = await fetchWithRetry(`http://127.0.0.1:${port}/sg`);
+  const homeHtml = await home.text();
+
+  const rootRedirect = await fetchWithRetry(`http://127.0.0.1:${port}/`, {
+    redirect: "manual",
+  });
+  const foreign = await fetchWithRetry(`http://127.0.0.1:${port}/au/collections/sofas`, {
+    redirect: "manual",
+  });
+
   const assertions = [
-    [html.includes('<html lang="en">'), "expected the shared English document language"],
-    [html.includes("Singapore"), "expected Singapore market content"],
-    [html.includes("SGD"), "expected SGD market currency"],
-    [html.includes("en-SG"), "expected the SG regional locale in runtime content"],
-    [!html.includes('<html lang="en-AU">'), "must not leak build-time en-AU html lang"],
-    [!html.includes('<html lang="en-SG">'), "regional locale belongs to runtime UI, not the shell"],
-    [!html.includes("Australia · AUD"), "must not leak AU market content"],
-    [!html.includes("Sydney studio"), "shared shell must not contain AU-only studio copy"],
+    [rootRedirect.status === 308, "expected / to 308"],
+    [
+      (rootRedirect.headers.get("location") ?? "").replace(/\/$/, "") === "/sg",
+      "expected / → /sg",
+    ],
+    [homeHtml.includes('<html lang="en">'), "expected the shared English document language"],
+    [homeHtml.includes("Singapore"), "expected Singapore market content"],
+    [homeHtml.includes("SGD"), "expected SGD market currency"],
+    [homeHtml.includes("en-SG"), "expected the SG regional locale in runtime content"],
+    [!homeHtml.includes('<html lang="en-AU">'), "must not leak build-time en-AU html lang"],
+    [!homeHtml.includes('<html lang="en-SG">'), "regional locale belongs to runtime UI, not the shell"],
+    [!homeHtml.includes("Australia · AUD"), "must not leak AU market content"],
+    [!homeHtml.includes("Sydney studio"), "shared shell must not contain AU-only studio copy"],
+    [foreign.status === 308, "expected foreign market prefix to 308"],
+    [
+      (foreign.headers.get("location") ?? "").includes("/sg/collections/sofas"),
+      "expected /au/... to redirect into /sg/...",
+    ],
   ];
   const failure = assertions.find(([passed]) => !passed);
   if (failure) throw new Error(`${failure[1]}\n${output}`);
   process.stdout.write("[runtime-market-smoke] PASS — SG runtime config is consistent.\n");
 } finally {
-  child.kill("SIGTERM");
+  if (child.pid) {
+    try {
+      process.kill(-child.pid, "SIGTERM");
+    } catch {
+      child.kill("SIGTERM");
+    }
+  }
   await Promise.race([
     new Promise((resolve) => child.once("exit", resolve)),
     new Promise((resolve) => setTimeout(resolve, 3000)),

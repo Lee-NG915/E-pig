@@ -1,6 +1,6 @@
 # M2.1 冻结契约
 
-更新日期：2026-07-19
+更新日期：2026-07-25
 
 状态：frozen（实现中勿静默改；要改先开溯源或更新本文件并记 task）
 
@@ -10,11 +10,12 @@
 
 | 路由 | 用途 | 本里程碑 |
 | --- | --- | --- |
-| `/` | Home（升级入口到 PLP） | 改 |
-| `/collections/[slug]` | PLP：按 collection handle 列表 | **新增** |
-| `/products/[slug]` | PDP | **仅占位链**（可 404 或极简 stub；完整页属 M2.2） |
+| `/` | 308 → `/{MARKET}` | proxy |
+| `/{market}` | Home（升级入口到 PLP） | 改 |
+| `/{market}/collections/[slug]` | PLP：按 collection handle 列表 | **新增** |
+| `/{market}/products/[slug]` | PDP | **仅占位链**（可 404 或极简 stub；完整页属 M2.2） |
 
-P0 仍无 `[market]/[locale]` 段；市场继续 `MARKET` / registry。
+市场段 `/{market}` 必须等于进程 `MARKET`；其它市场前缀与裸 `/collections/...` 由 `src/proxy.ts` 308 纠正。locale 段尚未启用（为多语言预留）。
 
 **选定：** PLP 用 `/collections/[slug]`（与 `Collection.handle` 对齐），不用 `/products` 扁平列表作主 PLP。
 

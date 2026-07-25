@@ -21,7 +21,7 @@ import { Badge } from "@e-pig/happy-dog/components/badge";
 //
 // Cache Components 渲染模型（docs/codex/research/07 §2）：
 // RootLayout 只输出当前 markets 共有的 base language `en`；region-specific
-// market/locale/currency 在下面的 request-time Suspense boundaries 中解析。
+// market/currency（及 registry 内 defaultLocale）在 request-time Suspense 中解析。
 // 价格/cart 不缓存（AGENTS.md Hard Rules），故取数均在 request-time 边界内。
 
 /** request-time 区域：读取当前进程 MARKET，经 registry 取 mock adapter 数据。 */
@@ -32,11 +32,11 @@ async function MarketProductGrid() {
     catalog.listProducts(),
     catalog.listCollections(),
   ]);
-  const homeCollectionLink = pickHomeCollectionLink(collections);
+  const homeCollectionLink = pickHomeCollectionLink(collections, market.id);
 
   return (
     <CartMarketProvider
-      market={{ id: market.id, currency: market.currency, locale: market.defaultLocale }}
+      market={{ id: market.id, currency: market.currency }}
     >
       <div className="mb-10 flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
         <div>
@@ -61,7 +61,7 @@ async function MarketProductGrid() {
       </div>
       <div className="grid gap-x-4 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
         {productList.map((product) => (
-          <ProductCard key={product.id} product={product} locale={market.defaultLocale} />
+          <ProductCard key={product.id} product={product} />
         ))}
       </div>
     </CartMarketProvider>
@@ -73,7 +73,7 @@ async function MarketChrome() {
   const { market } = getCapabilities();
   return (
     <CartSheetMount
-      market={{ id: market.id, currency: market.currency, locale: market.defaultLocale }}
+      market={{ id: market.id, currency: market.currency }}
     >
       <SiteHeader />
     </CartSheetMount>

@@ -15,7 +15,7 @@ vi.mock("next/image", () => ({
   default: ({ alt }: { alt: string }) => <span role="img" aria-label={alt || "Product image"} />,
 }));
 
-const market: CartMarket = { id: "component-test", currency: "AUD", locale: "en-AU" };
+const market: CartMarket = { id: "au", currency: "AUD" };
 const product = {
   id: "alto-modular-sofa",
   slug: "alto-modular-sofa",
@@ -41,7 +41,7 @@ describe("local cart user journey", () => {
     render(
       <CartMarketProvider market={market}>
         <SiteHeader />
-        <ProductCard product={product} locale={market.locale} />
+        <ProductCard product={product} />
         <CartSheet />
       </CartMarketProvider>,
     );

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  getDefaultLocale,
   getMarket,
   isLocaleSupported,
   isMarketId,
@@ -61,6 +62,12 @@ describe("resolveMarketFromHost（host → market 纯函数）", () => {
 });
 
 describe("isLocaleSupported", () => {
+  it("getDefaultLocale 从 market 推导，业务侧无需再传 locale", () => {
+    expect(getDefaultLocale("au")).toBe("en-AU");
+    expect(getDefaultLocale("sg")).toBe("en-SG");
+    expect(getDefaultLocale("us")).toBe("en-US");
+  });
+
   it("locale 必须属于该 market", () => {
     expect(isLocaleSupported(getMarket("au"), "en-AU")).toBe(true);
     expect(isLocaleSupported(getMarket("sg"), "en-SG")).toBe(true);

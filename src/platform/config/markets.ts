@@ -52,7 +52,7 @@ export function getMarket(id: MarketId): Market {
 /**
  * host → market 纯函数（docs/codex/research/07 §6：未知 host 返回 null，不猜测）。
  * 只匹配 registry 中显式登记的完整 host；不得根据首段子域名猜测市场。
- * 未来由 proxy.ts 调用；P0 单市场无前缀路由时仅用于本地多市场调试。
+ * 生产 host→market 时由 proxy 调用；本地开发以 path 前缀 + 进程 MARKET 为准。
  */
 export function resolveMarketFromHost(host: string | null | undefined): Market | null {
   if (!host) return null;
@@ -66,4 +66,12 @@ export function resolveMarketFromHost(host: string | null | undefined): Market |
 /** locale 必须属于该 market；`/us/zh-CN` 这类组合不能进入数据层（04 §8）。 */
 export function isLocaleSupported(market: Market, locale: string): boolean {
   return (market.locales as readonly string[]).includes(locale);
+}
+
+/**
+ * 当前阶段一市场一默认语言：业务代码只传 marketId，locale 从 registry 推导。
+ * 同一市场多语言时再引入 URL locale 段；不要把 locale 当第二套“市场切换”字段到处传递。
+ */
+export function getDefaultLocale(marketId: MarketId): string {
+  return markets[marketId].defaultLocale;
 }

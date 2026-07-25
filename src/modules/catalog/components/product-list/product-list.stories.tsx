@@ -8,7 +8,7 @@ import {
 
 import { ProductList } from "./product-list";
 
-const market: CartMarket = { id: "sb-product-list", currency: "AUD", locale: "en-AU" };
+const market: CartMarket = { id: "au", currency: "AUD" };
 
 const products: ProductListItem[] = [
   {
@@ -52,7 +52,7 @@ const meta = {
   args: {
     products,
     collection: { handle: "living-room", title: "Living Room" },
-    locale: market.locale,
+    marketId: market.id,
   },
   decorators: [
     (Story) => (

@@ -1,5 +1,7 @@
 import type { Collection, ListProductsQuery } from "@/core/contracts/commerce/catalog";
 
+import { withMarketPrefix } from "@/platform/config/market-path";
+
 export type ProductListSort = NonNullable<ListProductsQuery["sort"]>;
 
 const VALID_SORTS: readonly ProductListSort[] = ["price-asc", "price-desc", "name"];
@@ -25,8 +27,12 @@ export function findCollectionByHandle(
 /** Home 入口：取第一个可浏览集合；无集合时返回 null。 */
 export function pickHomeCollectionLink(
   collections: Collection[],
+  marketId: string,
 ): { href: string; title: string } | null {
   const first = collections[0];
   if (!first) return null;
-  return { href: `/collections/${first.handle}`, title: first.title };
+  return {
+    href: withMarketPrefix(marketId, `/collections/${first.handle}`),
+    title: first.title,
+  };
 }

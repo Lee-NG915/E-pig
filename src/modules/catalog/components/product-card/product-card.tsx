@@ -5,15 +5,18 @@ import Link from "next/link";
 import { Plus } from "lucide-react";
 
 import type { ProductListItem } from "@/core/contracts/commerce/catalog";
+
+import { withMarketPrefix } from "@/platform/config/market-path";
+
 import { useCartMarket } from "@/modules/cart/components/cart-market-context/cart-market-context";
 import { addItem } from "@/modules/cart/lib/cart-store";
+import { formatMarketPrice } from "@/shared/lib/money";
 import { Badge } from "@e-pig/happy-dog/components/badge";
 import { Button } from "@e-pig/happy-dog/components/button";
-import { formatPrice } from "@/shared/lib/money";
 
-export function ProductCard({ product, locale }: { product: ProductListItem; locale: string }) {
+export function ProductCard({ product }: { product: ProductListItem }) {
   const market = useCartMarket();
-  const productHref = `/products/${product.slug}`;
+  const productHref = withMarketPrefix(market.id, `/products/${product.slug}`);
 
   return (
     <article className="group">
@@ -59,10 +62,10 @@ export function ProductCard({ product, locale }: { product: ProductListItem; loc
           <p className="mt-1 text-sm text-muted-foreground">{product.colour}</p>
         </div>
         <div className="shrink-0 text-right text-sm">
-          <p className="font-medium">{formatPrice(product.price, locale)}</p>
+          <p className="font-medium">{formatMarketPrice(product.price, market.id)}</p>
           {product.compareAt ? (
             <p className="mt-1 text-muted-foreground line-through">
-              {formatPrice(product.compareAt, locale)}
+              {formatMarketPrice(product.compareAt, market.id)}
             </p>
           ) : null}
         </div>

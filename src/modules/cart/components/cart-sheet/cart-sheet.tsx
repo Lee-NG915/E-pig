@@ -5,7 +5,7 @@ import { Minus, Plus, ShoppingBag } from "lucide-react";
 
 import { setCartOpen, setQuantity, useCartStore } from "@/modules/cart/lib/cart-store";
 import { useCartMarket } from "../cart-market-context/cart-market-context";
-import { formatPrice } from "@/shared/lib/money";
+import { formatMarketPrice } from "@/shared/lib/money";
 import { Button } from "@e-pig/happy-dog/components/button";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@e-pig/happy-dog/components/sheet";
 
@@ -61,9 +61,9 @@ export function CartSheet() {
                         </button>
                       </div>
                       <p className="text-sm font-medium">
-                        {formatPrice(
+                        {formatMarketPrice(
                           { amount: line.priceAmount * line.quantity, currency: line.priceCurrency },
-                          market.locale,
+                          market.id,
                         )}
                       </p>
                     </div>
@@ -75,9 +75,9 @@ export function CartSheet() {
               <div className="mb-2 flex items-center justify-between">
                 <span className="font-medium">Subtotal</span>
                 <span className="font-medium">
-                  {formatPrice(
+                  {formatMarketPrice(
                     { amount: subtotal, currency: market.currency },
-                    market.locale,
+                    market.id,
                   )}
                 </span>
               </div>

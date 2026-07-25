@@ -10,7 +10,7 @@ import { SiteHeader } from "@/modules/content/components/site-header/site-header
 import { getCapabilities } from "@/platform/registry";
 
 type ProductPageProps = {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ market: string; slug: string }>;
 };
 
 /** request-time 边界：解析当前 market 并挂载站点 header + 单一购物车抽屉。 */
@@ -19,7 +19,7 @@ async function MarketChrome() {
   const { market } = getCapabilities();
   return (
     <CartSheetMount
-      market={{ id: market.id, currency: market.currency, locale: market.defaultLocale }}
+      market={{ id: market.id, currency: market.currency }}
     >
       <SiteHeader />
     </CartSheetMount>
@@ -27,7 +27,11 @@ async function MarketChrome() {
 }
 
 /** PDP 占位：params 在 Suspense 内解析。mock 阶段 slug === id。 */
-async function ProductDetailStub({ params }: { params: Promise<{ slug: string }> }) {
+async function ProductDetailStub({
+  params,
+}: {
+  params: Promise<{ market: string; slug: string }>;
+}) {
   const { slug } = await params;
 
   await connection();

@@ -15,7 +15,7 @@ import {
 
 import { SiteHeader } from "./site-header";
 
-const market: CartMarket = { id: "sb-site-header", currency: "AUD", locale: "en-AU" };
+const market: CartMarket = { id: "au", currency: "AUD" };
 
 const demoProduct: DemoCartProduct = {
   id: "alto-modular-sofa",

@@ -7,24 +7,25 @@
 要求：Node 24（`.nvmrc`，`nvm use` 即可）+ pnpm 10（`corepack enable`）。
 
 ```bash
-cp .env.example .env.local   # 首次；默认值即可运行
+cp .env.example .env.local   # 首次；务必设置 MARKET
 pnpm install
-pnpm dev                     # 默认市场 au → http://localhost:3000
+pnpm dev:au                  # → http://localhost:3000/au （裸 pnpm dev 会失败）
 ```
 
 ## 多市场本地开发
 
 <!-- MARKET_IDS:au|sg|us -->
 
-非秘密市场配置（货币、locale、host）维护在 `src/platform/config/markets.ts`，环境变量只负责"选哪个市场"：
+非秘密市场配置（货币、locale、host）维护在 `src/platform/config/markets.ts`，环境变量只负责"选哪个市场"。公开 URL 使用 MUJI 式前缀 `/{market}/...`；`/` 与其它市场前缀由 proxy 308 到本进程 `MARKET`。
 
 ```bash
-pnpm dev:sg    # MARKET=sg，新加坡市场（SGD / en-SG）
-pnpm dev:us    # MARKET=us
+pnpm dev:au    # MARKET=au → /au
+pnpm dev:sg    # MARKET=sg，新加坡市场（SGD / en-SG）→ /sg
+pnpm dev:us    # MARKET=us → /us
 MARKET=au pnpm dev   # 也可以直接注入
 ```
 
-`MARKET` 非法值会在启动时直接失败（env schema），不会静默回退。可选市场：`au | sg | us`。
+`MARKET` 缺省或非法值会在启动时直接失败（env schema / require-market），不会静默回退。登记市场：`au | sg | us`。
 
 ## 常用命令
 

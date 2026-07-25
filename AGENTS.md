@@ -25,17 +25,17 @@ E-pig 是轻量电商前端：单 Next.js 16.2 App（App Router + `cacheComponen
 ## Commands
 
 ```bash
-# 开发（多市场本地变体：MARKET=xx next dev）
-pnpm dev            # 默认市场启动 dev server
-pnpm dev:au         # MARKET=au next dev
-pnpm dev:sg         # MARKET=sg next dev
-pnpm dev:us         # MARKET=us next dev
+# 开发（必须带市场；裸 pnpm dev 会失败）
+pnpm dev            # 要求已设置 MARKET；否则 exit 1
+pnpm dev:au         # MARKET=au next dev → 首页 /au
+pnpm dev:sg         # MARKET=sg next dev → 首页 /sg
+pnpm dev:us         # MARKET=us next dev → 首页 /us
 # 其余市场：先在 src/platform/config/markets.ts 登记，再用 MARKET=<id> pnpm dev 启动
 
 # 构建与启动
-pnpm build          # next build（Turbopack + standalone 输出）
+pnpm build          # next build（缺省 MARKET=au 仅用于构建；运行时仍以启动 env 为准）
 pnpm prestart       # 把 public/.next/static 同步到 standalone（由 pnpm start 自动调用）
-pnpm start          # node .next/standalone/server.js（需先 build）
+pnpm start          # 要求 MARKET；node .next/standalone/server.js（需先 build）
 
 # 质量
 pnpm lint           # eslint .（flat config，含 no-restricted-imports 边界规则）
@@ -171,7 +171,7 @@ AI 完成代码任务时，最终回复里必须附以下固定格式记录：
 
 ```text
 src/
-  app/                  # Next.js App Router 路由（P0 单市场，无 market/locale 动态段）
+  app/                  # Next.js App Router；公开页在 `[market]/` 下（proxy 规范化前缀）
   modules/              # 业务域模块
     catalog/
     cart/
@@ -276,6 +276,8 @@ React/Next → 外部库 → `@/core/*` → `@/platform/*` → `@/adapters/*` �
 
 - typed market registry（`src/platform/config/markets.ts`）是非秘密市场配置的**唯一真源**（hosts / locales / defaultLocale / currency）。
 - env 只做两件事：市场选择（`MARKET=au|sg|us`）与 adapter 选择；其余配置进 registry。
-- 本地切换市场用 `MARKET=xx pnpm dev` 或 `pnpm dev:au` / `pnpm dev:sg` / `pnpm dev:us`。
-- 未来 host→market 的解析必须实现为纯函数并可单测，见 `docs/codex/research/07-next16-cache-cart-routing-decisions.md`；业务取数不得藏进 `proxy.ts`。
+- **本地开发必须显式带市场**：`pnpm dev:au` / `pnpm dev:sg` / `pnpm dev:us`（或 `MARKET=xx pnpm dev`）。裸 `pnpm dev` 会失败。
+- **公开 URL 使用市场路径前缀**（MUJI 式）：`/{market}/collections/...`、`/{market}/products/...`。`/` 与其它市场前缀由 `src/proxy.ts` 308 到本进程 `MARKET`（纯函数见 `planMarketPath`）。生产日后可叠加 Koala 式 host→market，不改资源路径语义。
+- 多语言预留：先稳定 `/{market}/...`；同一市场多语言时再加可选 `/{market}/{locale}/...`，不要回退成 Joyboy 式 middleware 链。
+- host→market 解析必须是纯函数并可单测（`resolveMarketFromHost`）；业务取数不得藏进 `proxy.ts`。
 - 跨市场改动（`src/platform/config/**`、`src/modules/**` 共享逻辑）合并前必须考虑每个市场的行为差异。

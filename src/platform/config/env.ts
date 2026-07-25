@@ -11,8 +11,15 @@ import { marketIds } from "./markets";
  */
 export const serverEnvSchema = {
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
-  /** 本进程服务哪个市场；非秘密配置本体在 ./markets registry */
-  MARKET: z.enum(marketIds).default("au"),
+  /**
+   * 本进程服务哪个市场；非秘密配置本体在 ./markets registry。
+   * 开发 / 生产必须显式设置（pnpm dev:au 等）；测试环境缺省回退 au。
+   */
+  MARKET: z.preprocess((value) => {
+    if (value !== undefined && value !== "") return value;
+    if (process.env.NODE_ENV === "test" || process.env.VITEST === "true") return "au";
+    return value;
+  }, z.enum(marketIds)),
   /** commerce adapter 选择；P0 只有 mock，真实后端接入后扩展（如 "custom-rest"） */
   COMMERCE_ADAPTER: z.enum(["mock"]).default("mock"),
   LOG_LEVEL: z.enum(["debug", "info", "warn", "error"]).default("info"),

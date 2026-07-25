@@ -11,8 +11,6 @@ function MarketInspector() {
       <dd className="font-medium">{market.id}</dd>
       <dt className="text-muted-foreground">currency</dt>
       <dd className="font-medium">{market.currency}</dd>
-      <dt className="text-muted-foreground">locale</dt>
-      <dd className="font-medium">{market.locale}</dd>
     </dl>
   );
 }
@@ -21,7 +19,7 @@ const meta = {
   title: "Modules/cart/CartMarketContext",
   component: CartMarketProvider,
   args: {
-    market: { id: "au", currency: "AUD", locale: "en-AU" },
+    market: { id: "au", currency: "AUD" },
     children: <MarketInspector />,
   },
 } satisfies Meta<typeof CartMarketProvider>;
@@ -31,9 +29,9 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {};
 
-/** 另一市场：SGD / en-SG */
+/** 另一市场：SGD */
 export const SgMarket: Story = {
   args: {
-    market: { id: "sg", currency: "SGD", locale: "en-SG" },
+    market: { id: "sg", currency: "SGD" },
   },
 };

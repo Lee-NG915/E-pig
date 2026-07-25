@@ -6,7 +6,7 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { addItem, getCartSnapshot, setCartOpen, setQuantity } from "@/modules/cart/lib/cart-store";
-import { formatPrice } from "@/shared/lib/money";
+import { formatMarketPrice } from "@/shared/lib/money";
 
 import { CartMarketProvider, type CartMarket } from "../cart-market-context/cart-market-context";
 import { CartSheet } from "./cart-sheet";
@@ -15,7 +15,7 @@ vi.mock("next/image", () => ({
   default: ({ alt }: { alt: string }) => <span role="img" aria-label={alt || "Product image"} />,
 }));
 
-const market: CartMarket = { id: "cart-sheet-test", currency: "AUD", locale: "en-AU" };
+const market: CartMarket = { id: "au", currency: "AUD" };
 
 const product = {
   id: "alto-modular-sofa",
@@ -74,15 +74,15 @@ describe("CartSheet", () => {
     expect(screen.getByText("Alto Modular Sofa")).toBeTruthy();
     expect(screen.getByText("Moss weave")).toBeTruthy();
 
-    const unit = formatPrice(product.price, market.locale);
+    const unit = formatMarketPrice(product.price, market.id);
     // 行金额与小计各渲染一次
     expect(screen.getAllByText(unit)).toHaveLength(2);
 
     await user.click(screen.getByRole("button", { name: "Increase Alto Modular Sofa quantity" }));
 
-    const doubled = formatPrice(
+    const doubled = formatMarketPrice(
       { amount: product.price.amount * 2, currency: "AUD" },
-      market.locale,
+      market.id,
     );
     expect(screen.getAllByText(doubled)).toHaveLength(2);
     expect(screen.queryByText(unit)).toBeNull();
