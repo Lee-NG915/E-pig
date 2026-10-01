@@ -204,4 +204,4 @@ description: Helps with git stuff.
 
 ## 本地 DTC skills
 
-已安装 20 个通用开发流程 skill，覆盖设计取证、两级组件拆分、详细参数、实现、测试、视觉校验与优化。使用顺序及 E-pig 适配见 [DTC 项目接入](dtc-installation.md)。GitHub 快照由 [.agents/dtc-skills-install.json](../dtc-skills-install.json) 记录，遵循项目规则和 e-pig-dev-loop；不改写社区来源锁文件。
+项目通过 `.agents/skills/dtc-*` 软链直接消费本地 `../DTC-skills/skills/dtc-*` 源目录，共 20 个通用开发流程 skill；不会复制一份静态安装快照。目标项目适配档案位于 [.dtc/target-profile.md](../../.dtc/target-profile.md)，使用顺序及 E-pig 规则见 [DTC 项目接入](dtc-installation.md)。来源和软链由 [.agents/dtc-skills-install.json](../dtc-skills-install.json) 记录，遵循项目规则和 e-pig-dev-loop；不改写社区来源锁文件。

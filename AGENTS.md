@@ -13,7 +13,7 @@
 4. **页面 / 组件流程** → `docs/engineering/page-workflow-guide.md` → `component-workflow-guide.md`
 5. **大里程碑交付** → `docs/engineering/milestone-delivery-loop.md`（分支 / task 推送 / 溯源 / 复盘）
 6. **设计契约** → 仓库根 `DESIGN.md` + `packages/happy-dog` tokens
-7. **Figma 到代码的 DTC 补充流程** → `.agents/skills/dtc-installation.md`（在上述项目规则与 `e-pig-dev-loop` 下按阶段调用）
+7. **Figma 到代码的 DTC 补充流程** → `.dtc/target-profile.md` → `.agents/skills/dtc-installation.md`（先读取目标项目适配档案，再在上述项目规则与 `e-pig-dev-loop` 下按阶段调用）
 
 **Precedence：** Hard Rules > `e-pig` rules > `e-pig-dev-loop` > 社区 skills。冲突时项目规则胜出。`phase-review` 仅手动触发。
 
