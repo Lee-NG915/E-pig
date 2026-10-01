@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "name": "dtc-design-evidence",
+  "version": "1.1.0",
+  "description": "从 Figma、运行页面或旧组件读取可追溯证据，区分初步取证、完整规格和未知项；用于页面/组件设计转代码前的来源核对。",
+  "stage": "discovery",
+  "inputs": [
+    "设计范围及来源",
+    "可读取的节点/画面",
+    "已有目标与组件"
+  ],
+  "outputs": [
+    "来源证据索引",
+    "提取覆盖",
+    "素材与字体清单",
+    "来源到组件映射"
+  ],
+  "relatedSkills": [
+    "dtc-page-decomposition",
+    "dtc-atomic-decomposition",
+    "dtc-ui-spec"
+  ],
+  "privacy": "真实源材料留在目标项目受控位置；公开内容先脱敏",
+  "entrypoint": "SKILL.md",
+  "$schema": "../skill.schema.json"
+}

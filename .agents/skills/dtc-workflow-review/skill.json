@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "name": "dtc-workflow-review",
+  "version": "1.0.0",
+  "description": "在预览交接后或用户要求复盘时评估流程问题，区分执行遗漏、规则不足、需求变化与证据缺口，提出有边界的技能改进。",
+  "stage": "review",
+  "inputs": [
+    "当前契约与候选",
+    "失败/重试证据",
+    "预览或阶段交接"
+  ],
+  "outputs": [
+    "经验分类和置信度",
+    "改进建议与适用边界",
+    "后续观察条件"
+  ],
+  "relatedSkills": [
+    "dtc-evidence-log",
+    "dtc-recording-analysis"
+  ],
+  "privacy": "公开输出仅保留脱敏证据",
+  "entrypoint": "SKILL.md",
+  "$schema": "../skill.schema.json"
+}

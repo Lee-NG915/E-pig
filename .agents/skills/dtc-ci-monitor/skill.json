@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "name": "dtc-ci-monitor",
+  "version": "1.0.0",
+  "description": "检查或跟进指定提交的 CI，定位失败并审阅自动修复建议；按授权执行有界重试，不自动推送或修改服务端设置。",
+  "stage": "ci",
+  "inputs": [
+    "提交与流水线身份",
+    "监控范围及授权",
+    "状态和必要日志"
+  ],
+  "outputs": [
+    "终态或最后观察状态",
+    "失败分类及修复评估",
+    "候选绑定的验证记录"
+  ],
+  "relatedSkills": [
+    "dtc-context",
+    "dtc-exception-handling",
+    "dtc-evidence-log"
+  ],
+  "privacy": "公开输出仅保留脱敏证据",
+  "entrypoint": "SKILL.md",
+  "$schema": "../skill.schema.json"
+}

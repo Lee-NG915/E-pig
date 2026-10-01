@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "name": "dtc-implementation",
+  "version": "1.1.0",
+  "description": "消费已落地的 UI、组件及行为契约，实现页面和原子/组合组件、生产资源及真实预览；按目标项目技术栈执行。",
+  "stage": "build",
+  "inputs": [
+    "有效 UI/行为契约",
+    "组件树及技术栈映射",
+    "现有源码及范围"
+  ],
+  "outputs": [
+    "生产源码与构建产物",
+    "实际组件预览",
+    "规格到实现映射",
+    "候选及回归记录"
+  ],
+  "relatedSkills": [
+    "dtc-ui-spec",
+    "dtc-page-decomposition",
+    "dtc-atomic-decomposition",
+    "dtc-component-testing",
+    "dtc-visual-validation",
+    "dtc-delivery"
+  ],
+  "privacy": "真实源材料留在目标项目受控位置；公开内容先脱敏",
+  "entrypoint": "SKILL.md",
+  "$schema": "../skill.schema.json"
+}

@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "name": "dtc-ui-spec",
+  "version": "1.1.0",
+  "description": "在首次 UI 实现前将设计证据落成逐项参数、采用目标和断言；分开维护行为及输入契约，支持增量修改和跨栈单位映射。",
+  "stage": "discovery",
+  "inputs": [
+    "设计证据与覆盖",
+    "组件/素材边界",
+    "有效决定及行为范围"
+  ],
+  "outputs": [
+    "逐项 UI 规格及 Review",
+    "行为/参数契约引用",
+    "断言映射",
+    "未知与进入实施的范围"
+  ],
+  "relatedSkills": [
+    "dtc-design-evidence",
+    "dtc-page-decomposition",
+    "dtc-atomic-decomposition",
+    "dtc-implementation",
+    "dtc-visual-validation"
+  ],
+  "privacy": "真实源材料留在目标项目受控位置；公开内容先脱敏",
+  "entrypoint": "SKILL.md",
+  "$schema": "../skill.schema.json"
+}

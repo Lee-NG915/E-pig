@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "name": "dtc-delivery",
+  "version": "1.0.0",
+  "description": "从当前源码生成候选，核对授权范围、目标身份、远端漂移、写入和回读，并把本地交付与业务发布分层记录。",
+  "stage": "release",
+  "inputs": [
+    "context",
+    "implementation diff",
+    "build manifest",
+    "authorized paths",
+    "target snapshot"
+  ],
+  "outputs": [
+    "candidate",
+    "delivery plan",
+    "write/readback receipt",
+    "handoff status"
+  ],
+  "privacy": "候选清单和回执不包含凭据、客户数据或签名 URL",
+  "entrypoint": "SKILL.md",
+  "$schema": "../skill.schema.json",
+  "relatedSkills": [
+    "dtc-context",
+    "dtc-implementation",
+    "dtc-scoped-validation",
+    "dtc-evidence-log"
+  ]
+}

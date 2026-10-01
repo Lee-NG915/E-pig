@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "name": "dtc-data-tracking",
+  "version": "1.0.0",
+  "description": "为埋点、许可、分析映射和监控变化选择场景范围，保证事件语义、排除条件、降级行为和下游边界可验证。",
+  "stage": "cross-cutting",
+  "inputs": [
+    "context",
+    "event/metric intent",
+    "implementation diff",
+    "tracking consumers"
+  ],
+  "outputs": [
+    "tracking contract",
+    "scenario scope",
+    "unit/browser results",
+    "downstream acceptance gaps"
+  ],
+  "privacy": "事件 payload 只使用合成或最小字段，不记录个人身份",
+  "entrypoint": "SKILL.md",
+  "$schema": "../skill.schema.json",
+  "relatedSkills": [
+    "dtc-context",
+    "dtc-implementation",
+    "dtc-scoped-validation"
+  ]
+}

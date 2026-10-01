@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "name": "dtc-exception-handling",
+  "version": "1.0.0",
+  "description": "处理目标不明、需求变化、证据缺失、动态数据异常、远端漂移、CI 失败、部分写入和紧急故障等特殊流程。",
+  "stage": "recovery",
+  "inputs": [
+    "current context",
+    "failure or ambiguity",
+    "candidate and target evidence"
+  ],
+  "outputs": [
+    "decision record",
+    "stop/retry condition",
+    "recovery plan",
+    "handoff boundary"
+  ],
+  "privacy": "先保护现场，公开记录只保留脱敏后的症状和结论",
+  "entrypoint": "SKILL.md",
+  "$schema": "../skill.schema.json",
+  "relatedSkills": [
+    "dtc-context",
+    "dtc-privacy-redaction",
+    "dtc-evidence-log"
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "name": "dtc-context",
+  "version": "1.1.0",
+  "description": "为设计到代码任务确定目标项目、技术栈、能力与现有命令；建立可恢复的上下文，不绑定特定框架或部署平台。",
+  "stage": "context",
+  "inputs": [
+    "任务与现有项目",
+    "已有状态/规范"
+  ],
+  "outputs": [
+    "上下文摘要",
+    "项目能力映射",
+    "范围与恢复入口"
+  ],
+  "relatedSkills": [
+    "dtc-requirements-analysis",
+    "dtc-design-evidence"
+  ],
+  "privacy": "真实源材料留在目标项目受控位置；公开内容先脱敏",
+  "entrypoint": "SKILL.md",
+  "$schema": "../skill.schema.json"
+}

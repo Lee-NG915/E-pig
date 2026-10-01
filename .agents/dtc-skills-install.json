@@ -1,0 +1,360 @@
+{
+  "formatVersion": 2,
+  "installedOn": "2026-10-01",
+  "source": {
+    "kind": "github-checkout",
+    "repository": "https://github.com/Lee-NG915/DTC-skills",
+    "ref": "main",
+    "checkoutBranch": "main",
+    "commit": "82561832b84e2b2211c189cf96618da0ed666b95",
+    "catalogSha256": "b1a2a26e58df6c07e4954d00915e1df5c39fb7682cab2ecd12115e22eb05b934",
+    "identity": "Per-file sourceSha256 values identify the exact GitHub snapshot; installedSha256 values include target-repository adaptations."
+  },
+  "skillCount": 20,
+  "adaptations": [
+    "skill.json: $schema changed to ../skill.schema.json for the project-local schema copy",
+    "dtc-context/SKILL.md: repository composition link changed to ../dtc-installation.md"
+  ],
+  "files": [
+    {
+      "sourcePath": "LICENSE",
+      "installedPath": ".agents/skills/dtc-skills-LICENSE.txt",
+      "sourceSha256": "c1a8664498fa7d401578b54569e52f00c59c29091d998c2b22fbe7696f864ab2",
+      "installedSha256": "c1a8664498fa7d401578b54569e52f00c59c29091d998c2b22fbe7696f864ab2"
+    },
+    {
+      "sourcePath": "schemas/skill.schema.json",
+      "installedPath": ".agents/skills/skill.schema.json",
+      "sourceSha256": "f7da1736119ead8fcacba8948123b4593597ab75e82916ad326b1c2b34519b0e",
+      "installedSha256": "f7da1736119ead8fcacba8948123b4593597ab75e82916ad326b1c2b34519b0e"
+    },
+    {
+      "sourcePath": "skills/dtc-atomic-decomposition/references/component-contract.md",
+      "installedPath": ".agents/skills/dtc-atomic-decomposition/references/component-contract.md",
+      "sourceSha256": "3758373fb588d956ecb1e88a2ef085ee427b6fa1d97cf744d0db7a469942152a",
+      "installedSha256": "3758373fb588d956ecb1e88a2ef085ee427b6fa1d97cf744d0db7a469942152a"
+    },
+    {
+      "sourcePath": "skills/dtc-atomic-decomposition/skill.json",
+      "installedPath": ".agents/skills/dtc-atomic-decomposition/skill.json",
+      "sourceSha256": "125feadae7d4378637c8b0555f820c4bd44ffc5ba020cd9579e512857e3634ce",
+      "installedSha256": "ca4411435e2eac26e6130f7a126e1312d45adb098ca697e3219e44ef0b465638"
+    },
+    {
+      "sourcePath": "skills/dtc-atomic-decomposition/SKILL.md",
+      "installedPath": ".agents/skills/dtc-atomic-decomposition/SKILL.md",
+      "sourceSha256": "07ec343c6e833ce1e398985b66eb6cee8628f584911a7316f4691ecb61c0dd89",
+      "installedSha256": "07ec343c6e833ce1e398985b66eb6cee8628f584911a7316f4691ecb61c0dd89"
+    },
+    {
+      "sourcePath": "skills/dtc-ci-monitor/skill.json",
+      "installedPath": ".agents/skills/dtc-ci-monitor/skill.json",
+      "sourceSha256": "9f8cbd2df56a113fb991d4255e8a00486379abab4a5ebe5f5e5582293096859b",
+      "installedSha256": "de4f24a87ac7442fe50c1061038930b35d567854b7adbc2b6b2d47b5391dc650"
+    },
+    {
+      "sourcePath": "skills/dtc-ci-monitor/SKILL.md",
+      "installedPath": ".agents/skills/dtc-ci-monitor/SKILL.md",
+      "sourceSha256": "6ea9b019c9dd08110716fbafe72805e105e5cafd82a459c8e16aa81db547008f",
+      "installedSha256": "6ea9b019c9dd08110716fbafe72805e105e5cafd82a459c8e16aa81db547008f"
+    },
+    {
+      "sourcePath": "skills/dtc-component-testing/assets/test-record.md",
+      "installedPath": ".agents/skills/dtc-component-testing/assets/test-record.md",
+      "sourceSha256": "aeca7419fda47f300bd16abf14551dfd062d7a540d95ce9ef70bd545b5a1007e",
+      "installedSha256": "aeca7419fda47f300bd16abf14551dfd062d7a540d95ce9ef70bd545b5a1007e"
+    },
+    {
+      "sourcePath": "skills/dtc-component-testing/references/test-contract.md",
+      "installedPath": ".agents/skills/dtc-component-testing/references/test-contract.md",
+      "sourceSha256": "3f9401a7b69830c62c696229c1f066c49877bc757ccb640855ca6afc146c6854",
+      "installedSha256": "3f9401a7b69830c62c696229c1f066c49877bc757ccb640855ca6afc146c6854"
+    },
+    {
+      "sourcePath": "skills/dtc-component-testing/skill.json",
+      "installedPath": ".agents/skills/dtc-component-testing/skill.json",
+      "sourceSha256": "fd0624a9d9e6e2ac1c616f55439b35e91c4d9d9bd370737e9b2709dd3ea5aa2b",
+      "installedSha256": "25dacc22740f9d4af11011bb35736c9af45a165aad206c66cf45f275e666f4e5"
+    },
+    {
+      "sourcePath": "skills/dtc-component-testing/SKILL.md",
+      "installedPath": ".agents/skills/dtc-component-testing/SKILL.md",
+      "sourceSha256": "069b5926e4665233f162ed93fda9cab1cad986af8378223af8957a8d0b93ba8e",
+      "installedSha256": "069b5926e4665233f162ed93fda9cab1cad986af8378223af8957a8d0b93ba8e"
+    },
+    {
+      "sourcePath": "skills/dtc-context/references/stack-adapter.md",
+      "installedPath": ".agents/skills/dtc-context/references/stack-adapter.md",
+      "sourceSha256": "755eb9d89e6e670f5d21ede5a21cde7047127525098a2de71e90f4e44c9ba924",
+      "installedSha256": "755eb9d89e6e670f5d21ede5a21cde7047127525098a2de71e90f4e44c9ba924"
+    },
+    {
+      "sourcePath": "skills/dtc-context/skill.json",
+      "installedPath": ".agents/skills/dtc-context/skill.json",
+      "sourceSha256": "607480b8cf270498e94bdb21d28f68ddd6c277e4982d4c6976ba7c21c2452e82",
+      "installedSha256": "3c89233a7ed744b951e0a8245a605190023e3900fa799ba124db337a80f759f4"
+    },
+    {
+      "sourcePath": "skills/dtc-context/SKILL.md",
+      "installedPath": ".agents/skills/dtc-context/SKILL.md",
+      "sourceSha256": "6074183c33895025921be424f380f064172c5770397c095f2efa092b3e58520e",
+      "installedSha256": "d5fc045c4772ec2d5898411a16c11d0828f728cb7358069e57fde768b7947325"
+    },
+    {
+      "sourcePath": "skills/dtc-data-tracking/skill.json",
+      "installedPath": ".agents/skills/dtc-data-tracking/skill.json",
+      "sourceSha256": "e0c8510fbcbe93748bbb229d0c574bb2d7883b7702afa94d551dc57bb22f1330",
+      "installedSha256": "9f20240ce0b4ab156964c351c7992842a22c1c820a8e77f00739c104533b326d"
+    },
+    {
+      "sourcePath": "skills/dtc-data-tracking/SKILL.md",
+      "installedPath": ".agents/skills/dtc-data-tracking/SKILL.md",
+      "sourceSha256": "e94d3a51b5e4346eb404b506fddb98d95e786a6ce3a18f97c2be758f0f6126a3",
+      "installedSha256": "e94d3a51b5e4346eb404b506fddb98d95e786a6ce3a18f97c2be758f0f6126a3"
+    },
+    {
+      "sourcePath": "skills/dtc-delivery/skill.json",
+      "installedPath": ".agents/skills/dtc-delivery/skill.json",
+      "sourceSha256": "685457e09de551ba2c42d999780f526527a41ec34f27c58fb752aed722b009b0",
+      "installedSha256": "daf61793e446a3c1cec6366e93bdc45bc6736f8088dfb2f81f6ac53766f56183"
+    },
+    {
+      "sourcePath": "skills/dtc-delivery/SKILL.md",
+      "installedPath": ".agents/skills/dtc-delivery/SKILL.md",
+      "sourceSha256": "d24fdbd80f88506754e25c4112ff6906eed7586f53466f73e3f9b15e602dcb21",
+      "installedSha256": "d24fdbd80f88506754e25c4112ff6906eed7586f53466f73e3f9b15e602dcb21"
+    },
+    {
+      "sourcePath": "skills/dtc-design-evidence/references/extraction-and-assets.md",
+      "installedPath": ".agents/skills/dtc-design-evidence/references/extraction-and-assets.md",
+      "sourceSha256": "ae4fcd1d878896a0a7c796f94793572e9651b919b5329fa51f2f66e0af478cbf",
+      "installedSha256": "ae4fcd1d878896a0a7c796f94793572e9651b919b5329fa51f2f66e0af478cbf"
+    },
+    {
+      "sourcePath": "skills/dtc-design-evidence/skill.json",
+      "installedPath": ".agents/skills/dtc-design-evidence/skill.json",
+      "sourceSha256": "48a7db2cc0e1943dd72ca73a3aebf77854e772bdb7bf4feb92381de1a5e9661e",
+      "installedSha256": "1330b9557920ddcd8fe5d68abf13ffb2afa3794ea4901190ec17e53b02e12d99"
+    },
+    {
+      "sourcePath": "skills/dtc-design-evidence/SKILL.md",
+      "installedPath": ".agents/skills/dtc-design-evidence/SKILL.md",
+      "sourceSha256": "c065e1152e6238ef92852a75c513bf811d83598fc4effcc38bba85766f40e22b",
+      "installedSha256": "c065e1152e6238ef92852a75c513bf811d83598fc4effcc38bba85766f40e22b"
+    },
+    {
+      "sourcePath": "skills/dtc-evidence-log/skill.json",
+      "installedPath": ".agents/skills/dtc-evidence-log/skill.json",
+      "sourceSha256": "cd0ff426a61aa1be484714fa5140f45b678209d7f4203a1b0371ee5e09e8aa35",
+      "installedSha256": "38b96fa89fcdb7c23b919121503fac542fe58a3aadb0a278650d12e18e6cd77e"
+    },
+    {
+      "sourcePath": "skills/dtc-evidence-log/SKILL.md",
+      "installedPath": ".agents/skills/dtc-evidence-log/SKILL.md",
+      "sourceSha256": "52c31a6fdcb07bfb74dedbb2610453e401b5df0de659bc75cc8f2f7a02a9c72a",
+      "installedSha256": "52c31a6fdcb07bfb74dedbb2610453e401b5df0de659bc75cc8f2f7a02a9c72a"
+    },
+    {
+      "sourcePath": "skills/dtc-exception-handling/skill.json",
+      "installedPath": ".agents/skills/dtc-exception-handling/skill.json",
+      "sourceSha256": "e73c8332ca54fd7784f6dd49c7d9237ce6581b1a18605a037f262588eeb6f919",
+      "installedSha256": "facd7158456cad1054db6681cffd346d5e1eb3442834859d40a4e9268343f8ad"
+    },
+    {
+      "sourcePath": "skills/dtc-exception-handling/SKILL.md",
+      "installedPath": ".agents/skills/dtc-exception-handling/SKILL.md",
+      "sourceSha256": "bea90c35ff7067bad72358060688f687f74d86db7b0ad24271c3e864d85e8992",
+      "installedSha256": "bea90c35ff7067bad72358060688f687f74d86db7b0ad24271c3e864d85e8992"
+    },
+    {
+      "sourcePath": "skills/dtc-implementation/references/production-preview.md",
+      "installedPath": ".agents/skills/dtc-implementation/references/production-preview.md",
+      "sourceSha256": "3591d57c46633d92df3728accbf2cfde3a151167ce779935773242ca98ee5276",
+      "installedSha256": "3591d57c46633d92df3728accbf2cfde3a151167ce779935773242ca98ee5276"
+    },
+    {
+      "sourcePath": "skills/dtc-implementation/skill.json",
+      "installedPath": ".agents/skills/dtc-implementation/skill.json",
+      "sourceSha256": "8f300e4756cb2657db32d4bcd59b64b50ce9b3d0b8eedd19894b8ef88e2bc3c2",
+      "installedSha256": "7472e9eead3a3e0801f7d121c6f5dd01a8a39a43018e48c2191b7f6e32531e5f"
+    },
+    {
+      "sourcePath": "skills/dtc-implementation/SKILL.md",
+      "installedPath": ".agents/skills/dtc-implementation/SKILL.md",
+      "sourceSha256": "ae9606ce734c74cdc3846c1b7c5fb96d1c09cde063f93d7f2c6b0b2f9d8170f7",
+      "installedSha256": "ae9606ce734c74cdc3846c1b7c5fb96d1c09cde063f93d7f2c6b0b2f9d8170f7"
+    },
+    {
+      "sourcePath": "skills/dtc-optimization/references/measurement-loop.md",
+      "installedPath": ".agents/skills/dtc-optimization/references/measurement-loop.md",
+      "sourceSha256": "66a9457c79f695c64ccc7ffbe73099b59853d0e66fa76bfbe176881a12fa9dff",
+      "installedSha256": "66a9457c79f695c64ccc7ffbe73099b59853d0e66fa76bfbe176881a12fa9dff"
+    },
+    {
+      "sourcePath": "skills/dtc-optimization/skill.json",
+      "installedPath": ".agents/skills/dtc-optimization/skill.json",
+      "sourceSha256": "26ef3b91eb2c4a55fdef38e983ce1162721a64a8a457187e6fd398c89bcd696b",
+      "installedSha256": "0e6dc4b0cca5264ec859dbcf481c2fe71ea251fd65d4bef534fb58d2226f163e"
+    },
+    {
+      "sourcePath": "skills/dtc-optimization/SKILL.md",
+      "installedPath": ".agents/skills/dtc-optimization/SKILL.md",
+      "sourceSha256": "46b9eb89e35a078464a8a3df23d0cf011f85e182016a8d3762166546f9bd7809",
+      "installedSha256": "46b9eb89e35a078464a8a3df23d0cf011f85e182016a8d3762166546f9bd7809"
+    },
+    {
+      "sourcePath": "skills/dtc-page-decomposition/references/decomposition-record.md",
+      "installedPath": ".agents/skills/dtc-page-decomposition/references/decomposition-record.md",
+      "sourceSha256": "149eaaaa24a68c7c6c9156da66f7723abab1eeebdd540d536ac6e95fa9fb6702",
+      "installedSha256": "149eaaaa24a68c7c6c9156da66f7723abab1eeebdd540d536ac6e95fa9fb6702"
+    },
+    {
+      "sourcePath": "skills/dtc-page-decomposition/skill.json",
+      "installedPath": ".agents/skills/dtc-page-decomposition/skill.json",
+      "sourceSha256": "67f51e05baa246d7dca7c5a9a4ef1e1040e6f6f82cc74630242e85ddeeda8d43",
+      "installedSha256": "0ccc9ec8760579ffb464d022700f10c7e634b224a8f83c8f037dbe4e6aee69a6"
+    },
+    {
+      "sourcePath": "skills/dtc-page-decomposition/SKILL.md",
+      "installedPath": ".agents/skills/dtc-page-decomposition/SKILL.md",
+      "sourceSha256": "cc57ad4df6e9b58807e7e1c995fa90f33968f868d99732491b64141bbe9f21ba",
+      "installedSha256": "cc57ad4df6e9b58807e7e1c995fa90f33968f868d99732491b64141bbe9f21ba"
+    },
+    {
+      "sourcePath": "skills/dtc-privacy-redaction/skill.json",
+      "installedPath": ".agents/skills/dtc-privacy-redaction/skill.json",
+      "sourceSha256": "0ebeaca6b43e2655b6a68a898da7257ff88926af1ff1e0cdaa4af021b7c70824",
+      "installedSha256": "2af2edb48ce6463b4cfeca4eb8b905187ae87ce190f3de7df9f0c634c49a2073"
+    },
+    {
+      "sourcePath": "skills/dtc-privacy-redaction/SKILL.md",
+      "installedPath": ".agents/skills/dtc-privacy-redaction/SKILL.md",
+      "sourceSha256": "b2a9360613f1deb5b8a96b5d168746282f47c560b269e9c9429bfec647a0aa19",
+      "installedSha256": "b2a9360613f1deb5b8a96b5d168746282f47c560b269e9c9429bfec647a0aa19"
+    },
+    {
+      "sourcePath": "skills/dtc-recording-analysis/skill.json",
+      "installedPath": ".agents/skills/dtc-recording-analysis/skill.json",
+      "sourceSha256": "9bc5f2965c17701d2a280a15f1411589fcab9e6510f8bd0a7f8172d35787d718",
+      "installedSha256": "c108760473cf20d3e3dbd4764462b4dd97ea47607c123f7a2c11561b6d9d9781"
+    },
+    {
+      "sourcePath": "skills/dtc-recording-analysis/SKILL.md",
+      "installedPath": ".agents/skills/dtc-recording-analysis/SKILL.md",
+      "sourceSha256": "66c37ebf6dbd22b7d1f9bc10fdd6837fa57ae522e7cdfd5f4b24f47c9b9ae673",
+      "installedSha256": "66c37ebf6dbd22b7d1f9bc10fdd6837fa57ae522e7cdfd5f4b24f47c9b9ae673"
+    },
+    {
+      "sourcePath": "skills/dtc-requirements-analysis/skill.json",
+      "installedPath": ".agents/skills/dtc-requirements-analysis/skill.json",
+      "sourceSha256": "36679bdfc1dfb6bc908c9acabfbfff5ecae6157fda11785129556eec1e8598c6",
+      "installedSha256": "adde3a3de84d1a9703547427178a1b4bd243504b29d82cb3923b23b864e4515e"
+    },
+    {
+      "sourcePath": "skills/dtc-requirements-analysis/SKILL.md",
+      "installedPath": ".agents/skills/dtc-requirements-analysis/SKILL.md",
+      "sourceSha256": "b03f7effeac94498eef37366bce53dc20349338ce9529fc631b0a7f045755618",
+      "installedSha256": "b03f7effeac94498eef37366bce53dc20349338ce9529fc631b0a7f045755618"
+    },
+    {
+      "sourcePath": "skills/dtc-scoped-validation/skill.json",
+      "installedPath": ".agents/skills/dtc-scoped-validation/skill.json",
+      "sourceSha256": "64a807304eaffeab6ebf7a322f16ccc26c63f2cc7f11a59efcbfefd8a2e14f1c",
+      "installedSha256": "d0e3c1ab883c94f7d583bd823b39b84958f17a4540486c6c48044715ba2a4628"
+    },
+    {
+      "sourcePath": "skills/dtc-scoped-validation/SKILL.md",
+      "installedPath": ".agents/skills/dtc-scoped-validation/SKILL.md",
+      "sourceSha256": "f51fbf696de01d5d0376d5edafa83029e683bfeda895f9ee46cb8edca1dc5b47",
+      "installedSha256": "f51fbf696de01d5d0376d5edafa83029e683bfeda895f9ee46cb8edca1dc5b47"
+    },
+    {
+      "sourcePath": "skills/dtc-technical-design/skill.json",
+      "installedPath": ".agents/skills/dtc-technical-design/skill.json",
+      "sourceSha256": "3b70500646e3aac338dff52671d2c10e80e790519793f26ab1b4f426654d2a38",
+      "installedSha256": "00ae4d32d333da01bc3ffd447bde3f7323880267d40a307a76dab47df9bf78f0"
+    },
+    {
+      "sourcePath": "skills/dtc-technical-design/SKILL.md",
+      "installedPath": ".agents/skills/dtc-technical-design/SKILL.md",
+      "sourceSha256": "fd837740e6fb41089115c292d33ae5281fcd8b9c1472513b9d0a3c6b9fbf6db4",
+      "installedSha256": "fd837740e6fb41089115c292d33ae5281fcd8b9c1472513b9d0a3c6b9fbf6db4"
+    },
+    {
+      "sourcePath": "skills/dtc-ui-spec/assets/ui-spec.example.json",
+      "installedPath": ".agents/skills/dtc-ui-spec/assets/ui-spec.example.json",
+      "sourceSha256": "4254c9740dda86e69b6e97dfa384608089effab160eff3f0776d5ebb1fc50ab0",
+      "installedSha256": "4254c9740dda86e69b6e97dfa384608089effab160eff3f0776d5ebb1fc50ab0"
+    },
+    {
+      "sourcePath": "skills/dtc-ui-spec/references/spec-contract.md",
+      "installedPath": ".agents/skills/dtc-ui-spec/references/spec-contract.md",
+      "sourceSha256": "5f0182a0d6a270f815a9a296cd2023a8d37066d87aefa2d33f98d901c6134cca",
+      "installedSha256": "5f0182a0d6a270f815a9a296cd2023a8d37066d87aefa2d33f98d901c6134cca"
+    },
+    {
+      "sourcePath": "skills/dtc-ui-spec/skill.json",
+      "installedPath": ".agents/skills/dtc-ui-spec/skill.json",
+      "sourceSha256": "f5ba28e2be28be375d941bf2cf8a114a3cff369b66f11d29f2667ab4182c2054",
+      "installedSha256": "926f2a26facc5d2e71f4aaa9357f47bfc5bac1cf146d0345abecdcc0918dec34"
+    },
+    {
+      "sourcePath": "skills/dtc-ui-spec/SKILL.md",
+      "installedPath": ".agents/skills/dtc-ui-spec/SKILL.md",
+      "sourceSha256": "dcb11ff57352e723332dfe1487586dacb48ac688fb6560340de67ed825827a6b",
+      "installedSha256": "dcb11ff57352e723332dfe1487586dacb48ac688fb6560340de67ed825827a6b"
+    },
+    {
+      "sourcePath": "skills/dtc-visual-validation/references/comparison-protocol.md",
+      "installedPath": ".agents/skills/dtc-visual-validation/references/comparison-protocol.md",
+      "sourceSha256": "75c2b9c1612de863afc1b505a07667ca4520524dbe63878577484865d120456e",
+      "installedSha256": "75c2b9c1612de863afc1b505a07667ca4520524dbe63878577484865d120456e"
+    },
+    {
+      "sourcePath": "skills/dtc-visual-validation/skill.json",
+      "installedPath": ".agents/skills/dtc-visual-validation/skill.json",
+      "sourceSha256": "8a62da7d8103bc527ac8ad51428206f86f61398a11f40bac09d72a4cb0270107",
+      "installedSha256": "7df7498f3b1a40bacbe7f8738e9c837622489f9f4bf3ffc73ac800eb5561ac5d"
+    },
+    {
+      "sourcePath": "skills/dtc-visual-validation/SKILL.md",
+      "installedPath": ".agents/skills/dtc-visual-validation/SKILL.md",
+      "sourceSha256": "12cf62712974cb736e4b8b939175c1679d048a709e8c412a5abff5ccc8822094",
+      "installedSha256": "12cf62712974cb736e4b8b939175c1679d048a709e8c412a5abff5ccc8822094"
+    },
+    {
+      "sourcePath": "skills/dtc-workflow-review/skill.json",
+      "installedPath": ".agents/skills/dtc-workflow-review/skill.json",
+      "sourceSha256": "b61737e46f44200848a75fbfca823375413592f6f71849b44f706ff25bf7a644",
+      "installedSha256": "7364aa4da2dce4a074ce6c6a68f811c39aadc21b4345b116f1923594492475e4"
+    },
+    {
+      "sourcePath": "skills/dtc-workflow-review/SKILL.md",
+      "installedPath": ".agents/skills/dtc-workflow-review/SKILL.md",
+      "sourceSha256": "e4a0f5e522e4b60426205cbaf9845f2b77bea18cbf3fee97a73db0684eb61422",
+      "installedSha256": "e4a0f5e522e4b60426205cbaf9845f2b77bea18cbf3fee97a73db0684eb61422"
+    }
+  ],
+  "claudeSymlinks": {
+    ".claude/skills/dtc-atomic-decomposition": "../../.agents/skills/dtc-atomic-decomposition",
+    ".claude/skills/dtc-ci-monitor": "../../.agents/skills/dtc-ci-monitor",
+    ".claude/skills/dtc-component-testing": "../../.agents/skills/dtc-component-testing",
+    ".claude/skills/dtc-context": "../../.agents/skills/dtc-context",
+    ".claude/skills/dtc-data-tracking": "../../.agents/skills/dtc-data-tracking",
+    ".claude/skills/dtc-delivery": "../../.agents/skills/dtc-delivery",
+    ".claude/skills/dtc-design-evidence": "../../.agents/skills/dtc-design-evidence",
+    ".claude/skills/dtc-evidence-log": "../../.agents/skills/dtc-evidence-log",
+    ".claude/skills/dtc-exception-handling": "../../.agents/skills/dtc-exception-handling",
+    ".claude/skills/dtc-implementation": "../../.agents/skills/dtc-implementation",
+    ".claude/skills/dtc-optimization": "../../.agents/skills/dtc-optimization",
+    ".claude/skills/dtc-page-decomposition": "../../.agents/skills/dtc-page-decomposition",
+    ".claude/skills/dtc-privacy-redaction": "../../.agents/skills/dtc-privacy-redaction",
+    ".claude/skills/dtc-recording-analysis": "../../.agents/skills/dtc-recording-analysis",
+    ".claude/skills/dtc-requirements-analysis": "../../.agents/skills/dtc-requirements-analysis",
+    ".claude/skills/dtc-scoped-validation": "../../.agents/skills/dtc-scoped-validation",
+    ".claude/skills/dtc-technical-design": "../../.agents/skills/dtc-technical-design",
+    ".claude/skills/dtc-ui-spec": "../../.agents/skills/dtc-ui-spec",
+    ".claude/skills/dtc-visual-validation": "../../.agents/skills/dtc-visual-validation",
+    ".claude/skills/dtc-workflow-review": "../../.agents/skills/dtc-workflow-review"
+  }
+}

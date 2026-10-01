@@ -1,0 +1,28 @@
+{
+  "$schema": "../skill.schema.json",
+  "schemaVersion": 1,
+  "name": "dtc-atomic-decomposition",
+  "version": "1.0.0",
+  "description": "把复杂组件拆成可复用的原子组件、组合组件、数据适配和交互状态，明确 props/inputs、slots、variants、依赖和不拆分边界。",
+  "stage": "architecture",
+  "inputs": [
+    "page component tree",
+    "component design evidence",
+    "component states",
+    "reuse candidates"
+  ],
+  "outputs": [
+    "atomic component tree",
+    "component contracts",
+    "variant/state matrix",
+    "reuse and ownership decisions"
+  ],
+  "relatedSkills": [
+    "dtc-page-decomposition",
+    "dtc-design-evidence",
+    "dtc-ui-spec",
+    "dtc-technical-design"
+  ],
+  "privacy": "公开输出仅使用脱敏设计、合成数据和占位符",
+  "entrypoint": "SKILL.md"
+}

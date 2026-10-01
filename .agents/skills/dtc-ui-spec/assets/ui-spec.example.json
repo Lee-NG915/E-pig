@@ -1,0 +1,91 @@
+{
+  "schemaVersion": 1,
+  "example": true,
+  "scope": "synthetic-feature-card",
+  "sourceRevision": "illustration-v1",
+  "sources": [
+    {
+      "id": "SRC-1",
+      "type": "synthetic",
+      "locator": "example.invalid/design",
+      "version": "illustration-v1",
+      "note": "合成演示，不是 Figma 实测；所有数值不是项目默认"
+    }
+  ],
+  "components": [
+    {
+      "id": "CARD",
+      "parentId": null,
+      "sourceRefs": [
+        "SRC-1"
+      ],
+      "responsibility": "单个可编辑卡片的内容与组合"
+    }
+  ],
+  "rows": [
+    {
+      "rowId": "CARD.title.font-size.compact",
+      "componentId": "CARD",
+      "element": "title",
+      "property": "font.size",
+      "sourceRef": "SRC-1",
+      "coordinateSpace": "item",
+      "original": {
+        "value": 24,
+        "unit": "design-px",
+        "kind": "synthetic"
+      },
+      "target": {
+        "value": 24,
+        "unit": "logical-unit",
+        "rule": "fixed",
+        "mappingReason": "示例假定映射；实际平台必须重新核对"
+      },
+      "viewport": {
+        "name": "compact",
+        "width": 400,
+        "unit": "logical-unit"
+      },
+      "state": "default",
+      "extraction": "extracted",
+      "decision": {
+        "status": "adopted",
+        "reason": "仅示范已采用目标的结构，不代表真实批准"
+      },
+      "implementation": null,
+      "acceptance": {
+        "expected": "采用的标题字体与间距在目标画面一致",
+        "method": "layout measurement + visual comparison",
+        "result": "not-run",
+        "evidence": []
+      }
+    }
+  ],
+  "behaviors": [
+    {
+      "id": "B-1",
+      "componentId": "CARD",
+      "input": "activation",
+      "expected": "通知拥有导航职责的上层，展示组件不暗绑真实地址",
+      "decision": "proposed"
+    }
+  ],
+  "parameters": [
+    {
+      "id": "title",
+      "componentId": "CARD",
+      "type": "text",
+      "default": null,
+      "emptyBehavior": "省略标题及其保留空间",
+      "consumer": "CARD title",
+      "decision": "proposed"
+    }
+  ],
+  "coverage": {
+    "completeSourceTree": false,
+    "unknowns": [
+      "仅演示一行，非完整规格",
+      "实际字体/窄宽屏/行为尚无真实证据"
+    ]
+  }
+}

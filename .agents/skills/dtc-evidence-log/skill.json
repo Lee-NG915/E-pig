@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "name": "dtc-evidence-log",
+  "version": "1.0.0",
+  "description": "维护跨需求、设计、实现、测试、交付和复盘的一份可追溯记录，保存候选身份、失败闭环和证据取回方式。",
+  "stage": "record",
+  "inputs": [
+    "context",
+    "stage outputs",
+    "commands and results",
+    "artifacts"
+  ],
+  "outputs": [
+    "timeline",
+    "evidence manifest",
+    "handoff summary",
+    "open issues"
+  ],
+  "privacy": "只归档脱敏摘要和最小证据索引，原始敏感输出留在受控位置",
+  "entrypoint": "SKILL.md",
+  "$schema": "../skill.schema.json",
+  "relatedSkills": [
+    "dtc-context",
+    "dtc-privacy-redaction"
+  ]
+}
