@@ -2,7 +2,9 @@ import type {
   Collection,
   ListProductsQuery,
   CatalogPort,
+  ProductColourOption,
   ProductDetail,
+  ProductGalleryImage,
   ProductListItem,
 } from "@/core/contracts/commerce/catalog";
 import { AppError } from "@/core/errors/errors";
@@ -41,6 +43,13 @@ const FIXTURE_HANDLE_CATEGORIES: Record<string, string> = {
   bedroom: "Bedroom",
 };
 
+const DEFAULT_COLOUR_OPTIONS: ProductColourOption[] = [
+  { id: "sky", label: "Sky", swatch: "#23A6F0" },
+  { id: "mint", label: "Mint", swatch: "#2DC071" },
+  { id: "coral", label: "Coral", swatch: "#E77C40" },
+  { id: "ink", label: "Ink", swatch: "#252B42" },
+];
+
 export function createMockCatalogAdapter({ market }: { market: Market }): CatalogPort {
   function categoryToHandle(category: string): string {
     return CATEGORY_HANDLES[category] ?? category.toLowerCase().replace(/\s+/g, "-");
@@ -61,6 +70,17 @@ export function createMockCatalogAdapter({ market }: { market: Market }): Catalo
         ? { compareAt: { amount: compareAt, currency: market.currency } }
         : {}),
     };
+  }
+
+  function toGallery(record: MockProductRecord): ProductGalleryImage[] {
+    return record.gallery?.length
+      ? record.gallery
+      : [
+          { src: record.image, alt: record.name },
+          // 当前 Koala 展示 fixture 只有一张图；保留第二个 gallery slot 让 PDP
+          // 的缩略图和前后切换在 mock 环境中仍可被验证。
+          { src: record.image, alt: `${record.name} alternate view` },
+        ];
   }
 
   return {
@@ -105,6 +125,11 @@ export function createMockCatalogAdapter({ market }: { market: Market }): Catalo
         ...toListItem(record),
         description: record.description,
         materials: record.materials,
+        gallery: toGallery(record),
+        rating: record.rating ?? 4,
+        reviewCount: record.reviewCount ?? 10,
+        availability: record.availability ?? "in-stock",
+        colourOptions: record.colourOptions ?? DEFAULT_COLOUR_OPTIONS,
       };
     },
 

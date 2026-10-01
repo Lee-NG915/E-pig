@@ -110,6 +110,12 @@ describe("mock catalog adapter", () => {
     expect(description.length).toBeGreaterThan(0);
     expect(description.length).toBeLessThanOrEqual(280);
     expect(detail.materials).toContain("Foam");
+    expect(detail.gallery.length).toBeGreaterThanOrEqual(1);
+    expect(detail.gallery[0]?.src).toBe(detail.image);
+    expect(detail.rating).toBeGreaterThanOrEqual(0);
+    expect(detail.reviewCount).toBeGreaterThan(0);
+    expect(detail.availability).toBe("in-stock");
+    expect(detail.colourOptions).toHaveLength(4);
 
     try {
       await sgCatalog.getProduct("does-not-exist");

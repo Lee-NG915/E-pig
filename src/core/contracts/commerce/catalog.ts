@@ -24,9 +24,27 @@ export type ProductListItem = {
   image: string;
 };
 
+export type ProductGalleryImage = {
+  src: string;
+  alt: string;
+};
+
+export type ProductColourOption = {
+  id: string;
+  label: string;
+  swatch: string;
+};
+
+export type ProductAvailability = "in-stock" | "out-of-stock";
+
 export type ProductDetail = ProductListItem & {
-  description?: string;
-  materials?: string[];
+  description: string;
+  materials: string[];
+  gallery: ProductGalleryImage[];
+  rating: number;
+  reviewCount: number;
+  availability: ProductAvailability;
+  colourOptions: ProductColourOption[];
 };
 
 export type Collection = {

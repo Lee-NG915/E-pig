@@ -1,3 +1,4 @@
+import type { ProductColourOption, ProductGalleryImage, ProductAvailability } from "@/core/contracts/commerce/catalog";
 import type { MarketId } from "@/platform/config/markets";
 
 import armchairs from "./fixtures/koala/armchairs.json";
@@ -23,6 +24,11 @@ export type MockProductRecord = {
   image: string;
   description: string;
   materials: string[];
+  gallery?: ProductGalleryImage[];
+  rating?: number;
+  reviewCount?: number;
+  availability?: ProductAvailability;
+  colourOptions?: ProductColourOption[];
   priceByMarket: Record<MarketId, number>;
   compareAtByMarket?: Partial<Record<MarketId, number>>;
   source: {
