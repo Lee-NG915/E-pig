@@ -46,6 +46,9 @@ export const utilityLinks: UtilityLink[] = [
   { label: "Our story", href: "#about" },
 ];
 
+/** 主导航叶子链（无 Mega）。href 为市场无关路径。 */
+export const primaryLinks: UtilityLink[] = [{ label: "Blog", href: "/blog" }];
+
 export const mainNav: NavPrimaryItem[] = [
   {
     id: "living",

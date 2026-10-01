@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { mainNav, promoBanner, utilityLinks } from "./main-nav";
+import { mainNav, primaryLinks, promoBanner, utilityLinks } from "./main-nav";
 
 describe("mainNav", () => {
   it("一级分类短标签且可进 PLP", () => {
@@ -24,5 +24,9 @@ describe("mainNav", () => {
   it("顶栏促销与辅助链存在", () => {
     expect(promoBanner.text.length).toBeGreaterThan(0);
     expect(utilityLinks.length).toBeGreaterThan(0);
+  });
+
+  it("主导航叶子链指向 Blog，且不进入分类 Mega", () => {
+    expect(primaryLinks).toEqual([{ label: "Blog", href: "/blog" }]);
   });
 });

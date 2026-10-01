@@ -57,6 +57,9 @@ describe("SiteHeader", () => {
     for (const label of ["Living", "Bedroom", "Outdoor", "Sofas"]) {
       expect(screen.getByRole("link", { name: new RegExp(label) })).toBeTruthy();
     }
+    const blog = screen.getByRole("link", { name: "Blog" });
+    expect(blog.getAttribute("href")).toBe("/au/blog");
+    expect(blog.getAttribute("aria-expanded")).toBeNull();
   });
 
   it("Sofas 一级链在当前 PLP 上为 aria-current", () => {
@@ -104,5 +107,7 @@ describe("SiteHeader", () => {
     expect(screen.getByRole("link", { name: /Shop all Living/i })).toBeTruthy();
     await user.click(screen.getByRole("button", { name: /Back/i }));
     expect(within(screen.getByRole("dialog")).getByRole("button", { name: /Bedroom/i })).toBeTruthy();
+    const blog = within(screen.getByRole("dialog")).getByRole("link", { name: "Blog" });
+    expect(blog.getAttribute("href")).toBe("/au/blog");
   });
 });

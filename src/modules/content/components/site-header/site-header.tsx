@@ -18,6 +18,7 @@ import { getMarket, isMarketId } from "@/platform/config/markets";
 import { withMarketPrefix } from "@/platform/config/market-path";
 import {
   mainNav,
+  primaryLinks,
   promoBanner,
   utilityLinks,
   type NavPrimaryItem,
@@ -220,6 +221,28 @@ export function SiteHeader() {
                     <ChevronDown className="size-3.5 " aria-hidden="true" />
                   </Link>
                 </div>
+              );
+            })}
+            {primaryLinks.map((link) => {
+              const href = withMarketPrefix(market.id, link.href);
+              const active = pathIsActive(pathname, link.href, market.id);
+              return (
+                <Link
+                  key={link.href}
+                  href={href}
+                  prefetch={false}
+                  className={`inline-flex h-10 items-center rounded-md px-3 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                    active
+                      ? "font-medium text-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                  aria-current={active ? "page" : undefined}
+                  onClick={() =>
+                    track("nav_primary_click", { id: link.href, href })
+                  }
+                >
+                  {link.label}
+                </Link>
               );
             })}
           </nav>
