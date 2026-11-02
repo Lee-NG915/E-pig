@@ -12,4 +12,6 @@ One accessible drawer around the shared server bag panel.
 | --- | --- | --- |
 | Closed | open=false | no dialog |
 | Open | open=true | one dialog, shared CartPanel |
-| Close | escape/overlay | UI-only open state updated |
+| Close | escape/overlay/close button | UI-only open state updated; focus returns to the original opener |
+
+异步加购在禁用按钮前记录原触发元素；关闭抽屉时通过现有 Radix `onCloseAutoFocus` 恢复，避免焦点落到 BODY。原按钮已移除或不可用时，回退到当前市场页头购物袋按钮。DOM 引用仅保存在浏览器 UI 内存，不进入查询、持久化或服务端数据。

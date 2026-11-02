@@ -19,6 +19,33 @@ const subscribeHydration = () => () => {};
 let browserClient: QueryClient | undefined;
 const mutationVersions = new Map<string, number>();
 const pendingCounts = new Map<string, number>();
+// Browser-only drawer focus targets. Never part of persisted, server or Query data.
+const cartOpeners = new Map<string, HTMLElement>();
+function rememberCartOpener(market: CartMarketIdentity, opener?: HTMLElement) {
+  if (typeof document === "undefined" || state(market).open) return;
+  const candidate = opener ?? document.activeElement;
+  if (candidate instanceof HTMLElement && candidate !== document.body)
+    cartOpeners.set(market.id, candidate);
+  else cartOpeners.delete(market.id);
+}
+export function restoreCartFocus(market: CartMarketIdentity) {
+  if (typeof document === "undefined") return;
+  const opener = cartOpeners.get(market.id);
+  cartOpeners.delete(market.id);
+  const fallback = Array.from(
+    document.querySelectorAll<HTMLElement>("[data-cart-trigger]"),
+  ).find((element) => element.dataset.cartTrigger === market.id);
+  for (const target of [opener, fallback]) {
+    if (
+      !target?.isConnected ||
+      target.matches(":disabled") ||
+      target.closest("[hidden], [inert]")
+    )
+      continue;
+    target.focus({ preventScroll: true });
+    if (document.activeElement === target) return;
+  }
+}
 
 /** Never share a private Query cache between server requests. */
 export function getStorefrontQueryClient() {
@@ -40,7 +67,12 @@ function updateUi(market: CartMarketIdentity, next: Partial<UiState>) {
   ui.set(market.id, { ...state(market), ...next });
   listeners.forEach((listener) => listener());
 }
-export function setCartOpen(market: CartMarketIdentity, open: boolean) {
+export function setCartOpen(
+  market: CartMarketIdentity,
+  open: boolean,
+  opener?: HTMLElement,
+) {
+  if (open) rememberCartOpener(market, opener);
   updateUi(market, { open });
 }
 
@@ -147,6 +179,8 @@ function readPending(market: CartMarketIdentity): PendingMutation | null {
   return value;
 }
 async function mutateCart(market: CartMarketIdentity, input?: CartMutation) {
+  // Capture synchronously before pending disables the original add button.
+  if (!input || input.action === "add") rememberCartOpener(market);
   if (!navigator.locks?.request) {
     const message =
       "This browser needs Web Locks for safe bag updates. Use a current browser over HTTPS.";

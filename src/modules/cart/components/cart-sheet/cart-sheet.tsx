@@ -6,7 +6,11 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@e-pig/happy-dog/components/sheet";
-import { setCartOpen, useCartStore } from "../../lib/cart-store";
+import {
+  restoreCartFocus,
+  setCartOpen,
+  useCartStore,
+} from "../../lib/cart-store";
 import { useCartMarket } from "../cart-market-context/cart-market-context";
 import { CartPanel } from "../cart-panel/cart-panel";
 export function CartSheet() {
@@ -14,7 +18,12 @@ export function CartSheet() {
   const cart = useCartStore(market);
   return (
     <Sheet open={cart.open} onOpenChange={(open) => setCartOpen(market, open)}>
-      <SheetContent>
+      <SheetContent
+        onCloseAutoFocus={(event) => {
+          event.preventDefault();
+          restoreCartFocus(market);
+        }}
+      >
         <SheetHeader>
           <SheetTitle>Your bag</SheetTitle>
           <SheetDescription>

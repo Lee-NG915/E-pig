@@ -43,3 +43,27 @@ export const Empty: Story = {
     });
   },
 };
+
+export const KeyboardFocusReturn: Story = {
+  beforeEach: () => {
+    getStorefrontQueryClient().setQueryData(cartQueryKey(marketFixture), {
+      cart: null,
+      checkoutEnabled: true,
+    });
+    setCartOpen(marketFixture, false);
+  },
+  render: () => (
+    <>
+      <button
+        className="m-6 rounded-md bg-primary px-5 py-3 text-primary-foreground focus-visible:ring-2 focus-visible:ring-ring"
+        data-cart-trigger={marketFixture.id}
+        onClick={(event) =>
+          setCartOpen(marketFixture, true, event.currentTarget)
+        }
+      >
+        Open bag and return focus with Escape
+      </button>
+      <CartSheet />
+    </>
+  ),
+};

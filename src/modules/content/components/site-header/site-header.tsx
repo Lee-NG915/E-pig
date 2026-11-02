@@ -265,9 +265,10 @@ export function SiteHeader() {
               size="icon"
               className="relative"
               aria-label={`Open bag with ${count} items`}
-              onClick={() => {
+              data-cart-trigger={market.id}
+              onClick={(event) => {
                 track("cart_icon_click", { count });
-                setCartOpen(market, true);
+                setCartOpen(market, true, event.currentTarget);
               }}
             >
               <ShoppingBag className="size-5" aria-hidden="true" />
