@@ -1,107 +1,63 @@
 // @vitest-environment jsdom
-
 import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-
 import type { ProductDetail as ProductDetailData } from "@/core/contracts/commerce/catalog";
-import {
-  CartMarketProvider,
-  type CartMarket,
-} from "@/modules/cart/components/cart-market-context/cart-market-context";
-import { getCartSnapshot, setCartOpen, setQuantity } from "@/modules/cart/lib/cart-store";
-
+import { CartMarketProvider } from "@/modules/cart/components/cart-market-context/cart-market-context";
 import { ProductDetail } from "./product-detail";
-
-vi.mock("next/image", () => ({
-  default: ({ alt }: { alt: string }) => <span role="img" aria-label={alt || "Product image"} />,
-}));
-
-const market: CartMarket = { id: "au", currency: "AUD" };
-
+const actions = vi.hoisted(() => ({ addItem: vi.fn(), pending: false, error: null as string | null }));
+vi.mock("@/modules/cart/lib/cart-store", async (importOriginal) => ({ ...await importOriginal<typeof import("@/modules/cart/lib/cart-store")>(), useCartActions: () => actions }));
+vi.mock("next/image", () => ({ default: ({ alt }: { alt: string }) => <span role="img" aria-label={alt || "Product image"} /> }));
 const product: ProductDetailData = {
-  id: "floating-phone",
-  slug: "floating-phone",
-  name: "Floating Phone",
-  category: "Armchairs",
-  colour: "Sky",
-  image: "/pdp/pdp-main.png",
-  price: { amount: 1139.33, currency: "AUD" },
-  description: "Met minim Mollie non desert Alamo est sit cliquey dolor do met sent.",
-  materials: ["Fabric"],
-  gallery: [
-    { src: "/pdp/pdp-main.png", alt: "Main product image" },
-    { src: "/pdp/pdp-main.png", alt: "Alternate product image" },
-  ],
-  rating: 4,
-  reviewCount: 10,
-  availability: "in-stock",
-  colourOptions: [
-    { id: "sky", label: "Sky", swatch: "#23A6F0" },
-    { id: "mint", label: "Mint", swatch: "#2DC071" },
+  id: "chair", slug: "chair", name: "Chair", category: "Armchairs", colour: "Moss", image: "/chair.jpg", price: { amount: 100, currency: "AUD" },
+  description: "A comfortable chair.", materials: ["Fabric"], gallery: [{ src: "/chair.jpg", alt: "Chair" }], availability: "in-stock", colourOptions: [],
+  variants: [
+    { id: "moss", sku: "SANDBOX-MOSS", label: "Moss", price: { amount: 100, currency: "AUD" }, image: "/chair.jpg", availability: "in-stock", maxQuantity: 5 },
+    { id: "test", sku: "SANDBOX-TEST", label: "Sandbox test option", price: { amount: 120, currency: "AUD" }, image: "/test.jpg", availability: "in-stock", maxQuantity: 3 },
+    { id: "unavailable", sku: "SANDBOX-UNAVAILABLE", label: "Unavailable test", price: { amount: 100, currency: "AUD" }, image: "/chair.jpg", availability: "out-of-stock", maxQuantity: 5 },
   ],
 };
-
-beforeEach(() => {
-  window.localStorage.clear();
-  setQuantity(market, product.id, 0);
-  setCartOpen(market, false);
-});
-
+function show(item = product) { render(<CartMarketProvider market={{ id: "au", currency: "AUD" }}><ProductDetail product={item} /></CartMarketProvider>); }
+beforeEach(() => { actions.pending = false; actions.error = null; actions.addItem.mockReset().mockResolvedValue(undefined); });
 afterEach(cleanup);
-
-function renderDetail(item: ProductDetailData = product) {
-  return render(
-    <CartMarketProvider market={market}>
-      <ProductDetail product={item} />
-    </CartMarketProvider>,
-  );
-}
-
 describe("ProductDetail", () => {
-  it("呈现商品详情的核心信息", () => {
-    renderDetail();
-
-    expect(screen.getByRole("heading", { name: "Floating Phone" })).toBeTruthy();
-    expect(screen.getByText("$1,139.33")).toBeTruthy();
-    expect(screen.getByText("10 Reviews")).toBeTruthy();
-    expect(screen.getByText("In Stock")).toBeTruthy();
-    expect(screen.getByText(product.description)).toBeTruthy();
+  it("hides absent reviews, fake gallery controls and dead wishlist", () => {
+    show();
+    expect(screen.getByRole("heading", { name: "Chair" })).toBeTruthy();
+    expect(screen.queryByText(/reviews/i)).toBeNull();
+    expect(screen.queryByRole("button", { name: /Next product image/ })).toBeNull();
+    expect(screen.queryByRole("button", { name: /wishlist/ })).toBeNull();
   });
-
-  it("通过缩略图和箭头切换主图", async () => {
-    const user = userEvent.setup();
-    renderDetail();
-
-    expect(screen.getByRole("img", { name: "Main product image" })).toBeTruthy();
-    await user.click(screen.getByRole("button", { name: "Next product image" }));
-    expect(screen.getByRole("img", { name: "Alternate product image" })).toBeTruthy();
-    await user.click(screen.getByRole("button", { name: "Show product image 1" }));
-    expect(screen.getByRole("img", { name: "Main product image" })).toBeTruthy();
-  });
-
-  it("选择颜色后将商品加入当前 market 的 demo cart", async () => {
-    const user = userEvent.setup();
-    renderDetail();
-
-    await user.click(screen.getByRole("button", { name: "Select Options" }));
-    expect(screen.getByRole("button", { name: "Add to bag" }).hasAttribute("disabled")).toBe(true);
-    await user.click(screen.getByRole("radio", { name: "Mint" }));
+  it("selects a real variant and submits only server identifiers", async () => {
+    show(); const user = userEvent.setup();
+    await user.click(screen.getByRole("radio", { name: "Sandbox test option" }));
+    expect(screen.getByText("$120")).toBeTruthy();
+    expect(screen.getByRole("img", { name: "Chair — Sandbox test option" })).toBeTruthy();
     await user.click(screen.getByRole("button", { name: "Add to bag" }));
-
-    const cart = getCartSnapshot(market);
-    expect(cart.open).toBe(true);
-    expect(cart.lines).toHaveLength(1);
-    expect(cart.lines[0]).toMatchObject({ productId: product.id, colour: "Mint", quantity: 1 });
+    expect(actions.addItem).toHaveBeenCalledWith({ productId: "chair", variantId: "test", quantity: 1 });
+    expect(await screen.findByRole("status")).toBeTruthy();
+  });
+  it("disables unavailable and pending additions", async () => {
+    show(); await userEvent.setup().click(screen.getByRole("radio", { name: "Unavailable test" }));
+    expect(screen.getByRole("button", { name: "Unavailable for sandbox checkout" }).hasAttribute("disabled")).toBe(true);
+    cleanup(); actions.pending = true; show();
+    expect(screen.getByRole("button", { name: "Adding…" }).hasAttribute("disabled")).toBe(true);
+  });
+  it("preserves selection and reports a rejected request accessibly", async () => {
+    actions.addItem.mockRejectedValue(new Error("Try again")); show(); const user = userEvent.setup();
+    await user.click(screen.getByRole("radio", { name: "Sandbox test option" }));
+    await user.click(screen.getByRole("button", { name: "Add to bag" }));
+    expect(await screen.findByRole("alert")).toBeTruthy();
+    expect(screen.getByRole("radio", { name: "Sandbox test option" }).getAttribute("aria-checked")).toBe("true");
+  });
+  it("ignores duplicate clicks while an add request is unresolved", async () => {
+    let finish!: () => void;
+    actions.addItem.mockImplementation(() => new Promise<void>(resolve => { finish = resolve; }));
+    show(); const user = userEvent.setup();
+    await user.dblClick(screen.getByRole("button", { name: "Add to bag" }));
+    expect(actions.addItem).toHaveBeenCalledTimes(1);
+    finish();
+    expect(await screen.findByRole("status")).toBeTruthy();
   });
 
-  it("缺货时禁用主按钮并保留占位操作的可访问名称", () => {
-    renderDetail({ ...product, availability: "out-of-stock" });
-
-    expect(screen.getByText("Out of Stock")).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Select Options" }).hasAttribute("disabled")).toBe(true);
-    expect(screen.getByRole("button", { name: "Add product to wishlist" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Add product to basket" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Preview product" })).toBeTruthy();
-  });
 });

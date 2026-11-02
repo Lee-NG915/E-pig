@@ -67,7 +67,8 @@ try {
     [homeHtml.includes('<html lang="en">'), "expected the shared English document language"],
     [homeHtml.includes("Singapore"), "expected Singapore market content"],
     [homeHtml.includes("SGD"), "expected SGD market currency"],
-    [homeHtml.includes("en-SG"), "expected the SG regional locale in runtime content"],
+    // Locale belongs to money/date formatting; it is no longer developer copy in the footer.
+    [homeHtml.includes("/sg/products/"), "expected market-prefixed SG product links"],
     [!homeHtml.includes('<html lang="en-AU">'), "must not leak build-time en-AU html lang"],
     [!homeHtml.includes('<html lang="en-SG">'), "regional locale belongs to runtime UI, not the shell"],
     [!homeHtml.includes("Australia · AUD"), "must not leak AU market content"],

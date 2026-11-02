@@ -1,226 +1,160 @@
 // @vitest-environment jsdom
-
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-/**
- * cart-store 是模块级 external store；每个用例用 vi.resetModules + 动态 import
- * 拿到全新模块实例，避免用例间状态泄漏。
- */
-type CartStoreModule = typeof import("./cart-store");
-
-let store: CartStoreModule;
-
-const alto = {
-  id: "alto-modular-sofa",
-  name: "Alto Modular Sofa",
-  colour: "Moss weave",
-  image: "https://example.com/alto.jpg",
-  price: { amount: 2890, currency: "AUD" },
+type Store = typeof import("./cart-store");
+let store: Store;
+const market = { id: "au", currency: "AUD" };
+const cart = {
+  id: "cart-1",
+  market: "au",
+  revision: 1,
+  lines: [
+    {
+      id: "line-1",
+      productId: "sofa",
+      variantId: "small",
+      variantLabel: "Small",
+      name: "Sofa",
+      quantity: 1,
+      unitPrice: { amount: 10, currency: "AUD" },
+      lineTotal: { amount: 10, currency: "AUD" },
+    },
+  ],
+  subtotal: { amount: 10, currency: "AUD" },
 };
-
-const nook = {
-  id: "nook-coffee-table",
-  name: "Nook Coffee Table",
-  colour: "Smoked ash",
-  image: "https://example.com/nook.jpg",
-  price: { amount: 590, currency: "AUD" },
-};
-
-const auMarket = { id: "au", currency: "AUD" };
-const sgMarket = { id: "sg", currency: "SGD" };
-
+const response = (value: unknown) => new Response(JSON.stringify(value));
 beforeEach(async () => {
+  vi.resetModules();
   vi.restoreAllMocks();
   window.localStorage.clear();
-  vi.resetModules();
+  window.sessionStorage.clear();
+  Object.defineProperty(navigator, "locks", {
+    configurable: true,
+    value: { request: vi.fn(async (_: string, fn: () => unknown) => fn()) },
+  });
   store = await import("./cart-store");
 });
-
-describe("demo cart store", () => {
-  it("初始为空且关闭", () => {
-    expect(store.getCartSnapshot(auMarket)).toEqual({ lines: [], open: false });
+describe("server cart", () => {
+  it("never imports or deletes the legacy local cart", () => {
+    const legacy = '{"lines":[{"priceAmount":1}]}';
+    localStorage.setItem(store.getCartStorageKey("au"), legacy);
+    expect(store.getCartSnapshot(market).lines).toEqual([]);
+    expect(localStorage.getItem(store.getCartStorageKey("au"))).toBe(legacy);
   });
-
-  it("addItem 新增行并保存价格快照（展示不再回查 catalog）", () => {
-    store.addItem(auMarket, alto);
-
-    const { lines } = store.getCartSnapshot(auMarket);
-    expect(lines).toHaveLength(1);
-    expect(lines[0]).toMatchObject({
-      productId: "alto-modular-sofa",
-      name: "Alto Modular Sofa",
-      quantity: 1,
-      priceAmount: 2890,
-      priceCurrency: "AUD",
+  it("reuses the unresolved mutation key after a lost first response", async () => {
+    const fetcher = vi
+      .fn()
+      .mockResolvedValueOnce(response({ cart: null, checkoutEnabled: true }))
+      .mockRejectedValueOnce(new TypeError("network lost"))
+      .mockResolvedValueOnce(response({ cart: null, checkoutEnabled: true }))
+      .mockResolvedValueOnce(response({ cart, checkoutEnabled: true }));
+    vi.stubGlobal("fetch", fetcher);
+    const input = { productId: "sofa", variantId: "small", quantity: 1 };
+    await expect(store.addCartItem(market, input)).rejects.toThrow(
+      "network lost",
+    );
+    await store.addCartItem(market, input);
+    const first = JSON.parse(fetcher.mock.calls[1][1].body);
+    const retry = JSON.parse(fetcher.mock.calls[3][1].body);
+    expect(retry.idempotencyKey).toBe(first.idempotencyKey);
+    expect(retry).toEqual({
+      action: "add",
+      ...input,
+      idempotencyKey: first.idempotencyKey,
     });
+    expect(store.getCartSnapshot(market).lines[0].priceAmount).toBe(10);
   });
-
-  it("重复 addItem 同商品只累加数量", () => {
-    store.addItem(auMarket, alto);
-    store.addItem(auMarket, alto);
-
-    const { lines } = store.getCartSnapshot(auMarket);
-    expect(lines).toHaveLength(1);
-    expect(lines[0].quantity).toBe(2);
-  });
-
-  it("addItem 后 cart 自动打开", () => {
-    store.addItem(auMarket, nook);
-    expect(store.getCartSnapshot(auMarket).open).toBe(true);
-  });
-
-  it("setQuantity 到 0 移除该行", () => {
-    store.addItem(auMarket, alto);
-    store.setQuantity(auMarket, "alto-modular-sofa", 0);
-    expect(store.getCartSnapshot(auMarket).lines).toHaveLength(0);
-  });
-
-  it("setQuantity 更新数量，多行互不影响", () => {
-    store.addItem(auMarket, alto);
-    store.addItem(auMarket, nook);
-    store.setQuantity(auMarket, "nook-coffee-table", 5);
-
-    const { lines } = store.getCartSnapshot(auMarket);
-    expect(lines).toHaveLength(2);
-    expect(lines.find((line) => line.productId === "nook-coffee-table")?.quantity).toBe(5);
-    expect(lines.find((line) => line.productId === "alto-modular-sofa")?.quantity).toBe(1);
-  });
-
-  it("setCartOpen 只切换开关，不影响行数据", () => {
-    store.addItem(auMarket, alto);
-    store.setCartOpen(auMarket, false);
-
-    const snapshot = store.getCartSnapshot(auMarket);
-    expect(snapshot.open).toBe(false);
-    expect(snapshot.lines).toHaveLength(1);
-  });
-
-  it("按 market 隔离状态和带版本的 localStorage payload", () => {
-    const sgProduct = { ...alto, price: { amount: 2990, currency: "SGD" } };
-
-    store.addItem(auMarket, alto);
-    store.addItem(sgMarket, sgProduct);
-
-    expect(store.getCartSnapshot(auMarket).lines[0].priceCurrency).toBe("AUD");
-    expect(store.getCartSnapshot(sgMarket).lines[0].priceCurrency).toBe("SGD");
-    expect(window.localStorage.getItem(store.getCartStorageKey("au"))).toContain(
-      '"marketId":"au"',
-    );
-    expect(window.localStorage.getItem(store.getCartStorageKey("sg"))).toContain(
-      '"version":1',
-    );
-  });
-
-  it("拒绝不完整或数值非法的持久化 schema", async () => {
-    window.localStorage.setItem(
-      store.getCartStorageKey("au"),
-      JSON.stringify({
-        version: 1,
-        marketId: "au",
-        lines: [{ ...alto, priceAmount: Number.NaN, priceCurrency: "AUD", quantity: 0 }],
+  it("blocks unsafe writes when cross-tab Web Locks are unavailable", async () => {
+    Object.defineProperty(navigator, "locks", {
+      configurable: true,
+      value: undefined,
+    });
+    const fetcher = vi.fn();
+    vi.stubGlobal("fetch", fetcher);
+    await expect(
+      store.addCartItem(market, {
+        productId: "sofa",
+        variantId: "small",
+        quantity: 1,
       }),
-    );
-    vi.resetModules();
-    store = await import("./cart-store");
-
-    expect(store.getCartSnapshot(auMarket).lines).toEqual([]);
-    expect(window.localStorage.getItem(store.getCartStorageKey("au"))).toBeNull();
+    ).rejects.toThrow(/browser.*Web Locks/i);
+    expect(fetcher).not.toHaveBeenCalled();
   });
+});
 
-  it("恢复合法的同 market v1 payload", async () => {
-    window.localStorage.setItem(
-      store.getCartStorageKey("au"),
-      JSON.stringify({
-        version: 1,
-        marketId: "au",
-        lines: [
-          {
-            productId: alto.id,
-            name: alto.name,
-            colour: alto.colour,
-            image: alto.image,
-            priceAmount: alto.price.amount,
-            priceCurrency: alto.price.currency,
-            quantity: 2,
+it("does not let an older null GET replace a newly created server cart", async () => {
+  let resolveOld!: (response: Response) => void;
+  const fetcher = vi
+    .fn()
+    .mockImplementationOnce(
+      () =>
+        new Promise<Response>((resolve) => {
+          resolveOld = resolve;
+        }),
+    )
+    .mockResolvedValueOnce(response({ cart: null, checkoutEnabled: true }))
+    .mockResolvedValueOnce(response({ cart, checkoutEnabled: true }));
+  vi.stubGlobal("fetch", fetcher);
+  const stale = store.refreshCart(market);
+  await store.addCartItem(market, {
+    productId: "sofa",
+    variantId: "small",
+    quantity: 1,
+  });
+  resolveOld(response({ cart: null, checkoutEnabled: true }));
+  await stale;
+  expect(store.getCartSnapshot(market).cart?.id).toBe("cart-1");
+  expect(store.getCartSnapshot(market).revision).toBe(1);
+});
+
+it("shares unresolved request data across tabs rather than creating a second first cart", async () => {
+  const input = {
+    action: "add",
+    productId: "sofa",
+    variantId: "small",
+    quantity: 1,
+  };
+  localStorage.setItem(
+    "e-pig:pending-cart:v1:au",
+    JSON.stringify({ input, idempotencyKey: "existing-other-tab-key" }),
+  );
+  const fetcher = vi
+    .fn()
+    .mockResolvedValueOnce(response({ cart: null, checkoutEnabled: true }))
+    .mockResolvedValueOnce(response({ cart, checkoutEnabled: true }));
+  vi.stubGlobal("fetch", fetcher);
+  await store.addCartItem(market, {
+    productId: "sofa",
+    variantId: "small",
+    quantity: 1,
+  });
+  expect(JSON.parse(fetcher.mock.calls[1][1].body).idempotencyKey).toBe(
+    "existing-other-tab-key",
+  );
+  expect(localStorage.getItem("e-pig:pending-cart:v1:au")).toBeNull();
+});
+
+it("keeps a newer revision when an older server response arrives", async () => {
+  vi.stubGlobal(
+    "fetch",
+    vi
+      .fn()
+      .mockResolvedValueOnce(
+        response({ cart: { ...cart, revision: 5 }, checkoutEnabled: true }),
+      )
+      .mockResolvedValueOnce(
+        response({
+          cart: {
+            ...cart,
+            revision: 3,
+            subtotal: { amount: 1, currency: "AUD" },
           },
-        ],
-      }),
-    );
-    vi.resetModules();
-    store = await import("./cart-store");
-
-    expect(store.getCartSnapshot(auMarket).lines[0]).toMatchObject({
-      productId: alto.id,
-      quantity: 2,
-      priceCurrency: "AUD",
-    });
-  });
-
-  it.each([
-    ["version", { version: 2, marketId: "au" }],
-    ["market", { version: 1, marketId: "sg" }],
-  ])("拒绝错误的 %s 持久化字段", async (_label, envelope) => {
-    window.localStorage.setItem(
-      store.getCartStorageKey("au"),
-      JSON.stringify({ ...envelope, lines: [] }),
-    );
-    vi.resetModules();
-    store = await import("./cart-store");
-
-    expect(store.getCartSnapshot(auMarket).lines).toEqual([]);
-    expect(window.localStorage.getItem(store.getCartStorageKey("au"))).toBeNull();
-  });
-
-  it("拒绝与当前 market 不一致的持久化货币", async () => {
-    window.localStorage.setItem(
-      store.getCartStorageKey("au"),
-      JSON.stringify({
-        version: 1,
-        marketId: "au",
-        lines: [
-          {
-            productId: alto.id,
-            name: alto.name,
-            colour: alto.colour,
-            image: alto.image,
-            priceAmount: alto.price.amount,
-            priceCurrency: "SGD",
-            quantity: 1,
-          },
-        ],
-      }),
-    );
-    vi.resetModules();
-    store = await import("./cart-store");
-
-    expect(store.getCartSnapshot(auMarket).lines).toEqual([]);
-  });
-
-  it("localStorage 读取和清理同时失败时保持空购物车且不抛错", () => {
-    vi.spyOn(Storage.prototype, "getItem").mockImplementation(() => {
-      throw new DOMException("storage disabled", "SecurityError");
-    });
-    vi.spyOn(Storage.prototype, "removeItem").mockImplementation(() => {
-      throw new DOMException("storage disabled", "SecurityError");
-    });
-
-    expect(() => store.getCartSnapshot(auMarket)).not.toThrow();
-    expect(store.getCartSnapshot(auMarket).lines).toEqual([]);
-  });
-
-  it("localStorage 写失败时仍更新内存状态且不抛错", () => {
-    vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
-      throw new DOMException("quota exceeded", "QuotaExceededError");
-    });
-
-    expect(() => store.addItem(auMarket, alto)).not.toThrow();
-    expect(store.getCartSnapshot(auMarket).lines).toHaveLength(1);
-  });
-
-  it("拒绝把其他货币的商品加入当前 market", () => {
-    const foreignProduct = { ...alto, price: { amount: 2890, currency: "SGD" } };
-
-    expect(() => store.addItem(auMarket, foreignProduct)).toThrow(/currency/i);
-    expect(store.getCartSnapshot(auMarket).lines).toEqual([]);
-  });
+          checkoutEnabled: true,
+        }),
+      ),
+  );
+  await store.refreshCart(market);
+  await store.refreshCart(market);
+  expect(store.getCartSnapshot(market).revision).toBe(5);
+  expect(store.getCartSnapshot(market).cart?.subtotal.amount).toBe(10);
 });

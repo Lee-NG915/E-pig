@@ -1,8 +1,0 @@
-.blogPage {
-  --blog-surface: #ffffff;
-  --blog-title: #252b42;
-  --blog-muted: #737373;
-  --blog-tag-accent: #8ec2f2;
-  --blog-new: #e74040;
-  font-family: "Montserrat", var(--font-sans);
-}

@@ -3,7 +3,11 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { CartMarketProvider, useCartMarket, type CartMarket } from "./cart-market-context";
+import {
+  CartMarketProvider,
+  useCartMarket,
+  type CartMarket,
+} from "./cart-market-context";
 
 const market: CartMarket = { id: "au", currency: "AUD" };
 
@@ -30,7 +34,9 @@ describe("CartMarketContext", () => {
   });
 
   it("provider 外使用 useCartMarket 会抛出明确错误", () => {
-    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+    const consoleError = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => {});
 
     expect(() => render(<MarketProbe />)).toThrow(
       "useCartMarket must be used inside CartMarketProvider",
@@ -58,11 +64,11 @@ describe("CartMarketContext", () => {
 
     const auRegion = screen.getByRole("region", { name: "AU subtree" });
     const sgRegion = screen.getByRole("region", { name: "SG subtree" });
-    expect(auRegion.querySelector("[data-testid='market-probe']")?.textContent).toBe(
-      "au:AUD",
-    );
-    expect(sgRegion.querySelector("[data-testid='market-probe']")?.textContent).toBe(
-      "sg:SGD",
-    );
+    expect(
+      auRegion.querySelector("[data-testid='market-probe']")?.textContent,
+    ).toBe("au:AUD");
+    expect(
+      sgRegion.querySelector("[data-testid='market-probe']")?.textContent,
+    ).toBe("sg:SGD");
   });
 });

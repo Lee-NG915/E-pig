@@ -19,18 +19,16 @@ describe("BlogCard", () => {
   it("renders the design content and accessible media metadata", () => {
     render(<BlogCard post={blogPosts[0]} />);
     expect(screen.getByRole("heading", { name: blogPosts[0].title })).toBeTruthy();
-    expect(screen.getByText("Google")).toBeTruthy();
-    expect(screen.getByText("Trending")).toBeTruthy();
-    expect(screen.getByText("New")).toBeTruthy();
+    expect(screen.getByText(/Google · Trending · New/)).toBeTruthy();
     expect(screen.getByText("22 April 2021")).toBeTruthy();
-    expect(screen.getByText("10 comments")).toBeTruthy();
+    expect(screen.queryByText(/comments/)).toBeNull();
     expect(screen.getByRole("img", { name: blogPosts[0].imageAlt })).toBeTruthy();
-    expect(screen.getByLabelText(`${blogPosts[0].title} details coming soon`).getAttribute("aria-disabled")).toBe("true");
+    expect(screen.queryByText("Learn More")).toBeNull();
   });
 
   it("can render a card without a NEW badge", () => {
     render(<BlogCard post={{ ...blogPosts[0], isNew: false }} />);
     expect(screen.queryByText("NEW")).toBeNull();
-    expect(screen.getByText("Learn More")).toBeTruthy();
+    expect(screen.queryByText("Learn More")).toBeNull();
   });
 });

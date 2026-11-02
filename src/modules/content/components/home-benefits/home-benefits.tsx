@@ -3,22 +3,22 @@ import { Leaf, PackageCheck, ShieldCheck } from "lucide-react";
 const benefits = [
   {
     icon: PackageCheck,
-    title: "Easy delivery",
-    copy: "Clear delivery estimates and room-of-choice options.",
+    title: "Explore the catalog",
+    copy: "Browse furniture by room and compare the displayed options.",
   },
   {
     icon: ShieldCheck,
-    title: "120-night trial",
-    copy: "Live with it first. Returns should never feel mysterious.",
+    title: "Test the checkout",
+    copy: "Use sandbox payment details. Test orders have no real charge or delivery.",
   },
   {
     icon: Leaf,
-    title: "Considered materials",
-    copy: "Durable finishes and fewer, better components by design.",
+    title: "Find your test order",
+    copy: "Return to Orders in the same browser to check your sandbox purchase.",
   },
 ];
 
-/** 首页权益条（无商品逻辑）：三条静态服务承诺。 */
+/** 首页权益条（无商品逻辑）：三条沙箱使用说明。 */
 export function HomeBenefits() {
   return (
     <section className="bg-secondary/65">

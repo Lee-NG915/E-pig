@@ -2,7 +2,7 @@ import type {
   Collection,
   ListProductsQuery,
   CatalogPort,
-  ProductColourOption,
+  ProductVariant,
   ProductDetail,
   ProductGalleryImage,
   ProductListItem,
@@ -43,16 +43,24 @@ const FIXTURE_HANDLE_CATEGORIES: Record<string, string> = {
   bedroom: "Bedroom",
 };
 
-const DEFAULT_COLOUR_OPTIONS: ProductColourOption[] = [
-  { id: "sky", label: "Sky", swatch: "#23A6F0" },
-  { id: "mint", label: "Mint", swatch: "#2DC071" },
-  { id: "coral", label: "Coral", swatch: "#E77C40" },
-  { id: "ink", label: "Ink", swatch: "#252B42" },
-];
-
 export function createMockCatalogAdapter({ market }: { market: Market }): CatalogPort {
   function categoryToHandle(category: string): string {
     return CATEGORY_HANDLES[category] ?? category.toLowerCase().replace(/\s+/g, "-");
+  }
+
+  function toVariants(record: MockProductRecord): ProductVariant[] {
+    const base = {
+      price: { amount: record.priceByMarket[market.id], currency: market.currency },
+      image: record.image,
+      availability: record.availability ?? "in-stock" as const,
+      maxQuantity: 5,
+    };
+    const variants: ProductVariant[] = [{ ...base, id: `${record.id}-default`, sku: `SANDBOX-${record.id}-DEFAULT`, label: record.colour }];
+    if (record.id === "bangalow-modular-sofa") {
+      variants.push({ ...base, id: `${record.id}-test-option`, sku: `SANDBOX-${record.id}-TEST`, label: "Sandbox test option (not a vendor variant)" });
+      variants.push({ ...base, id: `${record.id}-unavailable-test`, sku: `SANDBOX-${record.id}-UNAVAILABLE`, label: "Unavailable sandbox test option", availability: "out-of-stock" });
+    }
+    return variants;
   }
 
   function toListItem(record: MockProductRecord): ProductListItem {
@@ -64,7 +72,8 @@ export function createMockCatalogAdapter({ market }: { market: Market }): Catalo
       category: record.category,
       colour: record.colour,
       image: record.image,
-      badge: record.badge,
+      variantCount: toVariants(record).length,
+      defaultVariantId: toVariants(record)[0].id,
       price: { amount: record.priceByMarket[market.id], currency: market.currency },
       ...(compareAt !== undefined
         ? { compareAt: { amount: compareAt, currency: market.currency } }
@@ -73,14 +82,8 @@ export function createMockCatalogAdapter({ market }: { market: Market }): Catalo
   }
 
   function toGallery(record: MockProductRecord): ProductGalleryImage[] {
-    return record.gallery?.length
-      ? record.gallery
-      : [
-          { src: record.image, alt: record.name },
-          // 当前 Koala 展示 fixture 只有一张图；保留第二个 gallery slot 让 PDP
-          // 的缩略图和前后切换在 mock 环境中仍可被验证。
-          { src: record.image, alt: `${record.name} alternate view` },
-        ];
+    const images = record.gallery?.length ? record.gallery : [{ src: record.image, alt: record.name }];
+    return images.filter((image, index) => images.findIndex(other => other.src === image.src) === index);
   }
 
   return {
@@ -126,10 +129,10 @@ export function createMockCatalogAdapter({ market }: { market: Market }): Catalo
         description: record.description,
         materials: record.materials,
         gallery: toGallery(record),
-        rating: record.rating ?? 4,
-        reviewCount: record.reviewCount ?? 10,
+
         availability: record.availability ?? "in-stock",
-        colourOptions: record.colourOptions ?? DEFAULT_COLOUR_OPTIONS,
+        colourOptions: [],
+        variants: toVariants(record),
       };
     },
 
@@ -145,15 +148,14 @@ export function createMockCatalogAdapter({ market }: { market: Market }): Catalo
 
     async suggest(query: string): Promise<ProductListItem[]> {
       const normalized = query.trim().toLowerCase();
-      if (!normalized) {
-        throw new AppError("validation", "suggest query must not be empty");
-      }
+      if (!normalized) return [];
       return mockProducts
         .filter(
           (product) =>
             product.name.toLowerCase().includes(normalized) ||
             product.category.toLowerCase().includes(normalized),
         )
+        .slice(0, 100)
         .map(toListItem);
     },
   };

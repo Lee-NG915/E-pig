@@ -1,270 +1,66 @@
 "use client";
 
-import { useState } from "react";
-
+import { useRef, useState } from "react";
 import Image from "next/image";
-import {
-  ChevronLeft,
-  ChevronRight,
-  Eye,
-  Heart,
-  ShoppingCart,
-  Star,
-} from "lucide-react";
-
-import type {
-  ProductColourOption,
-  ProductDetail as ProductDetailData,
-  ProductGalleryImage,
-} from "@/core/contracts/commerce/catalog";
-
-import {
-  useCartMarket,
-} from "@/modules/cart/components/cart-market-context/cart-market-context";
-import { addItem } from "@/modules/cart/lib/cart-store";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Button } from "@e-pig/happy-dog/components/button";
+import type { ProductDetail as ProductDetailData } from "@/core/contracts/commerce/catalog";
 import { formatMarketPrice } from "@/platform/config/format-market-price";
+import { useCartMarket } from "@/modules/cart/components/cart-market-context/cart-market-context";
+import { useCartActions } from "@/modules/cart/lib/cart-store";
 
-type ProductDetailProps = {
-  product: ProductDetailData;
-};
-
-function Gallery({ product }: ProductDetailProps) {
-  const gallery: ProductGalleryImage[] = product.gallery.length
-    ? product.gallery
-    : [{ src: product.image, alt: product.name }];
-  const [activeIndex, setActiveIndex] = useState(0);
-  const activeImage = gallery[activeIndex] ?? gallery[0];
-
-  function move(delta: number) {
-    setActiveIndex((current) => (current + delta + gallery.length) % gallery.length);
-  }
-
-  return (
-    <div className="h-[394px] w-full overflow-hidden lg:h-[550px] lg:w-[510px]">
-      <div className="relative h-[277px] overflow-hidden rounded-[5px] bg-[#f3f3f3] lg:h-[450px] lg:w-[506px]">
-        <Image
-          key={activeImage.src}
-          src={activeImage.src}
-          alt={activeImage.alt}
-          fill
-          sizes="(min-width: 1024px) 506px, 100vw"
-          className="object-cover"
-          priority
-        />
-        {gallery.length > 1 ? (
-          <>
-            <button
-              type="button"
-              onClick={() => move(-1)}
-              aria-label="Previous product image"
-              className="absolute left-8 top-1/2 -translate-y-1/2 rounded-full p-2 text-white transition-colors hover:bg-black/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white lg:left-8"
-            >
-              <ChevronLeft className="size-10 stroke-[1.5]" aria-hidden="true" />
-            </button>
-            <button
-              type="button"
-              onClick={() => move(1)}
-              aria-label="Next product image"
-              className="absolute right-8 top-1/2 -translate-y-1/2 rounded-full p-2 text-white transition-colors hover:bg-black/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white lg:right-8"
-            >
-              <ChevronRight className="size-10 stroke-[1.5]" aria-hidden="true" />
-            </button>
-          </>
-        ) : null}
-      </div>
-      <div className="mt-10 flex gap-[19px] overflow-x-auto lg:mt-5">
-        {gallery.map((image, index) => (
-          <button
-            key={`${image.src}-${index}`}
-            type="button"
-            onClick={() => setActiveIndex(index)}
-            aria-label={`Show product image ${index + 1}`}
-            aria-pressed={activeIndex === index}
-            className={`relative h-[75px] w-[100px] shrink-0 overflow-hidden rounded-[2px] bg-[#f3f3f3] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#23a6f0] ${activeIndex === index ? "" : "opacity-50"}`}
-          >
-            <Image
-              src={image.src}
-              alt=""
-              fill
-              sizes="100px"
-              className="object-cover"
-            />
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function Rating({ rating, reviewCount }: { rating: number; reviewCount: number }) {
-  return (
-    <div className="flex items-center gap-[10px]" aria-label={`${rating} out of 5 stars, ${reviewCount} reviews`}>
-      <div className="flex gap-[5px]" aria-hidden="true">
-        {Array.from({ length: 5 }, (_, index) => {
-          const filled = index < Math.floor(rating);
-          return (
-            <Star
-              key={index}
-              className="size-[22px] stroke-[#f3cd03]"
-              fill={filled ? "#f3cd03" : "transparent"}
-              strokeWidth={filled ? 1.5 : 2}
-            />
-          );
-        })}
-      </div>
-      <span className="text-[14px] font-bold leading-6 tracking-[0.2px] text-[#737373]">
-        {reviewCount} Reviews
-      </span>
-    </div>
-  );
-}
-
-function ColourOptions({
-  options,
-  selectedId,
-  onSelect,
-}: {
-  options: ProductColourOption[];
-  selectedId: string | null;
-  onSelect: (option: ProductColourOption) => void;
-}) {
-  return (
-    <div className="flex gap-[10px]" role="radiogroup" aria-label="Colour options">
-      {options.map((option) => {
-        const selected = option.id === selectedId;
-        return (
-          <button
-            key={option.id}
-            type="button"
-            role="radio"
-            aria-checked={selected}
-            aria-label={option.label}
-            onClick={() => onSelect(option)}
-            className={`size-[30px] rounded-full border-2 border-transparent p-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#23a6f0] focus-visible:ring-offset-2 ${selected ? "border-[#252b42]" : ""}`}
-          >
-            <span
-              className="block size-full rounded-full"
-              style={{ backgroundColor: option.swatch }}
-              aria-hidden="true"
-            />
-          </button>
-        );
-      })}
-    </div>
-  );
-}
-
-export function ProductDetail({ product }: ProductDetailProps) {
+export function ProductDetail({ product }: { product: ProductDetailData }) {
   const market = useCartMarket();
-  const [optionsOpen, setOptionsOpen] = useState(false);
-  const [selectedColourId, setSelectedColourId] = useState<string | null>(null);
-  const selectedColour = product.colourOptions.find(
-    (option) => option.id === selectedColourId,
-  );
-  const inStock = product.availability === "in-stock";
-
-  function handlePrimaryAction() {
-    if (!inStock) return;
-    if (!optionsOpen) {
-      setOptionsOpen(true);
-      return;
-    }
-    if (!selectedColour) return;
-    addItem(market, {
-      id: product.id,
-      name: product.name,
-      colour: selectedColour.label,
-      image: product.image,
-      price: product.price,
-    });
+  const { addItem, pending, error } = useCartActions(market);
+  const [selectedId, setSelectedId] = useState(product.variants[0]?.id);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [feedback, setFeedback] = useState("");
+  const [failure, setFailure] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const submittingRef = useRef(false);
+  const selected = product.variants.find(variant => variant.id === selectedId) ?? product.variants[0];
+  const available = selected?.availability === "in-stock" && selected.maxQuantity > 0;
+  const gallery = product.gallery.length ? product.gallery.filter((image, index, all) => all.findIndex(other => other.src === image.src) === index) : [{ src: product.image, alt: product.name }];
+  const activeImage = gallery[activeIndex] ?? gallery[0];
+  const image = activeIndex === 0 && selected ? { src: selected.image, alt: `${product.name} — ${selected.label}` } : activeImage;
+  async function add() {
+    if (!selected || !available || pending || submittingRef.current) return;
+    submittingRef.current = true; setSubmitting(true); setFailure(""); setFeedback("");
+    try { await addItem({ productId: product.id, variantId: selected.id, quantity: 1 }); setFeedback(`${selected.label} added to your bag.`); }
+    catch (cause) { setFailure(cause instanceof Error ? cause.message : "Could not add this item. Please try again."); }
+    finally { submittingRef.current = false; setSubmitting(false); }
   }
-
   return (
-    <section className="bg-[#fafafa]" aria-labelledby="product-detail-title">
-      <div className="mx-auto flex w-full max-w-[348px] flex-col gap-[30px] overflow-hidden pb-12 pt-12 lg:max-w-[1050px] lg:flex-row lg:items-start">
-        <Gallery product={product} />
-
-        <div className="relative h-[471px] w-full overflow-hidden px-6 lg:w-[510px]">
-          <h1
-            id="product-detail-title"
-            className="text-[20px] font-normal leading-[30px] tracking-[0.2px] text-[#252b42]"
-          >
-            {product.name}
-          </h1>
-
-          <div className="mt-3">
-            <Rating rating={product.rating} reviewCount={product.reviewCount} />
+    <section className="bg-background" aria-labelledby="product-detail-title">
+      <div className="mx-auto grid max-w-6xl gap-10 px-4 py-10 sm:px-6 lg:grid-cols-2 lg:gap-16 lg:py-16">
+        <div className="min-w-0">
+          <div className="relative aspect-square overflow-hidden rounded-xl bg-secondary">
+            <Image src={image.src} alt={image.alt} fill sizes="(min-width: 1024px) 50vw, 100vw" className="object-cover" priority />
+            {gallery.length > 1 ? <>
+              <Button variant="secondary" size="icon" aria-label="Previous product image" className="absolute left-3 top-1/2" onClick={() => setActiveIndex((activeIndex - 1 + gallery.length) % gallery.length)}><ChevronLeft aria-hidden="true" /></Button>
+              <Button variant="secondary" size="icon" aria-label="Next product image" className="absolute right-3 top-1/2" onClick={() => setActiveIndex((activeIndex + 1) % gallery.length)}><ChevronRight aria-hidden="true" /></Button>
+            </> : null}
           </div>
-
-          <p className="mt-5 text-[24px] font-bold leading-8 tracking-[0.1px] text-[#252b42]">
-            {formatMarketPrice(product.price, market.id)}
-          </p>
-
-          <p className="mt-1 flex gap-[5px] text-[14px] font-bold leading-6 tracking-[0.2px]">
-            <span className="text-[#737373]">Availability&nbsp; :</span>
-            <span className={inStock ? "text-[#23a6f0]" : "text-[#e77c40]"}>
-              {inStock ? "In Stock" : "Out of Stock"}
-            </span>
-          </p>
-
-          <p className="mt-7 line-clamp-5 max-w-[464px] text-[14px] font-normal leading-5 tracking-[0.2px] text-[#858585] lg:line-clamp-3">
-            {product.description}
-          </p>
-
-          <div className="mt-6 h-px w-full bg-[#bdbdbd] lg:mt-6" aria-hidden="true" />
-
-          <div className="mt-6 lg:mt-7">
-            <ColourOptions
-              options={product.colourOptions}
-              selectedId={selectedColourId}
-              onSelect={(option) => {
-                setSelectedColourId(option.id);
-                setOptionsOpen(true);
-              }}
-            />
-            <p className="sr-only" aria-live="polite">
-              {optionsOpen
-                ? selectedColour
-                  ? `${selectedColour.label} selected. Choose Add to bag to continue.`
-                  : "Choose a colour to continue."
-                : "Colour options are available."}
-            </p>
-          </div>
-
-          <div className="absolute bottom-6 left-6 flex items-start gap-[10px]">
-            <button
-              type="button"
-              onClick={handlePrimaryAction}
-              disabled={!inStock || (optionsOpen && !selectedColour)}
-              className="h-11 rounded-[5px] bg-[#23a6f0] px-5 text-[14px] font-bold leading-6 tracking-[0.2px] text-white transition-colors hover:bg-[#1d93d8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#23a6f0] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {!optionsOpen ? "Select Options" : "Add to bag"}
-            </button>
-            <button
-              type="button"
-              aria-label="Add product to wishlist"
-              title="Wishlist"
-              className="size-10 rounded-full border border-[#e8e8e8] bg-white text-[#252b42] transition-colors hover:bg-[#f7f7f7] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#23a6f0] focus-visible:ring-offset-2"
-            >
-              <Heart className="mx-auto size-5" aria-hidden="true" />
-            </button>
-            <button
-              type="button"
-              aria-label="Add product to basket"
-              title="Basket"
-              className="size-10 rounded-full border border-[#e8e8e8] bg-white text-[#252b42] transition-colors hover:bg-[#f7f7f7] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#23a6f0] focus-visible:ring-offset-2"
-            >
-              <ShoppingCart className="mx-auto size-5" aria-hidden="true" />
-            </button>
-            <button
-              type="button"
-              aria-label="Preview product"
-              title="Preview"
-              className="size-10 rounded-full border border-[#e8e8e8] bg-white text-[#252b42] transition-colors hover:bg-[#f7f7f7] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#23a6f0] focus-visible:ring-offset-2"
-            >
-              <Eye className="mx-auto size-5" aria-hidden="true" />
-            </button>
-          </div>
+          {gallery.length > 1 ? <div className="mt-4 flex gap-3 overflow-x-auto">{gallery.map((item, index) => <button type="button" key={item.src} aria-label={`Show product image ${index + 1}`} aria-pressed={index === activeIndex} onClick={() => setActiveIndex(index)} className={`relative aspect-square w-20 shrink-0 overflow-hidden rounded-md border-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${index === activeIndex ? "border-primary" : "border-transparent"}`}><Image src={item.src} alt="" fill sizes="80px" className="object-cover" /></button>)}</div> : null}
+        </div>
+        <div className="min-w-0 py-2">
+          <p className="text-sm text-muted-foreground">{product.category}</p>
+          <h1 id="product-detail-title" className="mt-2 font-display text-3xl leading-tight sm:text-4xl">{product.name}</h1>
+          {product.rating !== undefined && product.reviewCount !== undefined && product.reviewCount > 0 ? <p className="mt-3 text-sm">{product.rating} out of 5 · {product.reviewCount} reviews</p> : null}
+          <p className="mt-6 text-2xl font-medium">{formatMarketPrice(selected?.price ?? product.price, market.id)}</p>
+          <p className="mt-2 text-sm text-muted-foreground">{available ? "Available for sandbox checkout" : "Unavailable for sandbox checkout"}</p>
+          <p className="mt-6 max-w-prose leading-7 text-muted-foreground">{product.description}</p>
+          <fieldset className="mt-8" disabled={pending || submitting}>
+            <legend className="mb-3 font-medium">Choose an option</legend>
+            <div className="flex flex-wrap gap-3">{product.variants.map(variant => <label key={variant.id} className={`cursor-pointer rounded-md border px-4 py-3 text-sm focus-within:ring-2 focus-within:ring-ring ${selected?.id === variant.id ? "border-primary bg-primary/10" : "border-border"}`}>
+              <input type="radio" name={`variant-${product.id}`} className="sr-only" value={variant.id} checked={selected?.id === variant.id} aria-checked={selected?.id === variant.id} onChange={() => { setSelectedId(variant.id); setActiveIndex(0); setFeedback(""); setFailure(""); }} />{variant.label}
+            </label>)}</div>
+          </fieldset>
+          <Button className="mt-6 w-full sm:w-auto" size="lg" disabled={!available || pending || submitting} onClick={() => void add()}>{pending || submitting ? "Adding…" : available ? "Add to bag" : "Unavailable for sandbox checkout"}</Button>
+          {failure || error ? <p role="alert" className="mt-3 text-sm text-destructive">{failure || error}</p> : null}
+          {feedback ? <p role="status" className="mt-3 text-sm">{feedback}</p> : null}
+          <p className="mt-6 text-sm leading-6 text-muted-foreground">Sandbox store. Test options and prices are for checkout testing. No real payment, stock reservation or delivery.</p>
+          {product.materials.length ? <div className="mt-8 border-t pt-6"><h2 className="font-medium">Materials in the catalog</h2><p className="mt-2 text-sm text-muted-foreground">{product.materials.join(", ")}</p></div> : null}
         </div>
       </div>
     </section>

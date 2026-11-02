@@ -8,6 +8,10 @@ import type { Money } from "./catalog";
 export type CartLine = {
   id: string;
   productId: string;
+  variantId: string;
+  variantLabel: string;
+  availability?: "in-stock" | "out-of-stock";
+  problem?: string;
   name: string;
   colour?: string;
   image?: string;
@@ -19,6 +23,8 @@ export type CartLine = {
 export type Cart = {
   id: string;
   market: string;
+  revision: number;
+  lockedCheckoutId?: string;
   lines: CartLine[];
   subtotal: Money;
   discount?: Money;
@@ -27,6 +33,7 @@ export type Cart = {
 
 export type AddCartLineInput = {
   productId: string;
+  variantId: string;
   quantity: number;
 };
 

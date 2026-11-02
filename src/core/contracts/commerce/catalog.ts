@@ -22,6 +22,8 @@ export type ProductListItem = {
   badge?: string;
   colour: string;
   image: string;
+  variantCount?: number;
+  defaultVariantId?: string;
 };
 
 export type ProductGalleryImage = {
@@ -37,14 +39,25 @@ export type ProductColourOption = {
 
 export type ProductAvailability = "in-stock" | "out-of-stock";
 
+export type ProductVariant = {
+  id: string;
+  sku: string;
+  label: string;
+  price: Money;
+  image: string;
+  availability: ProductAvailability;
+  maxQuantity: number;
+};
+
 export type ProductDetail = ProductListItem & {
   description: string;
   materials: string[];
   gallery: ProductGalleryImage[];
-  rating: number;
-  reviewCount: number;
+  rating?: number;
+  reviewCount?: number;
   availability: ProductAvailability;
   colourOptions: ProductColourOption[];
+  variants: ProductVariant[];
 };
 
 export type Collection = {

@@ -1,14 +1,18 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-import { env } from "@/platform/config/env";
 import { planMarketPath } from "@/platform/config/market-path";
 
 /**
  * 网络边界：只做市场路径规范化（redirect），不建 cart、不取商品、不做认证。
  * 决策逻辑在 planMarketPath 纯函数中，便于单测。
  */
-export function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
+  // API routes enforce market + cookie ownership themselves; webhooks must not redirect.
+  if (pathname === "/api" || pathname.startsWith("/api/")) return NextResponse.next();
+  // Deployment tooling imports this bundle before request env is available.
+  // Public requests still require the validated runtime market; no build default.
+  const { env } = await import("@/platform/config/env");
   const decision = planMarketPath(pathname, env.MARKET);
 
   if (decision.kind === "next") {

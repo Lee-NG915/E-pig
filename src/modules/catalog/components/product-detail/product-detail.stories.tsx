@@ -25,8 +25,7 @@ const product: ProductDetailData = {
     { src: "/pdp/pdp-yellow-couch.png", alt: "Floating Phone main image" },
     { src: "/pdp/pdp-main.png", alt: "Floating Phone alternate image" },
   ],
-  rating: 4,
-  reviewCount: 10,
+  variants: [{ id: "sky", sku: "SANDBOX-SKY", label: "Sky", price: { amount: 1139.33, currency: "AUD" }, image: "/pdp/pdp-yellow-couch.png", availability: "in-stock", maxQuantity: 5 }],
   availability: "in-stock",
   colourOptions: [
     { id: "sky", label: "Sky", swatch: "#23A6F0" },
@@ -65,6 +64,6 @@ export const NarrowMobile: Story = {
 
 export const OutOfStock: Story = {
   args: {
-    product: { ...product, availability: "out-of-stock" },
+    product: { ...product, variants: product.variants.map(variant => ({ ...variant, availability: "out-of-stock" })) },
   },
 };

@@ -1,8 +1,11 @@
 "use client";
 
-import { createContext, use } from "react";
+import { createContext, use, useEffect } from "react";
 
-import type { CartMarketIdentity } from "@/modules/cart/lib/cart-store";
+import {
+  getStorefrontQueryClient,
+  type CartMarketIdentity,
+} from "@/modules/cart/lib/cart-store";
 
 /** 购物车/UI 市场身份：只带 market id + currency；locale 从 registry 按 id 推导。 */
 export type CartMarket = CartMarketIdentity;
@@ -16,11 +19,17 @@ export function CartMarketProvider({
   market: CartMarket;
   children: React.ReactNode;
 }) {
+  useEffect(() => {
+    const client = getStorefrontQueryClient();
+    client.mount();
+    return () => client.unmount();
+  }, []);
   return <CartMarketContext value={market}>{children}</CartMarketContext>;
 }
 
 export function useCartMarket(): CartMarket {
   const market = use(CartMarketContext);
-  if (!market) throw new Error("useCartMarket must be used inside CartMarketProvider");
+  if (!market)
+    throw new Error("useCartMarket must be used inside CartMarketProvider");
   return market;
 }

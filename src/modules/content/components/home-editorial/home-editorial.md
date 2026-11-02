@@ -17,3 +17,5 @@
 ## 依赖
 - 基础组件：`@e-pig/happy-dog` 的 Button
 - `next/image`、`next/link`
+
+Catalog inspiration copy identifies sandbox purchases; it makes no removable-cover, finish-performance or delivery promise. The image and #about navigation are retained.

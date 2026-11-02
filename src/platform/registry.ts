@@ -2,6 +2,10 @@ import "server-only";
 
 import { createMockCartAdapter } from "@/adapters/commerce/mock/cart";
 import { createMockCatalogAdapter } from "@/adapters/commerce/mock/catalog";
+import { createPostgresCommerce } from "@/adapters/commerce/postgres/commerce";
+import { createCommercePool } from "@/adapters/commerce/postgres/pool";
+import { createStripePaymentAdapter } from "@/adapters/payment/stripe/payment";
+import type { PaymentPort } from "@/core/contracts/capabilities/payment";
 import type { CatalogPort } from "@/core/contracts/commerce/catalog";
 import type { CartPort } from "@/core/contracts/commerce/cart";
 import { createNoopAnalytics, type AnalyticsIntegration } from "@/integrations/analytics/analytics";
@@ -37,7 +41,7 @@ export function getCapabilities(): Capabilities {
 
   const market = getMarket(env.MARKET);
 
-  if (env.COMMERCE_ADAPTER !== "mock") {
+  if (env.COMMERCE_ADAPTER !== "mock" && env.COMMERCE_ADAPTER !== "postgres") {
     // 注册新 adapter 时在此扩展分支；未知值在 env schema 已被拦截。
     throw new AppError("validation", `Unsupported COMMERCE_ADAPTER: ${env.COMMERCE_ADAPTER}`);
   }
@@ -50,7 +54,10 @@ export function getCapabilities(): Capabilities {
   }
 
   const catalog = createMockCatalogAdapter({ market });
-  const cart = createMockCartAdapter({ catalog, market, logger: createLogger({ module: "cart" }) });
+  // Public catalog rendering never needs a database connection. Transaction routes use getCommerce().
+  const cart = env.COMMERCE_ADAPTER === "mock"
+    ? createMockCartAdapter({ catalog, market, logger: createLogger({ module: "cart" }) })
+    : { createCart: unavailable, getCart: unavailable, addItem: unavailable, updateItem: unavailable, removeItem: unavailable, applyCoupon: unavailable };
 
   capabilitiesCache = { catalog, cart, market };
   logger.info("capabilities.initialized", {
@@ -59,6 +66,27 @@ export function getCapabilities(): Capabilities {
     commerceAdapter: env.COMMERCE_ADAPTER,
   });
   return capabilitiesCache;
+}
+
+function unavailable(): never {
+  throw new AppError("upstream", "Sandbox service is not configured", { publicMessage: "Sandbox checkout is not available yet. Please try again later." });
+}
+let commerceCache: ReturnType<typeof createPostgresCommerce> | undefined;
+let paymentCache: PaymentPort | undefined;
+export function isCheckoutEnabled(): boolean {
+  return env.MARKET === "au" && env.COMMERCE_ADAPTER === "postgres"
+    && Boolean(env.DATABASE_URL && env.CART_COOKIE_SECRET && env.APP_ORIGIN && env.STRIPE_SECRET_KEY && env.STRIPE_WEBHOOK_SECRET);
+}
+export function getPayment(): PaymentPort {
+  if (paymentCache) return paymentCache;
+  if (!env.STRIPE_SECRET_KEY || !env.STRIPE_WEBHOOK_SECRET) return { createSession: unavailable, retrieveSession: unavailable, expireSession: unavailable, parseWebhook: unavailable };
+  return paymentCache = createStripePaymentAdapter({ secretKey: env.STRIPE_SECRET_KEY, webhookSecret: env.STRIPE_WEBHOOK_SECRET });
+}
+export function getCommerce() {
+  if (commerceCache) return commerceCache;
+  if (env.COMMERCE_ADAPTER !== "postgres" || !env.DATABASE_URL || !env.CART_COOKIE_SECRET || !env.APP_ORIGIN) return unavailable();
+  const { catalog, market } = getCapabilities();
+  return commerceCache = createPostgresCommerce({ pool: createCommercePool(env.DATABASE_URL), catalog, market, payment: getPayment(), origin: env.APP_ORIGIN });
 }
 
 export function getIntegrations(): Integrations {

@@ -1,10 +1,11 @@
 // @vitest-environment jsdom
 
 import { cleanup, render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { SiteFooter } from "./site-footer";
 
+vi.mock("next/navigation", () => ({ usePathname: () => "/sg/products/chair" }));
 afterEach(cleanup);
 
 describe("SiteFooter", () => {
@@ -17,5 +18,7 @@ describe("SiteFooter", () => {
     }
     expect(screen.getByText(/© 2026 E-pig/)).toBeTruthy();
     expect(container.querySelector("#about")).not.toBeNull();
+    expect(screen.getByRole("link", { name: "Privacy" }).getAttribute("href")).toBe("/sg/help/privacy");
+    expect(container.querySelector('a[href="#"]')).toBeNull();
   });
 });

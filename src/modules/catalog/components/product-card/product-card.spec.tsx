@@ -9,7 +9,7 @@ import {
   CartMarketProvider,
   type CartMarket,
 } from "@/modules/cart/components/cart-market-context/cart-market-context";
-import { getCartSnapshot, setCartOpen, setQuantity } from "@/modules/cart/lib/cart-store";
+
 import { formatMarketPrice } from "@/platform/config/format-market-price";
 
 import { ProductCard } from "./product-card";
@@ -21,6 +21,8 @@ vi.mock("next/image", () => ({
 const market: CartMarket = { id: "au", currency: "AUD" };
 
 const product: ProductListItem = {
+  variantCount: 1,
+  defaultVariantId: "alto-default",
   id: "alto-modular-sofa",
   slug: "alto-modular-sofa",
   name: "Alto Modular Sofa",
@@ -30,11 +32,9 @@ const product: ProductListItem = {
   price: { amount: 2890, currency: "AUD" },
 };
 
-beforeEach(() => {
-  window.localStorage.clear();
-  setQuantity(market, product.id, 0);
-  setCartOpen(market, false);
-});
+const actions = vi.hoisted(() => ({ addItem: vi.fn(), pending: false, error: null as string | null }));
+vi.mock("@/modules/cart/lib/cart-store", async (importOriginal) => ({ ...await importOriginal<typeof import("@/modules/cart/lib/cart-store")>(), useCartActions: () => actions }));
+beforeEach(() => { actions.addItem.mockReset().mockResolvedValue(undefined); actions.pending = false; actions.error = null; });
 
 afterEach(cleanup);
 
@@ -95,9 +95,17 @@ describe("ProductCard", () => {
 
     await user.click(screen.getByRole("button", { name: "Add Alto Modular Sofa to bag" }));
 
-    const cart = getCartSnapshot(market);
-    expect(cart.open).toBe(true);
-    expect(cart.lines).toHaveLength(1);
-    expect(cart.lines[0]).toMatchObject({ productId: product.id, quantity: 1 });
+    expect(actions.addItem).toHaveBeenCalledWith({ productId: product.id, variantId: "alto-default", quantity: 1 });
   });
+  it("routes multiple or unknown variants to product options instead of guessing", () => {
+    renderCard({ ...product, variantCount: 2 });
+    expect(screen.getByRole("link", { name: /Choose options/ }).getAttribute("href")).toBe(`/au/products/${product.slug}`);
+    expect(screen.queryByRole("button", { name: /Add/ })).toBeNull();
+  });
+  it("shows a quick-add rejection accessibly", async () => {
+    actions.addItem.mockRejectedValue(new Error("Unavailable")); renderCard();
+    await userEvent.setup().click(screen.getByRole("button", { name: /Add Alto/ }));
+    expect(await screen.findByRole("alert")).toBeTruthy();
+  });
+
 });

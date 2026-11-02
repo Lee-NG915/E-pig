@@ -12,6 +12,8 @@ import { ProductCard } from "./product-card";
 const market: CartMarket = { id: "au", currency: "AUD" };
 
 const product: ProductListItem = {
+  variantCount: 1,
+  defaultVariantId: "alto-default",
   id: "alto-modular-sofa",
   slug: "alto-modular-sofa",
   name: "Alto Modular Sofa",

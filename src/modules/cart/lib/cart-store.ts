@@ -1,230 +1,276 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
+import { QueryClient, useQuery } from "@tanstack/react-query";
 
-/**
- * 浏览器 demo cart（README 已声明的有意决策）：
- * P0 无后端时按 market 保存在带版本的 localStorage；接后端后由 CartPort
- * adapter + 匿名 cart cookie（Server Action 签发，docs/07 §4）替换。
- */
+import type { AddCartLineInput, Cart } from "@/core/contracts/commerce/cart";
 
-export type DemoCartLine = {
-  productId: string;
-  name: string;
-  colour: string;
-  image: string;
-  priceAmount: number;
-  priceCurrency: string;
-  quantity: number;
-};
+export type CartMarketIdentity = { id: string; currency: string };
+export type CartResponse = { cart: Cart | null; checkoutEnabled: boolean };
+type CartMutation =
+  | ({ action: "add" } & AddCartLineInput)
+  | { action: "update"; lineId: string; quantity: number };
+type PendingMutation = { input: CartMutation; idempotencyKey: string };
+type UiState = { open: boolean; pending: boolean; error: string | null };
+const initialUi: UiState = { open: false, pending: false, error: null };
+const ui = new Map<string, UiState>();
+const listeners = new Set<() => void>();
+const subscribeHydration = () => () => {};
+let browserClient: QueryClient | undefined;
+const mutationVersions = new Map<string, number>();
+const pendingCounts = new Map<string, number>();
 
-export type DemoCartProduct = {
-  id: string;
-  name: string;
-  colour: string;
-  image: string;
-  price: { amount: number; currency: string };
-};
-
-export type CartMarketIdentity = {
-  id: string;
-  currency: string;
-};
-
-type CartState = {
-  lines: DemoCartLine[];
-  open: boolean;
-};
-
-type PersistedCart = {
-  version: 1;
-  marketId: string;
-  lines: DemoCartLine[];
-};
-
-type MarketCartStore = {
-  getSnapshot: () => CartState;
-  subscribe: (listener: () => void) => () => void;
-  update: (next: CartState) => void;
-};
-
-const STORAGE_VERSION = 1;
-const STORAGE_PREFIX = "e-pig:demo-cart:v1";
-const SERVER_SNAPSHOT: CartState = { lines: [], open: false };
-const marketStores = new Map<string, { currency: string; store: MarketCartStore }>();
-
-export function getCartStorageKey(marketId: string): string {
-  return `${STORAGE_PREFIX}:${marketId}`;
-}
-
-function isNonEmptyString(value: unknown): value is string {
-  return typeof value === "string" && value.length > 0;
-}
-
-function isValidLine(line: unknown, currency: string): line is DemoCartLine {
-  if (typeof line !== "object" || line === null) return false;
-  const candidate = line as Record<string, unknown>;
-  return (
-    isNonEmptyString(candidate.productId) &&
-    isNonEmptyString(candidate.name) &&
-    typeof candidate.colour === "string" &&
-    typeof candidate.image === "string" &&
-    typeof candidate.priceAmount === "number" &&
-    Number.isFinite(candidate.priceAmount) &&
-    candidate.priceAmount >= 0 &&
-    candidate.priceCurrency === currency &&
-    Number.isInteger(candidate.quantity) &&
-    (candidate.quantity as number) > 0
-  );
-}
-
-function isPersistedCart(
-  value: unknown,
-  market: CartMarketIdentity,
-): value is PersistedCart {
-  if (typeof value !== "object" || value === null) return false;
-  const candidate = value as Record<string, unknown>;
-  return (
-    candidate.version === STORAGE_VERSION &&
-    candidate.marketId === market.id &&
-    Array.isArray(candidate.lines) &&
-    candidate.lines.every((line) => isValidLine(line, market.currency))
-  );
-}
-
-function safelyRemoveStoredCart(storageKey: string) {
-  try {
-    window.localStorage.removeItem(storageKey);
-  } catch {
-    // 浏览器禁用 storage 时保持内存购物车可用。
-  }
-}
-
-function createMarketStore(market: CartMarketIdentity): MarketCartStore {
-  let state: CartState = SERVER_SNAPSHOT;
-  let hydrated = false;
-  const listeners = new Set<() => void>();
-  const storageKey = getCartStorageKey(market.id);
-
-  function hydrate() {
-    if (hydrated || typeof window === "undefined") return;
-    hydrated = true;
-
-    try {
-      const stored = window.localStorage.getItem(storageKey);
-      if (!stored) return;
-      const parsed: unknown = JSON.parse(stored);
-      if (!isPersistedCart(parsed, market)) {
-        safelyRemoveStoredCart(storageKey);
-        return;
-      }
-      state = { ...state, lines: parsed.lines };
-    } catch {
-      safelyRemoveStoredCart(storageKey);
-    }
-  }
-
-  function persist(lines: DemoCartLine[]) {
-    if (typeof window === "undefined") return;
-    const payload: PersistedCart = { version: STORAGE_VERSION, marketId: market.id, lines };
-    try {
-      window.localStorage.setItem(storageKey, JSON.stringify(payload));
-    } catch {
-      // Quota/private-mode 错误不应让当前页面的内存购物车失效。
-    }
-  }
-
-  function emit() {
-    listeners.forEach((listener) => listener());
-  }
-
-  return {
-    getSnapshot() {
-      hydrate();
-      return state;
+/** Never share a private Query cache between server requests. */
+export function getStorefrontQueryClient() {
+  if (typeof window === "undefined") return new QueryClient();
+  return (browserClient ??= new QueryClient({
+    defaultOptions: {
+      queries: { retry: false, staleTime: 0, gcTime: 30 * 60_000 },
     },
-    subscribe(listener) {
+  }));
+}
+export const cartQueryKey = (market: CartMarketIdentity) =>
+  ["cart", market.id] as const;
+export const getCartStorageKey = (marketId: string) =>
+  `e-pig:demo-cart:v1:${marketId}`;
+const pendingKey = (market: CartMarketIdentity) =>
+  `e-pig:pending-cart:v1:${market.id}`;
+const state = (market: CartMarketIdentity) => ui.get(market.id) ?? initialUi;
+function updateUi(market: CartMarketIdentity, next: Partial<UiState>) {
+  ui.set(market.id, { ...state(market), ...next });
+  listeners.forEach((listener) => listener());
+}
+export function setCartOpen(market: CartMarketIdentity, open: boolean) {
+  updateUi(market, { open });
+}
+
+export class StorefrontHttpError extends Error {
+  constructor(
+    message: string,
+    public readonly status: number,
+  ) {
+    super(message);
+  }
+}
+export async function storefrontRequest<T>(
+  url: string,
+  body?: unknown,
+  signal?: AbortSignal,
+): Promise<T> {
+  const response = await fetch(url, {
+    signal,
+    method: body === undefined ? "GET" : "POST",
+    credentials: "same-origin",
+    cache: "no-store",
+    headers:
+      body === undefined ? undefined : { "Content-Type": "application/json" },
+    body: body === undefined ? undefined : JSON.stringify(body),
+  });
+  const result = await response.json();
+  if (!response.ok)
+    throw new StorefrontHttpError(
+      result.error?.message ?? "The request failed. Please retry.",
+      response.status,
+    );
+  return result as T;
+}
+function newestCart(previous: unknown, incoming: CartResponse): CartResponse {
+  const old = previous as CartResponse | undefined;
+  if (
+    old?.cart &&
+    incoming.cart?.id === old.cart.id &&
+    (incoming.cart.revision < old.cart.revision ||
+      // Terminal unlocks increment revision; an equal-revision unlocked GET is stale.
+      (incoming.cart.revision === old.cart.revision &&
+        !!old.cart.lockedCheckoutId &&
+        !incoming.cart.lockedCheckoutId))
+  )
+    return old;
+  return incoming;
+}
+function acceptCart(market: CartMarketIdentity, result: CartResponse) {
+  getStorefrontQueryClient().setQueryData<CartResponse>(
+    cartQueryKey(market),
+    (old) => newestCart(old, result),
+  );
+}
+async function readCart(market: CartMarketIdentity) {
+  const version = mutationVersions.get(market.id) ?? 0;
+  const result = await storefrontRequest<CartResponse>(
+    `/api/${market.id}/cart`,
+  );
+  if (version !== (mutationVersions.get(market.id) ?? 0))
+    return (
+      getStorefrontQueryClient().getQueryData<CartResponse>(
+        cartQueryKey(market),
+      ) ?? result
+    );
+  return result;
+}
+export async function refreshCart(market: CartMarketIdentity) {
+  const result = await readCart(market);
+  acceptCart(market, result);
+  updateUi(market, { error: null });
+  return result;
+}
+export function getCartSnapshot(market: CartMarketIdentity) {
+  const response = getStorefrontQueryClient().getQueryData<CartResponse>(
+    cartQueryKey(market),
+  );
+  return {
+    ...state(market),
+    cart: response?.cart ?? null,
+    revision: response?.cart?.revision ?? 0,
+    lockedCheckoutId: response?.cart?.lockedCheckoutId,
+    checkoutEnabled: response?.checkoutEnabled ?? false,
+    lines: (response?.cart?.lines ?? []).map((line) => ({
+      ...line,
+      colour: line.colour ?? "",
+      image: line.image ?? "",
+      priceAmount: line.unitPrice.amount,
+      priceCurrency: line.unitPrice.currency,
+    })),
+  };
+}
+function readPending(market: CartMarketIdentity): PendingMutation | null {
+  const stored = window.localStorage.getItem(pendingKey(market));
+  if (!stored) return null;
+  const value = JSON.parse(stored) as PendingMutation;
+  if (
+    !value.idempotencyKey ||
+    !value.input ||
+    !["add", "update"].includes(value.input.action)
+  )
+    throw new Error(
+      "An unresolved bag request needs this browser session. Please retry in the original tab.",
+    );
+  return value;
+}
+async function mutateCart(market: CartMarketIdentity, input?: CartMutation) {
+  if (!navigator.locks?.request) {
+    const message =
+      "This browser needs Web Locks for safe bag updates. Use a current browser over HTTPS.";
+    updateUi(market, { error: message });
+    throw new Error(message);
+  }
+  pendingCounts.set(market.id, (pendingCounts.get(market.id) ?? 0) + 1);
+  updateUi(market, { pending: true, error: null });
+  try {
+    await navigator.locks.request(`e-pig:cart:${market.id}`, async () => {
+      let pending = readPending(market);
+      if (
+        pending &&
+        input &&
+        JSON.stringify(input) !== JSON.stringify(pending.input)
+      )
+        throw new Error(
+          "Your previous bag update is unconfirmed. Retry that update before making another change.",
+        );
+      if (!pending) {
+        if (!input) return;
+        pending = { input, idempotencyKey: crypto.randomUUID() };
+        // Shared storage plus Web Locks keeps an unresolved first creation key consistent across tabs.
+        // Only product IDs, quantities and the request key are stored; prices and identity cookies are never persisted.
+        window.localStorage.setItem(
+          pendingKey(market),
+          JSON.stringify(pending),
+        );
+      }
+      // Cookie identity may have changed in a different tab while this lock was queued.
+      await refreshCart(market);
+      try {
+        const result = await storefrontRequest<CartResponse>(
+          `/api/${market.id}/cart`,
+          { ...pending.input, idempotencyKey: pending.idempotencyKey },
+        );
+        mutationVersions.set(
+          market.id,
+          (mutationVersions.get(market.id) ?? 0) + 1,
+        );
+        acceptCart(market, result);
+        window.localStorage.removeItem(pendingKey(market));
+        updateUi(market, {
+          open: pending.input.action === "add" ? true : state(market).open,
+        });
+      } catch (error) {
+        // 5xx/network results are ambiguous; keep the request for a safe replay.
+        if (error instanceof StorefrontHttpError && error.status < 500)
+          window.localStorage.removeItem(pendingKey(market));
+        throw error;
+      }
+    });
+  } catch (error) {
+    updateUi(market, {
+      error:
+        error instanceof Error
+          ? error.message
+          : "Your bag could not be updated. Please retry.",
+    });
+    throw error;
+  } finally {
+    const count = Math.max(0, (pendingCounts.get(market.id) ?? 1) - 1);
+    pendingCounts.set(market.id, count);
+    updateUi(market, { pending: count > 0 });
+  }
+}
+export function addCartItem(
+  market: CartMarketIdentity,
+  input: AddCartLineInput,
+) {
+  return mutateCart(market, { action: "add", ...input });
+}
+export function useCartStore(market: CartMarketIdentity) {
+  const hydrated = useSyncExternalStore(
+    subscribeHydration,
+    () => true,
+    () => false,
+  );
+  const visibleUi = useSyncExternalStore(
+    (listener) => {
       listeners.add(listener);
-      hydrate();
       return () => listeners.delete(listener);
     },
-    update(next) {
-      state = next;
-      persist(next.lines);
-      emit();
+    () => state(market),
+    () => initialUi,
+  );
+  const query = useQuery<CartResponse>(
+    {
+      queryKey: cartQueryKey(market),
+      queryFn: () => readCart(market),
+      enabled: hydrated,
+      structuralSharing: (old, incoming) =>
+        newestCart(old, incoming as CartResponse),
+    },
+    getStorefrontQueryClient(),
+  );
+  let legacyCart = false;
+  try {
+    legacyCart =
+      hydrated && !!window.localStorage.getItem(getCartStorageKey(market.id));
+  } catch {
+    /* Legacy storage is optional and never changed. */
+  }
+  return {
+    ...getCartSnapshot(market),
+    ...visibleUi,
+    loading: query.isPending,
+    error: visibleUi.error ?? query.error?.message ?? null,
+    legacyCart,
+    refresh: async () => {
+      const result = await query.refetch();
+      if (!result.error) updateUi(market, { error: null });
+      return result;
     },
   };
 }
-
-function getMarketStore(market: CartMarketIdentity): MarketCartStore {
-  const existing = marketStores.get(market.id);
-  if (existing) {
-    if (existing.currency !== market.currency) {
-      throw new Error(`Market ${market.id} changed currency during the current session`);
-    }
-    return existing.store;
-  }
-
-  const store = createMarketStore(market);
-  marketStores.set(market.id, { currency: market.currency, store });
-  return store;
-}
-
-export function getCartSnapshot(market: CartMarketIdentity): CartState {
-  return getMarketStore(market).getSnapshot();
-}
-
-export function addItem(market: CartMarketIdentity, product: DemoCartProduct) {
-  if (product.price.currency !== market.currency) {
-    throw new Error(
-      `Product currency ${product.price.currency} does not match market currency ${market.currency}`,
-    );
-  }
-
-  const store = getMarketStore(market);
-  const current = store.getSnapshot();
-  const existing = current.lines.find((line) => line.productId === product.id);
-  const lines = existing
-    ? current.lines.map((line) =>
-        line.productId === product.id ? { ...line, quantity: line.quantity + 1 } : line,
-      )
-    : [
-        ...current.lines,
-        {
-          productId: product.id,
-          name: product.name,
-          colour: product.colour,
-          image: product.image,
-          priceAmount: product.price.amount,
-          priceCurrency: product.price.currency,
-          quantity: 1,
-        },
-      ];
-
-  store.update({ lines, open: true });
-}
-
-export function setQuantity(
-  market: CartMarketIdentity,
-  productId: string,
-  quantity: number,
-) {
-  if (!Number.isInteger(quantity)) throw new Error("Cart quantity must be an integer");
-  const store = getMarketStore(market);
-  const current = store.getSnapshot();
-  const lines = current.lines
-    .map((line) => (line.productId === productId ? { ...line, quantity } : line))
-    .filter((line) => line.quantity > 0);
-  store.update({ ...current, lines });
-}
-
-export function setCartOpen(market: CartMarketIdentity, open: boolean) {
-  const store = getMarketStore(market);
-  const current = store.getSnapshot();
-  store.update({ ...current, open });
-}
-
-export function useCartStore(market: CartMarketIdentity) {
-  const store = getMarketStore(market);
-  return useSyncExternalStore(store.subscribe, store.getSnapshot, () => SERVER_SNAPSHOT);
+export function useCartActions(market: CartMarketIdentity) {
+  const cart = useCartStore(market);
+  return {
+    addItem: (input: AddCartLineInput) => addCartItem(market, input),
+    updateItem: (lineId: string, quantity: number) =>
+      mutateCart(market, { action: "update", lineId, quantity }),
+    retry: () => mutateCart(market),
+    pending: cart.pending,
+    error: cart.error,
+  };
 }
