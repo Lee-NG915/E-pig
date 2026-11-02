@@ -18,14 +18,25 @@
 2. 迁移：`node --env-file=.env.local scripts/database/migrate.mjs`。本次本地 Neon 连接超时，已改由 Neon 连接器执行同一 SQL；没有在请求中自动建表。
 3. 安装：`corepack pnpm install --frozen-lockfile`。
 4. 质量：确保 PATH 使用 pnpm 10.34.5 后运行 `pnpm verify`；再执行部署构建。
-5. Netlify CLI 使用仓库根 `--cwd`。在 pnpm workspace 中，CLI 自动筛选可能只识别组件包；从仓库外传入绝对 `--cwd` 可明确根 App。先 `netlify build --context production --cwd <repo>`，确认包含 Next Runtime、functions 与 edge functions。
-6. 将服务端变量安全导入指定测试站点；使用 `netlify deploy --prod --no-build --context production --cwd <repo>` 发布已检查的包。这里 `--prod` 指新测试站点的固定 URL。
+5. Netlify CLI 使用仓库根 `--cwd`。在 pnpm workspace 中，CLI 自动筛选可能只识别组件包；从仓库外传入绝对 `--cwd` 可明确根 App。完整 deploy 内确认包含 Next Runtime、functions 与 edge functions，无需单独先 build。
+6. 将服务端变量安全导入指定测试站点；使用 `netlify deploy --prod --context production --cwd <repo>` 执行完整构建和发布。不要将独立 `build` 后恢复的 `.next` 直接 `deploy --no-build`；该 adapter 在 onPostBuild 临时切换静态发布目录，并在 onEnd 恢复 Next 构建目录。这里 `--prod` 指新测试站点的固定 URL。
 7. 以 `acceptance.md` 的实际访问和支付结果判断验收。CLI 登录、构建通过、Webhook 建立均不能代替支付成功证据。
 
-## 尚待验证
+## 已部署并验证
 
-- Netlify adapter 完整打包与发布结果。
-- 云端 Neon 连通及独立连接并发；本机 DNS 可解析数据库域名，但 TCP/HTTPS/WS 连接仍失败，不能宣称数据库应用链路已通过。
-- 实际托管 Stripe 沙箱卡支付、订单刷新回查、取消与私有响应隔离。
+- 当前 ready 部署：`6ae8ad643aca6161053b6c32`，运行提交 `b0dc3a9`；完整 build/deploy 成功，46 个公开文件、1 个函数、3 个 Edge 函数。日志 `logs/netlify-deploy-focus-20261102.log`。
+- 先前 ready 部署：`6ae8a82309096ed77364e367`（419990e）、`6ae8aacc224835a3273ca4be`（23835a8）。最终重新部署后原订单继续可读。
+- 云端实际 HTTP → Neon/Stripe 独立请求并发通过；本机 WS/HTTPS 直连 suite 网络失败仍保留。迁移不在业务请求中执行。
+- 桌面 AUD 3,800 与移动视口 AUD 8,350 两笔真实沙箱卡支付、订单刷新、重复 Webhook 不重复下单、拒付不生成订单及取消核验均通过，详见 [验收记录](./acceptance.md)。
+- 无 Cookie 查单返回 401，跨市场查单返回 404，响应均 `private,no-store,max-age=0`；没有读取到订单明细。
+- 3DS 额外认证 iframe 未完成加载，完整人工 UAT/实体手机未验收；不宣称全部支付方式或生产环境已通过。
+
+最后的源码质量门为 213 应用测试 +22 基础组件测试，包含 typecheck/lint/docs/Harness/doctor；最终 modules Storybook build 也已通过。代码提交和部署彼此分开记录，后续纯文档提交不改变上述运行代码。
 
 参考：[Netlify Next.js 部署](https://docs.netlify.com/build/frameworks/framework-setup-guides/nextjs/overview/)、[Stripe CLI OAuth 登录说明](https://support.stripe.com/questions/sign-in-to-stripe-cli)。
+
+## 部署适配修复
+
+Netlify Edge 打包会在请求环境注入前导入 Proxy。市场 env 改为在实际非 API 请求中异步加载并校验；缺少 MARKET 仍拒绝请求，不固定为 AU。四项真实 env 回归、独立评审与修复后 adapter 构建通过。
+
+CLI 拆分 build/no-build 的两次尝试均停在 uploading 且 published_at=null，已请求取消。后续改用单次完整 deploy 生命周期；只认可最终 ready 的部署。

@@ -2,7 +2,14 @@
 
 更新日期：2026-11-02
 
-状态：implemented-local — 本地定向测试通过，独立 backend 复核两处 P2 已修复；全局质量门与云端验收由主任务统筹
+状态：implemented / reviewed / pushed — 集成质量门、桌面沙箱交易与指定云端并发场景通过；浏览器 T04 未结束
+
+## 集成交付与当前边界
+
+- Commit：`419990e`，已推送；后续表单文案补丁 `23835a8` 保持原校验行为。
+- 最终完整 verify：213 应用 + 22 基础测试、Harness 8 例及 doctor PASS；独立最终 review 无未解决 finding。Next / Netlify 构建 PASS。
+- 主任务在真实测试站点完成 AUD 3,800 桌面沙箱付款，订单 `96a008f6-6e14-495b-9b2e-1d04b6db7512` 回查成功；重复真实 Webhook 后仍一订单。真实云端 HTTP 并发重试命中同一 checkout、购物车锁定返回 409、取消核验解锁均 PASS。该证据覆盖这些具体场景，不等于网络中断或任意并发压测已完成。
+- 移动拒付后仍 open / 0 订单，重试 3DS iframe 暂未加载完成；完整浏览器验收尚未关闭。详细云端记录由主任务维护 acceptance.md / deployment.md。
 
 ## 实现范围
 
@@ -35,7 +42,9 @@ SQL 测试真实执行 migration、事务、SQL 与唯一约束；包含文件�
 
 覆盖：创建/变更幂等、不同规格、客户端价格篡改无效、数量/可售规则、旧行重新定价、报价变化拒绝、同 revision 不同 key 结算、冻结拒写、请求键复用冲突、创建超时同 payload 重试、超出安全窗口停止重建、订单写入失败回滚与恢复、同 cart 一次清空、重复/乱序事件、返回先于 webhook、不同 owner/market 隔离、错误支付金额、取消不确定与确认失效、AU 表单、签名/原始字节/测试模式/card/currency/redirect 限制。
 
-## 未完成的外部验收
+## 实施阶段的外部验收边界
+
+下列记录保留子任务当时的真实限制；其后已完成的云端指定场景以文首集成交付与 acceptance.md / deployment.md 为准。本地多连接脚本及网络中断演练不因后来的云端 HTTP 通过而自动标记完成。
 
 - 已配置 Neon 连接并尝试只读连接检查，但本机 WebSocket 返回 ErrorEvent，主任务进一步发现网络/DNS 不可达；未读取或修改远端交易数据，未执行外部多进程并发和网络中断演练。
 - 已准备隔离于默认单测的真实多连接检查：`COMMERCE_DATABASE_TEST=1 corepack pnpm exec vitest run --config scripts/database/vitest.config.ts`。仅在显式启用后读取忽略的 `.env.local`，创建全新专用测试记录，注入模拟 PaymentPort，不调用真实支付、不删除既有数据。此检查尚未执行成功。
@@ -49,6 +58,8 @@ SQL 测试真实执行 migration、事务、SQL 与唯一约束；包含文件�
 SDK 23.1.0 的 API 版本固定为 `2026-10-28.endive`；当前 Checkout create 使用 [allowed_payment_method_types](https://docs.stripe.com/api/checkout/sessions/create) 限制 card。请求 payload 固定与超时保护依据 [Stripe 幂等请求规则](https://docs.stripe.com/api/idempotent_requests)；webhook 按 [Stripe 签名与事件管理](https://docs.stripe.com/events/manage-webhook-endpoints) 处理原始请求体并允许重复投递。
 
 ## AI Test Record
+
+以下为实施阶段定向记录；最终集成及指定云端场景见文首。
 
 - Behavior changed: 持久购物车、冻结结算、可信沙箱付款确认、一次性订单和同浏览器归属隔离。
 - Tests added/updated: `commerce.spec.ts` 16 项、`payment.spec.ts` 8 项。

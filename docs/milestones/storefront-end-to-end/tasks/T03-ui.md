@@ -2,7 +2,13 @@
 
 更新日期：2026-11-02
 
-状态：本地实现与定向测试已通过；全量质量门、独立评审、浏览器与真实沙箱验收由里程碑统筹记录。
+状态：implemented / reviewed / pushed — 全量质量门与桌面真实沙箱闭环通过；浏览器 T04 继续中。
+
+## 集成交付与当前边界
+
+- Commits：`419990e`（T03 集成与状态/私有缓存修复）、`23835a8`（表单校验文案）、`b0dc3a9`（关闭购物袋恢复触发焦点），均已推送。
+- 最终 verify：213 应用 + 22 基础测试、Harness 8 例与 doctor PASS；独立最终 review 含焦点修复，无未解决 finding。Next / Netlify 构建 PASS，先前 modules Storybook 与同构建 SG/US standalone 检查 PASS。下方定向记录保留实施阶段的实际命令和当时边界。
+- 主任务已完成桌面真实 Stripe 沙箱付款和同浏览器订单回查。移动拒付路径显示错误且仍 open / 0 订单；重试 3DS iframe 正在恢复。组件中的 Web Locks mock、standalone 市场检查和源码 review 均不代表完整真实浏览器矩阵通过；T04 保持进行中。
 
 ## 范围与领域
 
@@ -17,6 +23,8 @@
 - 每个新增业务组件均有 md/spec/stories；现有 cart companions 同步更新。
 
 ## AI Test Record
+
+以下为实施阶段定向记录；最终集成状态见文首。
 
 - Behavior changed: 本地 demo cart 替换为服务端权威 Query 数据；新增 AU 结算、可信支付核验、同浏览器订单回查与错误恢复。
 - Tests added/updated: cart-store、CartPanel、CartSheet、CartSheetMount、跨 provider 商品→Header→Drawer→增量/移除旅程、CheckoutForm、CheckoutStatus、OrderHistory。HTTP 是组件测试的 mock 边界。

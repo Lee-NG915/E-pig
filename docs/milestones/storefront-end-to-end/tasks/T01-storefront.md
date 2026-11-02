@@ -2,7 +2,13 @@
 
 更新日期：2026-11-02
 
-状态：local implementation verified; integrated quality/review/browser acceptance pending
+状态：implemented / reviewed / pushed — 集成质量门已通过；浏览器完整验收仍归 T04
+
+## 集成交付与当前边界
+
+- Commit：`419990e`，已推送里程碑分支；T01–T03 共享接口以集成提交交付。
+- 最终完整 verify：213 应用 + 22 基础测试、Harness 8 例及 doctor PASS；独立最终 review 无未解决 finding。下方定向记录保留实施阶段的实际命令和当时边界。
+- Next / Netlify 构建、先前 modules Storybook 构建、AU 同构建 SG/US standalone 检查均 PASS。主任务桌面 AU 购买并生成可回查沙箱订单已通过；完整响应式、移动支付与其他浏览器断言仍由 T04 验收表收口，不据此宣布所有视觉检查通过。
 
 Catalog owns controlled variants, product cards/detail and keyword search. Content owns site chrome, Blog summaries and six sandbox help topics. Existing market registry, page shell and cream/moss tokens remain the basis.
 
@@ -13,6 +19,8 @@ Catalog owns controlled variants, product cards/detail and keyword search. Conte
 - Help explains sandbox payment, delivery/returns, privacy/cookie limitations, terms and contact without real fulfillment or fabricated contact promises. Homepage copy drops trial/shipping/material-performance guarantees. Blog summaries use shared tokens and remove unavailable detail/comment affordances. New/changed component docs and stories accompany behavior.
 
 ## AI Test Record
+
+以下为实施阶段定向记录；最终集成状态见文首。
 
 - Behavior changed: catalog variant mapping, search, PDP/quick-add interaction, site navigation and sandbox content boundaries as above.
 - Tests added/updated: catalog all-product × all-market variant matrix; PDP option/price/image/server-ID/pending/error tests; quick-add/multiple-variant/error tests; search blank/empty/error GET form; help supported destinations; header/footer market navigation; existing Blog/list/benefit tests updated.
