@@ -25,6 +25,7 @@ const config: StorybookConfig = {
     path.join(repoRoot, "src/modules/**/*.stories.@(ts|tsx)"),
     path.join(repoRoot, "packages/happy-dog/src/**/*.stories.@(ts|tsx)"),
   ],
+  staticDirs: [path.join(repoRoot, "public")],
   addons: ["@storybook/addon-docs", "@storybook/addon-a11y"],
   framework: { name: "@storybook/react-vite", options: {} },
   docs: { autodocs: "tag" },

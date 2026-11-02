@@ -21,7 +21,16 @@ export const serverEnvSchema = {
     return value;
   }, z.enum(marketIds)),
   /** commerce adapter 选择；P0 只有 mock，真实后端接入后扩展（如 "custom-rest"） */
-  COMMERCE_ADAPTER: z.enum(["mock"]).default("mock"),
+  COMMERCE_ADAPTER: z.enum(["mock", "postgres"]).default("mock"),
+  DATABASE_URL: z.url().refine(value => /^postgres(?:ql)?:\/\//.test(value), "Use a Postgres connection URL").optional(),
+  CART_COOKIE_SECRET: z.string().min(32).optional(),
+  APP_ORIGIN: z.url().refine(value => {
+    const url = new URL(value);
+    return !url.username && !url.password && url.pathname === "/" && !url.search && !url.hash
+      && (url.protocol === "https:" || (url.protocol === "http:" && url.hostname === "localhost"));
+  }, "Use an HTTPS origin, or http://localhost for local testing").optional(),
+  STRIPE_SECRET_KEY: z.string().startsWith("sk_test_").optional(),
+  STRIPE_WEBHOOK_SECRET: z.string().startsWith("whsec_").optional(),
   LOG_LEVEL: z.enum(["debug", "info", "warn", "error"]).default("info"),
 } as const;
 
@@ -41,6 +50,11 @@ export const env = createEnv({
     MARKET: process.env.MARKET,
     COMMERCE_ADAPTER: process.env.COMMERCE_ADAPTER,
     LOG_LEVEL: process.env.LOG_LEVEL,
+    DATABASE_URL: process.env.DATABASE_URL,
+    CART_COOKIE_SECRET: process.env.CART_COOKIE_SECRET,
+    APP_ORIGIN: process.env.APP_ORIGIN,
+    STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
+    STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,
   },
 });
 

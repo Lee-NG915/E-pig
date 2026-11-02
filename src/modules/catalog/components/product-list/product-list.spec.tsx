@@ -1,14 +1,14 @@
 // @vitest-environment jsdom
 
 import { cleanup, render, screen } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { ProductListItem } from "@/core/contracts/commerce/catalog";
 import {
   CartMarketProvider,
   type CartMarket,
 } from "@/modules/cart/components/cart-market-context/cart-market-context";
-import { setCartOpen, setQuantity } from "@/modules/cart/lib/cart-store";
+vi.mock("@/modules/cart/lib/cart-store", async (importOriginal) => ({ ...await importOriginal<typeof import("@/modules/cart/lib/cart-store")>(), useCartActions: () => ({ addItem: vi.fn(), pending: false, error: null }) }));
 
 import { ProductList } from "./product-list";
 
@@ -40,12 +40,6 @@ const products: ProductListItem[] = [
 ];
 
 const collection = { handle: "living-room", title: "Living Room" };
-
-beforeEach(() => {
-  window.localStorage.clear();
-  products.forEach((product) => setQuantity(market, product.id, 0));
-  setCartOpen(market, false);
-});
 
 afterEach(cleanup);
 

@@ -36,15 +36,18 @@ export type UtilityLink = {
 
 /** 顶栏促销文案（全市场共用英文 demo）。 */
 export const promoBanner = {
-  text: "Try it properly with our 120 day trial",
-  href: "#trial",
+  text: "Sandbox shopping · No real payment or delivery",
+  href: "/help/payment",
   cta: "Learn more",
 } as const;
 
 export const utilityLinks: UtilityLink[] = [
-  { label: "FAQs", href: "#faqs" },
-  { label: "Our story", href: "#about" },
+  { label: "Help", href: "/help/payment" },
+  { label: "Contact", href: "/help/contact" },
 ];
+
+/** 主导航叶子链（无 Mega）。href 为市场无关路径。 */
+export const primaryLinks: UtilityLink[] = [{ label: "Blog", href: "/blog" }];
 
 export const mainNav: NavPrimaryItem[] = [
   {

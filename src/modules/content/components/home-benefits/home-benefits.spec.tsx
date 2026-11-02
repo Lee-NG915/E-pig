@@ -11,7 +11,7 @@ describe("HomeBenefits", () => {
   it("渲染三条服务承诺", () => {
     render(<HomeBenefits />);
 
-    for (const title of ["Easy delivery", "120-night trial", "Considered materials"]) {
+    for (const title of ["Explore the catalog", "Test the checkout", "Find your test order"]) {
       expect(screen.getByRole("heading", { name: title })).toBeTruthy();
     }
   });

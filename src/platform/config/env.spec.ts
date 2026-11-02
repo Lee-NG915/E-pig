@@ -24,6 +24,16 @@ describe("env schema", () => {
     expect(() => serverEnvSchema.COMMERCE_ADAPTER.parse("shopify")).toThrow();
   });
 
+  it("accepts persistent commerce and rejects live payment keys and unsafe origins", () => {
+    expect(serverEnvSchema.COMMERCE_ADAPTER.parse("postgres")).toBe("postgres");
+    expect(serverEnvSchema.STRIPE_SECRET_KEY.safeParse("sk_live_not-allowed").success).toBe(false);
+    expect(serverEnvSchema.STRIPE_SECRET_KEY.parse("sk_test_example")).toBe("sk_test_example");
+    expect(serverEnvSchema.APP_ORIGIN.safeParse("https://user:password@example.test").success).toBe(false);
+    expect(serverEnvSchema.APP_ORIGIN.safeParse("http://example.test").success).toBe(false);
+    expect(serverEnvSchema.APP_ORIGIN.parse("http://localhost:3000")).toBe("http://localhost:3000");
+    expect(serverEnvSchema.CART_COOKIE_SECRET.safeParse("short").success).toBe(false);
+  });
+
   it("LOG_LEVEL 缺省为 info，拒绝非法级别", () => {
     expect(serverEnvSchema.LOG_LEVEL.parse(undefined)).toBe("info");
     expect(serverEnvSchema.LOG_LEVEL.parse("debug")).toBe("debug");

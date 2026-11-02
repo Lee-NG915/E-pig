@@ -48,3 +48,7 @@ next-env.d.ts
 # OpenNext / Cloudflare
 .open-next/
 .wrangler/
+
+# Netlify CLI state and local agent handoffs
+.netlify/
+.superpowers/

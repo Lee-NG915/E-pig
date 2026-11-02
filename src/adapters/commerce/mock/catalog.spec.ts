@@ -110,6 +110,12 @@ describe("mock catalog adapter", () => {
     expect(description.length).toBeGreaterThan(0);
     expect(description.length).toBeLessThanOrEqual(280);
     expect(detail.materials).toContain("Foam");
+    expect(detail.gallery.length).toBeGreaterThanOrEqual(1);
+    expect(detail.gallery[0]?.src).toBe(detail.image);
+    expect(detail.rating).toBeUndefined();
+    expect(detail.reviewCount).toBeUndefined();
+    expect(detail.availability).toBe("in-stock");
+    expect(detail.colourOptions).toHaveLength(0);
 
     try {
       await sgCatalog.getProduct("does-not-exist");
@@ -146,16 +152,43 @@ describe("mock catalog adapter", () => {
     expect(mockProducts.every((product) => product.source.vendor === "Koala")).toBe(true);
   });
 
-  it("suggest 按名称/类别模糊匹配；空查询抛 validation", async () => {
+  it("suggest 按名称/类别模糊匹配；空查询返回空结果", async () => {
     const results = await sgCatalog.suggest("sofa");
     expect(results.some((product) => product.id === "tamarama-modular-sofa")).toBe(true);
     expect(results.every((product) => /sofa/i.test(`${product.name} ${product.category}`))).toBe(true);
 
-    try {
-      await sgCatalog.suggest("   ");
-      expect.unreachable("should throw");
-    } catch (error) {
-      expect((error as { kind: string }).kind).toBe("validation");
+    await expect(sgCatalog.suggest("   ")).resolves.toEqual([]);
+  });
+});
+
+
+describe("sandbox variant coverage", () => {
+  it("maps every visible product to controlled, market-priced variants without invented reviews", async () => {
+    for (const marketId of ["au", "sg", "us"] as const) {
+      const catalog = createMockCatalogAdapter({ market: getMarket(marketId) });
+      const products = await catalog.listProducts();
+      let multi = false;
+      const variantIds: string[] = [];
+      const skus: string[] = [];
+      for (const item of products) {
+        const detail = await catalog.getProduct(item.id);
+        expect(detail.variants.length).toBeGreaterThan(0);
+        expect(detail.variants[0].label).toBe(item.colour);
+        expect(item.defaultVariantId).toBe(detail.variants[0].id);
+        expect(item.variantCount).toBe(detail.variants.length);
+        expect(new Set(detail.variants.map(v => v.id)).size).toBe(detail.variants.length);
+        expect(detail.variants.every(v => v.sku.startsWith("SANDBOX-") && v.maxQuantity > 0 && v.price.currency === getMarket(marketId).currency)).toBe(true);
+        expect(new Set(detail.gallery.map(image => image.src)).size).toBe(detail.gallery.length);
+        expect(detail.rating).toBeUndefined();
+        expect(detail.reviewCount).toBeUndefined();
+        variantIds.push(...detail.variants.map(variant => variant.id));
+        skus.push(...detail.variants.map(variant => variant.sku));
+        multi ||= detail.variants.length > 1;
+      }
+      expect(multi).toBe(true);
+      expect(new Set(variantIds).size).toBe(variantIds.length);
+      expect(new Set(skus).size).toBe(skus.length);
+      await expect(catalog.suggest("   ")).resolves.toEqual([]);
     }
   });
 });

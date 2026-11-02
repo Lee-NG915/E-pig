@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>从 Figma 到可交付页面</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --cream: #faf7ef;
+        --cream-deep: #f1ecdf;
+        --paper: #fffdf8;
+        --moss: #495133;
+        --moss-deep: #354025;
+        --moss-soft: #dfe6c9;
+        --ink: #1f1f1f;
+        --muted: #6b6c61;
+        --line: #d8d8ca;
+        --gate: #2f3824;
+      }
+
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: var(--cream);
+        color: var(--ink);
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+      main { width: min(1500px, 100%); margin: 0 auto; padding: 42px 34px 54px; }
+      header { display: flex; align-items: flex-end; justify-content: space-between; gap: 28px; margin-bottom: 22px; }
+      .eyebrow { margin: 0 0 10px; color: var(--moss); font-size: 12px; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
+      h1 { margin: 0; color: var(--moss-deep); font-family: Georgia, "Times New Roman", serif; font-size: clamp(30px, 4vw, 54px); font-weight: 500; letter-spacing: -.03em; line-height: 1.02; }
+      .intro { max-width: 440px; margin: 0 0 4px; color: var(--muted); font-size: 15px; line-height: 1.65; }
+      .canvas-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 26px; background: var(--paper); box-shadow: 0 18px 45px rgba(53, 64, 37, .08); }
+      canvas { display: block; width: 1440px; height: 900px; max-width: none; image-rendering: auto; }
+      .caption { display: flex; justify-content: space-between; gap: 22px; padding: 14px 18px 0; color: var(--muted); font-size: 12px; line-height: 1.55; }
+      .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; }
+      .notes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 18px; }
+      .note { padding: 14px 16px; border: 1px solid var(--line); border-radius: 16px; background: rgba(255,253,248,.68); }
+      .note strong { display: block; margin-bottom: 5px; color: var(--moss-deep); font-size: 13px; }
+      .note span { color: var(--muted); font-size: 12px; line-height: 1.55; }
+      @media (max-width: 760px) {
+        main { padding: 26px 16px 36px; }
+        header { display: block; }
+        .intro { margin-top: 14px; }
+        .notes { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <div>
+          <p class="eyebrow">E-pig · Design to delivery</p>
+          <h1>从 Figma 到可交付页面</h1>
+        </div>
+        <p class="intro">让产品、设计和开发对同一条路径有共同预期：每一步确认什么、产出什么，以及什么时候算真正完成。</p>
+      </header>
+      <div class="canvas-wrap">
+        <canvas id="flow" width="1440" height="900" role="img" aria-label="从 Figma 设计到可交付页面的流程图：看懂设计、规划页面、对齐规则、变成页面、体验验证、交付候选、发布与业务验收。体验验证可以反馈回对齐规则，底部展示检查通过、预览环境、线上发布和业务验收状态。"></canvas>
+      </div>
+      <p class="caption"><span>横向滚动查看完整画布 · 建议在桌面宽度下阅读</span><span>实线：主流程　虚线：反馈回路　深色：确认门槛　底部：交付证据</span></p>
+      <section class="notes" aria-label="流程图文字摘要">
+        <div class="note"><strong>关键输入</strong><span>设计画面、内容、素材、不同设备下的状态，以及要解决的业务目标。</span></div>
+        <div class="note"><strong>关键产物</strong><span>设计共识、页面蓝图、确认过的规则、页面版本、体验记录和交付候选。</span></div>
+        <div class="note"><strong>关键边界</strong><span>检查通过、预览可见、线上可访问、业务确认分别记录，不能互相替代。</span></div>
+      </section>
+    </main>
+    <script>
+      const canvas = document.getElementById('flow');
+      const ctx = canvas.getContext('2d');
+      const W = canvas.width;
+      const H = canvas.height;
+      const C = {
+        cream: '#faf7ef', paper: '#fffdf8', ink: '#1f1f1f', muted: '#6b6c61', line: '#d8d8ca',
+        moss: '#495133', mossDeep: '#354025', mossSoft: '#dfe6c9', gate: '#2f3824', white: '#fffdf8'
+      };
+
+      function roundRect(x, y, w, h, r, fill, stroke, lineWidth = 1) {
+        ctx.beginPath();
+        ctx.roundRect(x, y, w, h, r);
+        if (fill) { ctx.fillStyle = fill; ctx.fill(); }
+        if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = lineWidth; ctx.stroke(); }
+      }
+      function text(value, x, y, size, color = C.ink, weight = 400, align = 'left', family = 'Inter, system-ui, sans-serif') {
+        ctx.font = `${weight} ${size}px ${family}`;
+        ctx.fillStyle = color;
+        ctx.textAlign = align;
+        ctx.textBaseline = 'alphabetic';
+        ctx.fillText(value, x, y);
+      }
+      function wrap(value, x, y, maxWidth, lineHeight, size = 13, color = C.muted, weight = 400) {
+        ctx.font = `${weight} ${size}px Inter, system-ui, sans-serif`;
+        ctx.fillStyle = color;
+        ctx.textAlign = 'left';
+        const words = value.split('');
+        let line = '';
+        let row = 0;
+        for (const char of words) {
+          const test = line + char;
+          if (ctx.measureText(test).width > maxWidth && line) {
+            ctx.fillText(line, x, y + row * lineHeight);
+            line = char;
+            row += 1;
+          } else line = test;
+        }
+        if (line) ctx.fillText(line, x, y + row * lineHeight);
+        return row + 1;
+      }
+      function arrow(x1, y1, x2, y2, dashed = false, color = C.moss) {
+        ctx.save();
+        ctx.strokeStyle = color;
+        ctx.fillStyle = color;
+        ctx.lineWidth = dashed ? 2.2 : 3;
+        ctx.setLineDash(dashed ? [8, 8] : []);
+        ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+        const a = Math.atan2(y2 - y1, x2 - x1);
+        ctx.setLineDash([]);
+        ctx.beginPath();
+        ctx.moveTo(x2, y2);
+        ctx.lineTo(x2 - 12 * Math.cos(a - Math.PI / 6), y2 - 12 * Math.sin(a - Math.PI / 6));
+        ctx.lineTo(x2 - 12 * Math.cos(a + Math.PI / 6), y2 - 12 * Math.sin(a + Math.PI / 6));
+        ctx.closePath(); ctx.fill(); ctx.restore();
+      }
+      function icon(type, cx, cy, color = C.moss) {
+        ctx.save(); ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = 2; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+        if (type === 'figma') {
+          [[0,-9,'#d55c54'],[0,0,'#ef9a68'],[0,9,'#8e9f52'],[9,-9,'#8f6bb6'],[9,0,'#56a5bd']].forEach(([dx,dy,fill]) => { ctx.fillStyle = fill; ctx.beginPath(); ctx.arc(cx + dx, cy + dy, 4.2, 0, Math.PI*2); ctx.fill(); });
+        } else if (type === 'layers') {
+          ctx.beginPath(); ctx.moveTo(cx-11,cy-4); ctx.lineTo(cx,cy-10); ctx.lineTo(cx+11,cy-4); ctx.lineTo(cx,cy+2); ctx.closePath(); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(cx-11,cy+3); ctx.lineTo(cx,cy+9); ctx.lineTo(cx+11,cy+3); ctx.stroke();
+        } else if (type === 'contract') {
+          ctx.beginPath(); ctx.roundRect(cx-9,cy-12,18,24,3); ctx.stroke(); ctx.beginPath(); ctx.moveTo(cx-5,cy-5); ctx.lineTo(cx+5,cy-5); ctx.moveTo(cx-5,cy); ctx.lineTo(cx+5,cy); ctx.moveTo(cx-5,cy+5); ctx.lineTo(cx+2,cy+5); ctx.stroke();
+        } else if (type === 'code') {
+          ctx.beginPath(); ctx.moveTo(cx-5,cy-9); ctx.lineTo(cx-12,cy); ctx.lineTo(cx-5,cy+9); ctx.moveTo(cx+5,cy-9); ctx.lineTo(cx+12,cy); ctx.lineTo(cx+5,cy+9); ctx.stroke();
+        } else if (type === 'check') {
+          ctx.beginPath(); ctx.arc(cx,cy,11,0,Math.PI*2); ctx.stroke(); ctx.beginPath(); ctx.moveTo(cx-5,cy); ctx.lineTo(cx-1,cy+4); ctx.lineTo(cx+6,cy-5); ctx.stroke();
+        } else if (type === 'box') {
+          ctx.beginPath(); ctx.rect(cx-10,cy-8,20,16); ctx.stroke(); ctx.beginPath(); ctx.moveTo(cx-10,cy-2); ctx.lineTo(cx,cy+4); ctx.lineTo(cx+10,cy-2); ctx.stroke();
+        } else if (type === 'flag') {
+          ctx.beginPath(); ctx.moveTo(cx-8,cy+11); ctx.lineTo(cx-8,cy-11); ctx.lineTo(cx+9,cy-7); ctx.lineTo(cx-8,cy-2); ctx.stroke();
+        }
+        ctx.restore();
+      }
+      function badge(label, x, y, tone = 'soft') {
+        ctx.font = '700 11px Inter, system-ui, sans-serif';
+        const w = ctx.measureText(label).width + 22;
+        const fill = tone === 'dark' ? C.gate : C.mossSoft;
+        const color = tone === 'dark' ? C.white : C.mossDeep;
+        roundRect(x, y, w, 24, 12, fill, null);
+        text(label, x + 11, y + 16, 11, color, 700);
+        return w;
+      }
+      function stageCard(stage, x, y, w, h, gate = false) {
+        roundRect(x, y, w, h, 18, gate ? C.gate : C.paper, gate ? C.gate : C.line, gate ? 0 : 1);
+        ctx.fillStyle = gate ? C.mossSoft : C.mossSoft; ctx.beginPath(); ctx.arc(x+28,y+31,20,0,Math.PI*2); ctx.fill();
+        icon(stage.icon, x+28, y+31, gate ? C.gate : C.mossDeep);
+        text(stage.no, x+58, y+25, 11, gate ? '#dfe6c9' : C.muted, 800);
+        text(stage.title, x+58, y+48, 19, gate ? C.white : C.mossDeep, 700);
+        wrap(stage.body, x+22, y+85, w-44, 20, 13, gate ? '#ecf0de' : C.muted, 400);
+        const labelY = y + h - 42;
+        badge(stage.output, x+22, labelY, gate ? 'dark' : 'soft');
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, W, H);
+        ctx.fillStyle = C.paper; ctx.fillRect(0,0,W,H);
+        ctx.strokeStyle = '#eee9dd'; ctx.lineWidth = 1;
+        for (let x=30; x<W; x+=80) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
+        for (let y=30; y<H; y+=80) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+        roundRect(26, 24, 1388, 852, 22, 'rgba(250,247,239,.62)', null);
+        text('一条主路径，三处需要确认的门槛', 62, 72, 14, C.moss, 800);
+        text('从“看懂设计”到“证明可交付”', 62, 108, 28, C.mossDeep, 500, 'left', 'Georgia, Times New Roman, serif');
+        text('输入 → 决策 → 实现 → 证据', 1378, 74, 12, C.muted, 700, 'right');
+
+        const y = 194, w = 166, h = 250;
+        const xs = [58, 250, 442, 634, 826, 1018, 1210];
+        const stages = [
+          {no:'01',title:'看懂设计',icon:'figma',body:'看清画面、内容、素材和不同状态，\n先对“要做成什么”形成共同理解。',output:'设计共识'},
+          {no:'02',title:'规划页面',icon:'layers',body:'拆出页面区块、可复用部分和\n不同设备下的使用方式。',output:'页面蓝图'},
+          {no:'03',title:'对齐规则',icon:'contract',body:'把视觉、交互、内容和验收标准\n说清楚，再进入制作。',output:'规则确认',gate:true},
+          {no:'04',title:'变成页面',icon:'code',body:'按确认过的规则制作页面，\n接入内容并保留后续调整空间。',output:'页面初版'},
+          {no:'05',title:'体验验证',icon:'check',body:'看真实页面在不同设备和关键状态下\n是否与设计目标一致。',output:'体验通过',gate:true},
+          {no:'06',title:'交付候选',icon:'box',body:'整理成可预览、可检查、可回读的\n版本，并记录仍待处理的问题。',output:'交付候选'},
+          {no:'07',title:'发布验收',icon:'flag',body:'经过预览、线上发布和真实业务场景\n确认，才算完成这一轮交付。',output:'业务确认',gate:true}
+        ];
+        stages.forEach((s,i) => stageCard(s, xs[i], y, w, h, s.gate));
+        for (let i=0; i<xs.length-1; i++) arrow(xs[i]+w+4, y+125, xs[i+1]-10, y+125, false, C.moss);
+
+        // Feedback loop from visual validation to contract.
+        ctx.save(); ctx.strokeStyle = C.moss; ctx.lineWidth = 2.4; ctx.setLineDash([8,8]);
+        ctx.beginPath(); ctx.moveTo(xs[4]+w/2, y+h+3); ctx.bezierCurveTo(xs[4]+w/2, 528, xs[2]+w/2, 528, xs[2]+w/2, y+h+3); ctx.stroke();
+        ctx.restore();
+        arrow(xs[2]+w/2, 528, xs[2]+w/2, y+h+4, true, C.moss);
+        text('发现偏差 / 缺口 → 回到规则与页面调整', 730, 550, 12, C.moss, 700, 'center');
+
+        // Evidence strip.
+        roundRect(58, 610, 1318, 166, 18, C.cream, C.line);
+        text('交付状态是逐步累积的证据', 84, 646, 16, C.mossDeep, 800);
+        text('每一步都能回读，但它们代表的承诺不同', 84, 671, 12, C.muted, 400);
+        const ev = [
+          ['检查通过','关键检查完成',C.mossSoft],
+          ['预览环境','可以看到候选版本', '#ece7d7'],
+          ['线上发布','真实地址可访问', '#d9e1bf'],
+          ['业务验收','真实场景确认完成', '#cad7a1']
+        ];
+        ev.forEach((e,i) => {
+          const ex = 84 + i*312;
+          roundRect(ex, 697, 270, 54, 14, C.paper, C.line);
+          ctx.fillStyle = e[2]; ctx.beginPath(); ctx.arc(ex+22,724,8,0,Math.PI*2); ctx.fill();
+          text(e[0], ex+42, 721, 13, C.mossDeep, 800);
+          text(e[1], ex+42, 739, 11, C.muted, 400);
+          if (i<ev.length-1) arrow(ex+278, 724, ex+302, 724, false, C.moss);
+        });
+
+        // Legend.
+        roundRect(58, 808, 1318, 44, 13, C.paper, C.line);
+        ctx.strokeStyle = C.moss; ctx.lineWidth=3; ctx.setLineDash([]); ctx.beginPath(); ctx.moveTo(80,830); ctx.lineTo(128,830); ctx.stroke();
+        text('主流程', 138, 834, 11, C.muted, 700);
+        ctx.strokeStyle = C.moss; ctx.lineWidth=2; ctx.setLineDash([7,7]); ctx.beginPath(); ctx.moveTo(220,830); ctx.lineTo(268,830); ctx.stroke(); ctx.setLineDash([]);
+        text('反馈回路', 278, 834, 11, C.muted, 700);
+        roundRect(390, 818, 24, 24, 7, C.gate, null); text('门槛', 424, 834, 11, C.muted, 700);
+        roundRect(500, 818, 72, 24, 12, C.mossSoft, null); text('产物标签', 584, 834, 11, C.muted, 700);
+        text('读图顺序：从左到右；看到虚线时，回到前一步调整。', 1352, 834, 11, C.muted, 700, 'right');
+      }
+      // Use a larger backing store on Retina/high-DPI screens so canvas text stays crisp.
+      const dpr = Math.max(1, Math.min(window.devicePixelRatio || 1, 3));
+      canvas.width = Math.round(W * dpr);
+      canvas.height = Math.round(H * dpr);
+      canvas.style.width = `${W}px`;
+      canvas.style.height = `${H}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      draw();
+    </script>
+  </body>
+</html>

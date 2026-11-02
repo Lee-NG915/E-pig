@@ -201,3 +201,7 @@ description: Helps with git stuff.
 4. 提交 `.agents/skills/`、`.claude/skills/` 和 `skills-lock.json` 的相关变更。
 5. 提 PR，并像 review 代码一样 review skill 内容。
 6. 合并后其他人 pull，开新对话即可生效。
+
+## 本地 DTC skills
+
+项目通过 `.agents/skills/dtc-*` 软链直接消费本地 `../DTC-skills/skills/dtc-*` 源目录，共 20 个通用开发流程 skill；不会复制一份静态安装快照。目标项目适配档案位于 [.dtc/target-profile.md](../../.dtc/target-profile.md)，使用顺序及 E-pig 规则见 [DTC 项目接入](dtc-installation.md)。来源和软链由 [.agents/dtc-skills-install.json](../dtc-skills-install.json) 记录，遵循项目规则和 e-pig-dev-loop；不改写社区来源锁文件。

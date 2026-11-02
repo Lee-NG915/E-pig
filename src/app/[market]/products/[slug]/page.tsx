@@ -1,17 +1,55 @@
 import { Suspense } from "react";
 
+import type { Metadata } from "next";
 import { connection } from "next/server";
 import { notFound } from "next/navigation";
 
 import { isAppError } from "@/core/errors/errors";
+import { CartMarketProvider } from "@/modules/cart/components/cart-market-context/cart-market-context";
 import { CartSheetMount } from "@/modules/cart/components/cart-sheet-mount/cart-sheet-mount";
+import { ProductDetail } from "@/modules/catalog/components/product-detail/product-detail";
 import { SiteFooter } from "@/modules/content/components/site-footer/site-footer";
 import { SiteHeader } from "@/modules/content/components/site-header/site-header";
+import { isMarketId } from "@/platform/config/markets";
+import { withMarketPrefix } from "@/platform/config/market-path";
 import { getCapabilities } from "@/platform/registry";
+import {
+  buildCanonicalUrl,
+  buildPageMetadata,
+  buildProductJsonLd,
+  jsonLdScriptProps,
+  siteName,
+} from "@/platform/seo";
 
 type ProductPageProps = {
   params: Promise<{ market: string; slug: string }>;
 };
+
+export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
+  const { market: marketParam, slug } = await params;
+  if (!isMarketId(marketParam)) {
+    return buildPageMetadata({ title: siteName, noIndex: true });
+  }
+
+  await connection();
+  const { catalog } = getCapabilities();
+  try {
+    const product = await catalog.getProduct(slug);
+    return buildPageMetadata({
+      title: `${product.name} | ${siteName}`,
+      description: product.description,
+      canonicalUrl: buildCanonicalUrl(
+        marketParam,
+        withMarketPrefix(marketParam, `/products/${product.slug}`),
+      ),
+    });
+  } catch (error) {
+    if (isAppError(error) && error.kind === "not_found") {
+      return buildPageMetadata({ title: `Product not found | ${siteName}`, noIndex: true });
+    }
+    throw error;
+  }
+}
 
 /** request-time 边界：解析当前 market 并挂载站点 header + 单一购物车抽屉。 */
 async function MarketChrome() {
@@ -26,8 +64,8 @@ async function MarketChrome() {
   );
 }
 
-/** PDP 占位：params 在 Suspense 内解析。mock 阶段 slug === id。 */
-async function ProductDetailStub({
+/** request-time PDP 数据边界：params 与商品数据在 Suspense 内解析。 */
+async function ProductDetailSection({
   params,
 }: {
   params: Promise<{ market: string; slug: string }>;
@@ -47,17 +85,24 @@ async function ProductDetailStub({
     throw error;
   }
 
+  const jsonLd = isMarketId(market.id)
+    ? buildProductJsonLd({
+        name: product.name,
+        description: product.description,
+        imageUrl: product.gallery[0]?.src ?? product.image,
+        sku: product.id,
+        url: buildCanonicalUrl(
+          market.id,
+          withMarketPrefix(market.id, `/products/${product.slug}`),
+        ),
+      })
+    : null;
+
   return (
-    <div className="mx-auto max-w-[1440px] px-4 py-20 sm:px-6 lg:px-8">
-      <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">Product</p>
-      <h1 className="mt-3 font-display text-4xl tracking-[-0.03em] sm:text-5xl">{product.name}</h1>
-      <p className="mt-6 max-w-xl text-muted-foreground">
-        Full product details, gallery and variant selection are coming in M2.2.
-      </p>
-      <p className="mt-2 text-sm text-muted-foreground">
-        {market.name} · {market.currency}
-      </p>
-    </div>
+    <CartMarketProvider market={{ id: market.id, currency: market.currency }}>
+      {jsonLd ? <script {...jsonLdScriptProps(jsonLd)} /> : null}
+      <ProductDetail product={product} />
+    </CartMarketProvider>
   );
 }
 
@@ -67,10 +112,9 @@ function HeaderSkeleton() {
 
 function ProductSkeleton() {
   return (
-    <div className="mx-auto max-w-[1440px] px-4 py-20 sm:px-6 lg:px-8">
-      <div className="h-6 max-w-xs animate-pulse rounded-2xl bg-secondary" />
-      <div className="mt-4 h-12 max-w-lg animate-pulse rounded-2xl bg-secondary" />
-      <div className="mt-6 h-24 max-w-xl animate-pulse rounded-2xl bg-secondary" />
+    <div className="mx-auto flex max-w-[1050px] flex-col gap-8 px-4 py-12 lg:flex-row">
+      <div className="h-[394px] w-full animate-pulse rounded-[5px] bg-secondary lg:h-[550px] lg:w-[510px]" />
+      <div className="h-[471px] w-full animate-pulse rounded-[5px] bg-secondary lg:w-[510px]" />
     </div>
   );
 }
@@ -83,7 +127,7 @@ export default function ProductPage({ params }: ProductPageProps) {
       </Suspense>
       <main>
         <Suspense fallback={<ProductSkeleton />}>
-          <ProductDetailStub params={params} />
+          <ProductDetailSection params={params} />
         </Suspense>
       </main>
       <SiteFooter />

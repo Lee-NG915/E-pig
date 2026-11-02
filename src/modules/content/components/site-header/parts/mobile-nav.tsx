@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ArrowLeft, X } from "lucide-react";
 
 import { withMarketPrefix } from "@/platform/config/market-path";
-import { mainNav, type NavPrimaryItem } from "@/modules/content/lib/main-nav";
+import { mainNav, primaryLinks, type NavPrimaryItem } from "@/modules/content/lib/main-nav";
 import { track } from "@/shared/lib/track";
 import { Button } from "@e-pig/happy-dog/components/button";
 
@@ -86,6 +86,24 @@ export function MobileNav({ open, marketId, drill, onClose, onDrill }: MobileNav
                   </button>
                 </li>
               ))}
+              {primaryLinks.map((link) => {
+                const href = withMarketPrefix(marketId, link.href);
+                return (
+                  <li key={link.href}>
+                    <Link
+                      href={href}
+                      prefetch={false}
+                      className="flex w-full items-center rounded-lg px-3 py-3 text-base font-medium hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      onClick={() => {
+                        track("nav_primary_click", { id: link.href, href });
+                        onClose();
+                      }}
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                );
+              })}
             </ul>
           ) : (
             <div className="space-y-6">

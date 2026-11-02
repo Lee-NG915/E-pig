@@ -3,14 +3,7 @@
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  ChevronDown,
-  Heart,
-  Menu,
-  Search,
-  ShoppingBag,
-  User,
-} from "lucide-react";
+import { ChevronDown, Menu, Search, ShoppingBag } from "lucide-react";
 
 import { useCartMarket } from "@/modules/cart/components/cart-market-context/cart-market-context";
 import { setCartOpen, useCartStore } from "@/modules/cart/lib/cart-store";
@@ -18,6 +11,7 @@ import { getMarket, isMarketId } from "@/platform/config/markets";
 import { withMarketPrefix } from "@/platform/config/market-path";
 import {
   mainNav,
+  primaryLinks,
   promoBanner,
   utilityLinks,
   type NavPrimaryItem,
@@ -108,18 +102,22 @@ export function SiteHeader() {
 
   return (
     <header ref={headerRef} className="sticky top-0 z-40">
-      {/* Utility bar — fixed height for CLS */}
+      {/* Utility notice wraps above market controls on small screens; desktop stays one row. */}
       <div className="bg-primary text-primary-foreground">
-        <div className="mx-auto flex h-9 max-w-[1440px] items-center justify-between gap-3 px-4 text-xs sm:px-6 lg:px-8">
-          <p className="hidden truncate sm:block sm:max-w-[40%]">
+        <div className="mx-auto flex max-w-[1440px] flex-col items-center justify-between gap-2 px-4 py-2 text-xs sm:px-6 lg:h-9 lg:flex-row lg:gap-3 lg:px-8 lg:py-0">
+          <p className="hidden truncate lg:block lg:max-w-[40%]">
             <span className="text-primary-foreground/80">About</span>
           </p>
-          <p className="min-w-0 flex-1 text-center">
-            <span className="truncate">{promoBanner.text}</span>
+          <p
+            role="note"
+            aria-label="Sandbox shopping notice"
+            className="w-full min-w-0 text-center leading-5 lg:w-auto lg:flex-1"
+          >
+            <span>{promoBanner.text}</span>
             <span className="mx-1.5 text-primary-foreground/50">•</span>
             <a
-              href={promoBanner.href}
-              className="underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              href={withMarketPrefix(market.id, promoBanner.href)}
+              className="inline-block whitespace-nowrap underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               {promoBanner.cta}
             </a>
@@ -128,7 +126,7 @@ export function SiteHeader() {
             {utilityLinks.map((link) => (
               <a
                 key={link.label}
-                href={link.href}
+                href={withMarketPrefix(market.id, link.href)}
                 className="hidden text-primary-foreground/90 hover:text-primary-foreground md:inline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 {link.label}
@@ -136,7 +134,7 @@ export function SiteHeader() {
             ))}
             <span
               className="inline-flex items-center gap-1.5 rounded-full border border-primary-foreground/25 px-2 py-0.5 font-medium"
-              title="Market is selected at process start (MARKET=xx)"
+              title="Current shopping market"
             >
               <span
                 aria-hidden="true"
@@ -180,7 +178,7 @@ export function SiteHeader() {
 
           <Link
             href={homeHref}
-            className="font-display text-2xl font-semibold tracking-[-0.05em] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="font-display text-2xl font-semibold tracking-[-0.03em] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             prefetch={false}
           >
             E-pig
@@ -222,47 +220,55 @@ export function SiteHeader() {
                 </div>
               );
             })}
+            {primaryLinks.map((link) => {
+              const href = withMarketPrefix(market.id, link.href);
+              const active = pathIsActive(pathname, link.href, market.id);
+              return (
+                <Link
+                  key={link.href}
+                  href={href}
+                  prefetch={false}
+                  className={`inline-flex h-10 items-center rounded-md px-3 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                    active
+                      ? "font-medium text-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                  aria-current={active ? "page" : undefined}
+                  onClick={() =>
+                    track("nav_primary_click", { id: link.href, href })
+                  }
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
           </nav>
 
           <div className="ml-auto flex items-center gap-0.5">
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              aria-label="Search (coming soon)"
-              disabled
-            >
-              <Search className="size-5" aria-hidden="true" />
+            <Button asChild variant="ghost" size="icon">
+              <Link
+                href={withMarketPrefix(market.id, "/search")}
+                aria-label="Search products"
+              >
+                <Search className="size-5" aria-hidden="true" />
+              </Link>
             </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              aria-label="Wishlist (coming soon)"
-              disabled
-              className="hidden sm:inline-flex"
+            <Link
+              href={withMarketPrefix(market.id, "/orders")}
+              className="rounded-md px-2 py-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
-              <Heart className="size-5" aria-hidden="true" />
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              aria-label="Account (coming soon)"
-              disabled
-              className="hidden sm:inline-flex"
-            >
-              <User className="size-5" aria-hidden="true" />
-            </Button>
+              Orders
+            </Link>
             <Button
               type="button"
               variant="ghost"
               size="icon"
               className="relative"
               aria-label={`Open bag with ${count} items`}
-              onClick={() => {
+              data-cart-trigger={market.id}
+              onClick={(event) => {
                 track("cart_icon_click", { count });
-                setCartOpen(market, true);
+                setCartOpen(market, true, event.currentTarget);
               }}
             >
               <ShoppingBag className="size-5" aria-hidden="true" />

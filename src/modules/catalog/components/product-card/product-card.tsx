@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Plus } from "lucide-react";
@@ -9,13 +10,24 @@ import type { ProductListItem } from "@/core/contracts/commerce/catalog";
 import { withMarketPrefix } from "@/platform/config/market-path";
 
 import { useCartMarket } from "@/modules/cart/components/cart-market-context/cart-market-context";
-import { addItem } from "@/modules/cart/lib/cart-store";
+import { useCartActions } from "@/modules/cart/lib/cart-store";
 import { formatMarketPrice } from "@/platform/config/format-market-price";
 import { Badge } from "@e-pig/happy-dog/components/badge";
 import { Button } from "@e-pig/happy-dog/components/button";
 
 export function ProductCard({ product }: { product: ProductListItem }) {
   const market = useCartMarket();
+  const { addItem, pending, error } = useCartActions(market);
+  const [failure, setFailure] = useState("");
+  const [adding, setAdding] = useState(false);
+  const busy = useRef(false);
+  async function add() {
+    if (!product.defaultVariantId || pending || busy.current) return;
+    busy.current = true; setAdding(true); setFailure("");
+    try { await addItem({ productId: product.id, variantId: product.defaultVariantId, quantity: 1 }); }
+    catch (cause) { setFailure(cause instanceof Error ? cause.message : "Could not add item. Please try again."); }
+    finally { busy.current = false; setAdding(false); }
+  }
   const productHref = withMarketPrefix(market.id, `/products/${product.slug}`);
 
   return (
@@ -31,7 +43,7 @@ export function ProductCard({ product }: { product: ProductListItem }) {
             alt={product.name}
             fill
             sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
-            className="object-cover transition-transform duration-500 group-hover:scale-[1.025]"
+            className="object-cover transition-transform duration-200 motion-safe:group-hover:scale-[1.025] motion-reduce:transition-none"
           />
         </Link>
         {product.badge ? (
@@ -39,14 +51,12 @@ export function ProductCard({ product }: { product: ProductListItem }) {
             {product.badge}
           </Badge>
         ) : null}
-        <Button
-          size="icon"
-          className="absolute bottom-3 right-3 rounded-full shadow-md transition-transform hover:scale-105"
-          onClick={() => addItem(market, product)}
-          aria-label={`Add ${product.name} to bag`}
-        >
-          <Plus aria-hidden="true" />
-        </Button>
+        {product.variantCount === 1 && product.defaultVariantId ? <Button
+          size="icon" disabled={pending || adding}
+          className="absolute bottom-3 right-3 rounded-full"
+          onClick={() => void add()}
+          aria-label={pending || adding ? `Adding ${product.name}` : `Add ${product.name} to bag`}
+        ><Plus aria-hidden="true" /></Button> : <Button asChild className="absolute bottom-3 right-3" size="sm"><Link href={productHref}>Choose options<span className="sr-only"> for {product.name}</span></Link></Button>}
       </div>
       <div className="mt-4 flex items-start justify-between gap-4">
         <div>
@@ -70,6 +80,7 @@ export function ProductCard({ product }: { product: ProductListItem }) {
           ) : null}
         </div>
       </div>
+      {failure || error ? <p role="alert" className="mt-2 text-sm text-destructive">{failure || error}</p> : null}
     </article>
   );
 }

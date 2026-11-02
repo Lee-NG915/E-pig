@@ -38,6 +38,7 @@ export function createMockCartAdapter({
   }
 
   function recompute(cart: Cart): Cart {
+    cart.revision += 1;
     const subtotal = cart.lines.reduce((total, line) => total + line.lineTotal.amount, 0);
     cart.subtotal = money(subtotal);
     cart.discount = cart.couponCode === DEMO_COUPON ? money(subtotal * DEMO_COUPON_RATE) : undefined;
@@ -100,6 +101,8 @@ export function createMockCartAdapter({
     return {
       id: crypto.randomUUID(),
       productId: product.id,
+      variantId: input.variantId,
+      variantLabel: product.variants.find(v => v.id === input.variantId)?.label ?? product.colour,
       name: product.name,
       colour: product.colour,
       image: product.image,
@@ -120,6 +123,7 @@ export function createMockCartAdapter({
       const cart: Cart = {
         id: crypto.randomUUID(),
         market: market.id,
+        revision: 0,
         lines: [],
         subtotal: money(0),
       };
@@ -134,12 +138,12 @@ export function createMockCartAdapter({
     },
 
     async addItem(cartId, input, options) {
-      const signature = JSON.stringify(["add", input.productId, input.quantity]);
+      const signature = JSON.stringify(["add", input.productId, input.variantId, input.quantity]);
       return mutateOnce(cartId, options, signature, async (cart) => {
         if (!Number.isInteger(input.quantity) || input.quantity < 1) {
           throw new AppError("validation", "quantity must be a positive integer");
         }
-        const existing = cart.lines.find((line) => line.productId === input.productId);
+        const existing = cart.lines.find((line) => line.productId === input.productId && line.variantId === input.variantId);
         if (existing) {
           existing.quantity += input.quantity;
           existing.lineTotal = money(existing.unitPrice.amount * existing.quantity);
