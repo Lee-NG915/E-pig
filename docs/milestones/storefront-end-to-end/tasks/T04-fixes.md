@@ -42,3 +42,18 @@
 - Result: PASS — 4 tests and static checks.
 - Failures or gaps: Netlify rebuild and hosted runtime validation are not performed by this fix task.
 - Next risk: Confirm Netlify packages the deferred import and receives the intended runtime MARKET; no commit was created.
+
+## Browser copy addendum — checkout field errors
+
+- Hosted empty-form validation exposed raw Zod wording on required full name, address line 1 and city/suburb. Added plain-English required-field messages, valid email/state guidance, and field-specific maximum-length messages in `src/core/contracts/commerce/checkout.ts`.
+- Copy-only change: all validators, trim behavior, length limits, optional fields, accepted state values and AU postcode rule remain identical. Existing checkout-form tests assert the unchanged postcode message and submission/retry behavior; commerce and HTTP tests cover schema validation and checkout integration. No tests needed to be rewritten and no new render spec was created under the copy-only exemption.
+- Checks: `corepack pnpm typecheck` — **PASS**; `corepack pnpm lint` — **PASS**; `corepack pnpm test src/modules/checkout/components/checkout-form/checkout-form.spec.tsx src/adapters/commerce/postgres/commerce.spec.ts src/platform/http/storefront-api.spec.ts src/platform/http/storefront-api.integration.spec.ts` — **27 passed / 4 files**.
+
+## AI Test Record — browser copy addendum
+
+- Behavior changed: Only validation message wording; accepted/rejected inputs and limits are unchanged.
+- Tests added/updated: None — pure copy exemption. Existing related component, commerce and HTTP tests reviewed and run.
+- Tests run: Typecheck → full lint → checkout-form/Postgres commerce/HTTP unit and integration specs; exact command above.
+- Result: PASS — 27 tests and static checks.
+- Failures or gaps: Final-copy deployment and browser recheck remain root-owned.
+- Next risk: Confirm the deployed form displays the updated messages and the existing owned order survives redeployment. No commit was created.
