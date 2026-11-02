@@ -1,6 +1,6 @@
 # 沙箱部署记录
 
-更新日期：2026-11-02
+更新日期：2026-11-03
 
 ## 环境与边界
 
@@ -29,7 +29,7 @@
 - 云端实际 HTTP → Neon/Stripe 独立请求并发通过；本机 WS/HTTPS 直连 suite 网络失败仍保留。迁移不在业务请求中执行。
 - 桌面 AUD 3,800 与移动视口 AUD 8,350 两笔真实沙箱卡支付、订单刷新、重复 Webhook 不重复下单、拒付不生成订单及取消核验均通过，详见 [验收记录](./acceptance.md)。
 - 无 Cookie 查单返回 401，跨市场查单返回 404，响应均 `private,no-store,max-age=0`；没有读取到订单明细。
-- 3DS 额外认证 iframe 未完成加载，完整人工 UAT/实体手机未验收；不宣称全部支付方式或生产环境已通过。
+- 首次 3DS iframe 失败后，独立任务补验完成真实 challenge；合并前 Stripe authenticated / paid 与 Neon 订单再次核对。完整人工 UAT/实体手机仍未验收。
 
 最后的源码质量门为 213 应用测试 +22 基础组件测试，包含 typecheck/lint/docs/Harness/doctor；最终 modules Storybook build 也已通过。代码提交和部署彼此分开记录，后续纯文档提交不改变上述运行代码。
 
@@ -40,3 +40,7 @@
 Netlify Edge 打包会在请求环境注入前导入 Proxy。市场 env 改为在实际非 API 请求中异步加载并校验；缺少 MARKET 仍拒绝请求，不固定为 AU。四项真实 env 回归、独立评审与修复后 adapter 构建通过。
 
 CLI 拆分 build/no-build 的两次尝试均停在 uploading 且 published_at=null，已请求取消。后续改用单次完整 deploy 生命周期；只认可最终 ready 的部署。
+
+## 合并主分支的发布边界
+
+`.github/workflows/ci.yml` 保留 PR、main push 和手动触发的 quality。Cloudflare deploy 仅在 main 上显式 workflow_dispatch 且 quality 成功后运行；合并本身不触发 CF 发布。原 CF 配置仍为 mock，不能作为这次 Neon/Stripe 交易链路的替代部署。Netlify 站点和服务端配置保持现有已验收状态。

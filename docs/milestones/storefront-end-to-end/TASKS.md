@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use subagent-driven-development to implement this plan task-by-task. Steps use checkbox syntax for tracking.
 
-更新日期：2026-11-02
+更新日期：2026-11-03
 
 **Goal:** AU 浏览、选规格、服务端购物车、游客结算、Stripe 沙箱卡支付与同浏览器订单回查闭环；SG/US 兼容检查。
 
@@ -103,7 +103,7 @@ expect(forgedSuccess.order?.status).not.toBe("paid");
 - [x] 桌面真正访问测试站点支付沙箱测试卡，等待可信确认并重开查单；重复真实 Webhook 仍一订单。
 - [x] SG/US 路由/币种 standalone smoke 与市场 Cookie/支付禁用集成检查通过；仅 AU 部署完整支付站点，符合本轮兼容范围。
 - [x] 375px 普通测试卡支付 AUD 8,350、订单刷新与最终部署后两笔订单回查通过。
-- [ ] 3DS 额外挑战完整认证；第三方 iframe 未能加载，保留未通过。
+- [x] 3DS 额外挑战由独立协调任务补验完成；合并前 Stripe authenticated 与 Neon paid 只读复核通过。首次失败记录保留。
 - [x] Whole-branch independent review、修复、报告本地/预览/UAT 的分别结论。未取得账号连接则保持真实云端验收未完成。
 
 ## 当前看板
@@ -113,7 +113,7 @@ expect(forgedSuccess.order?.status).not.toBe("paid");
 | T01 | implemented / reviewed / pushed `419990e` | tasks/T01-storefront.md；完整浏览器矩阵仍归 T04 |
 | T02 | implemented / reviewed / pushed `419990e` | tasks/T02-commerce.md；指定云端并发与桌面沙箱交易已通过 |
 | T03 | implemented / reviewed / pushed | 集成 `419990e`；文案 `23835a8`；焦点 `b0dc3a9`；见 task 记录 |
-| T04 | sandbox deployed / core flow verified / partial extended UAT | 桌面+375px 支付与回查通过；3DS 额外挑战未通过，详见 acceptance.md |
+| T04 | sandbox deployed / core flow verified / partial extended UAT | 桌面+375px 支付与回查通过；3DS 挑战补验及服务端复核通过；完整人工 UAT 仍未完成，详见 acceptance.md |
 
 需求覆盖：NAV/CNT/CAT/PDP/UI→T01；CART/CHK/PAY/ORD→T02+T03；NFR/E01–E12→T04。评审中延后的项以 contracts.md 为准。尚未通过的云端证据绝不标记 done。
 
@@ -125,5 +125,7 @@ expect(forgedSuccess.order?.status).not.toBe("paid");
 - 最终完整 `pnpm verify`：应用 47 文件 / 213 测试、happy-dog 7 文件 / 22 测试、Harness 8 例与 agent-doctor 全部 PASS；日志 `logs/verify-focus-final-20261102.log`。独立最终源码评审含焦点修复，无未解决 finding。
 - Next 与 Netlify adapter 构建 PASS；最终业务 Storybook 构建 PASS；同一 AU 构建以 SG/US 启动的 standalone 路由/币种兼容检查 PASS。以上不替代真实浏览器市场隔离或第三方支付页面验收。
 - 测试站点：[e-pig AU Sandbox](https://e-pig-au-sandbox.netlify.app)。主任务完成真实桌面 Stripe 沙箱支付 AUD 3,800，订单 `96a008f6-6e14-495b-9b2e-1d04b6db7512` 可回查；重复真实 Webhook 后仍一订单。云端 HTTP → Neon/Stripe 并发重试复用同一 checkout、冻结写入 409、取消核验解锁均 PASS。详细证据以 acceptance.md / deployment.md 为准。
-- 移动拒付后无订单，未完成的 3DS 会话经核验取消；重新结算的普通测试卡已支付 AUD 8,350，订单 `85d16698-7aec-4149-81ff-268ac853cfb3` 刷新可回查。最终部署后两笔订单同时可读，Header/PDP 焦点实际复验通过。3DS 与完整跨标签页/辅助技术/实体设备 UAT 保留缺口，不宣称完整验收矩阵全绿。
+- 移动拒付后无订单，未完成的 3DS 会话经核验取消；重新结算的普通测试卡已支付 AUD 8,350，订单 `85d16698-7aec-4149-81ff-268ac853cfb3` 刷新可回查。最终部署后两笔订单同时可读，Header/PDP 焦点实际复验通过。3DS 挑战另经补验关闭；完整跨标签页/辅助技术/实体设备 UAT 保留缺口，不宣称完整验收矩阵全绿。
 - 阶段复盘与问题溯源见 `retros/milestone.md`；本轮没有修改 skills 或扩大批准范围。
+
+合并准备：遗留 Cloudflare job 改为仅 main 上 workflow_dispatch 手动发布；PR/main push 的质量门保留。本轮没有向 Cloudflare 发布交易版本。

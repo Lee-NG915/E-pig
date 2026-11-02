@@ -1,6 +1,6 @@
 # T02 — 持久交易与 Stripe 沙箱边界
 
-更新日期：2026-11-02
+更新日期：2026-11-03
 
 状态：implemented / reviewed / pushed — 集成质量门、桌面沙箱交易与指定云端并发场景通过；浏览器 T04 未结束
 
@@ -9,7 +9,7 @@
 - Commit：`419990e`，已推送；后续表单文案补丁 `23835a8` 保持原校验行为。
 - 最终完整 verify：213 应用 + 22 基础测试、Harness 8 例及 doctor PASS；独立最终 review 无未解决 finding。Next / Netlify 构建 PASS。
 - 主任务在真实测试站点完成 AUD 3,800 桌面沙箱付款，订单 `96a008f6-6e14-495b-9b2e-1d04b6db7512` 回查成功；重复真实 Webhook 后仍一订单。真实云端 HTTP 并发重试命中同一 checkout、购物车锁定返回 409、取消核验解锁均 PASS。该证据覆盖这些具体场景，不等于网络中断或任意并发压测已完成。
-- 移动拒付后仍 open / 0 订单，重试 3DS iframe 暂未加载完成；完整浏览器验收尚未关闭。详细云端记录由主任务维护 acceptance.md / deployment.md。
+- 移动拒付后仍 open / 0 订单；首次 3DS iframe 失败后，协调任务补验及服务端 authenticated / paid 复核通过；完整人工验收尚未关闭。详细云端记录由主任务维护 acceptance.md / deployment.md。
 
 ## 实现范围
 

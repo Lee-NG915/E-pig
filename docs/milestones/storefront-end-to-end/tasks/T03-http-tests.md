@@ -1,6 +1,6 @@
 # T03 — HTTP 与持久化交易集成测试
 
-更新日期：2026-11-02
+更新日期：2026-11-03
 
 状态：implemented / reviewed / pushed — 本地集成与最终质量门通过；真实云端指定场景已另行验证。
 
@@ -8,7 +8,7 @@
 
 - Commit：`419990e`，已推送里程碑分支。最终 verify：213 应用 + 22 基础测试、Harness 8 例及 doctor PASS；独立最终 review 无未解决 finding。
 - 本文原始 2 个 PGlite 集成旅程仍只证明进程内 HTTP/SQL 与模拟支付边界。主任务随后通过真实托管 HTTP → Neon/Stripe 完成并发重试同 checkout、锁车 409、取消核验解锁，并完成桌面沙箱支付及重复真实 Webhook 后仍一订单；不能回写为本地测试使用了真实外部服务。
-- Next / Netlify 构建 PASS，云端部署与订单证据见 acceptance.md / deployment.md。移动 3DS 重试仍未完成，浏览器 T04 保持进行中。下方定向记录保留实施阶段的命令和当时限制。
+- Next / Netlify 构建 PASS，云端部署与订单证据见 acceptance.md / deployment.md。3DS 后续补验及合并前服务端复核通过，完整人工 UAT 保持未完成。下方定向记录保留实施阶段的命令和当时限制。
 
 `src/platform/http/storefront-api.integration.spec.ts` 将真实 Request/Response、签名 Cookie、`createPostgresCommerce` 与迁移后的 PGlite PostgreSQL SQL 连起来。每个请求重新创建 commerce adapter，通过公共 HTTP 查询验证持久化结果。仅展示目录和外部支付网络使用测试 fixture；没有 mock SQL、事务或 commerce ports。
 

@@ -1,6 +1,6 @@
 # T04 — Final review fixes
 
-更新日期：2026-11-02
+更新日期：2026-11-03
 
 状态：F1–F3 / Proxy / 文案已提交推送并复核；最终集成质量门通过；浏览器 T04 未结束
 
@@ -10,7 +10,7 @@
 - 最终完整 verify：应用 47 文件 / 213 测试，happy-dog 7 文件 / 22 测试，Harness 8 例与 doctor PASS；证据 `logs/verify-focus-final-20261102.log`。独立最终源码 review 含焦点修复，无未解决 finding。
 - Next 与 Netlify adapter 构建 PASS，先前 modules Storybook PASS，同一 AU 构建下 SG/US standalone 检查 PASS。Proxy 修复后的实际 Netlify 打包已通过，不再保留为未验证构建项。
 - 主任务已在托管站点完成真实桌面 Stripe 沙箱支付 AUD 3,800，订单 `96a008f6-6e14-495b-9b2e-1d04b6db7512` 回查成功，重复真实 Webhook 仍一订单；真实云端 HTTP 并发同 checkout、锁车 409、取消核验解锁 PASS。以上不证明 idle Pool 实际断线重连或任意故障注入已完成。
-- 移动拒付显示错误且数据库仍 open / 0 订单；重试 3DS 第三方 iframe 暂未加载完成。T04 浏览器验收仍进行中，详细状态由主任务维护 acceptance.md / deployment.md。下文保留每次修复时的 scoped 证据与当时的待验证边界。
+- 移动拒付显示错误且数据库仍 open / 0 订单；3DS 后续补验及服务端 authenticated / paid 复核通过。完整人工 UAT 未执行，详细状态由主任务维护 acceptance.md / deployment.md。下文保留每次修复时的 scoped 证据与当时的待验证边界。
 
 ## Changes
 
@@ -70,4 +70,4 @@
 
 - Review focus: F1–F3、Proxy 请求期 env 校验、表单文案及后续焦点修复的最终独立源码复核。
 - Findings: 无未解决 finding；原缺陷与部署适配修复已在 `419990e`，文案在 `23835a8`，焦点在 `b0dc3a9`，均已推送。
-- Residual risks: 浏览器 T04、移动 3DS 重试及未覆盖的真实故障注入不因 review/verify 通过而自动完成。
+- Residual risks: 3DS 后续补验详见 acceptance.md；完整人工 UAT 及未覆盖的真实故障注入不因 review/verify 通过而自动完成。

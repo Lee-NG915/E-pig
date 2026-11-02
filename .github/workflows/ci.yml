@@ -4,6 +4,7 @@ on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
 
 # 一条通用 workflow（docs/codex/research/03 §6：不按市场复制多条）。
 # 无真实 secret：全部验证都可用 mock adapter 完成（04 §11）。
@@ -57,11 +58,12 @@ jobs:
         run: pnpm smoke:runtime-market
 
   deploy:
-    # main 推送且 quality 全绿后自动部署到 Cloudflare Workers；PR 只验证不部署。
+    # 本轮交易验收目标为 Netlify；保留 CF 为 main 上的手动发布路径。
+    # PR/main push 仅执行 quality，不自动发布未经交易验收的 CF 环境。
     # 需要的 secret：CLOUDFLARE_API_TOKEN（CF Dashboard → My Profile → API Tokens →
     # "Edit Cloudflare Workers" 模板，作用域限本账号）。account_id 已固定在 wrangler.jsonc。
     needs: quality
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     concurrency:
       group: deploy-cf-main
