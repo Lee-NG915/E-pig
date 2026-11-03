@@ -9,7 +9,9 @@ import { CartSheetMount } from "@/modules/cart/components/cart-sheet-mount/cart-
 import { ProductList } from "@/modules/catalog/components/product-list/product-list";
 import {
   findCollectionByHandle,
-  parseProductListSort,
+  loadCollectionListing,
+  parseProductListQuery,
+  type ProductListSearchParams,
 } from "@/modules/catalog/lib/plp-query";
 import { SiteFooter } from "@/modules/content/components/site-footer/site-footer";
 import { SiteHeader } from "@/modules/content/components/site-header/site-header";
@@ -27,7 +29,7 @@ import {
 
 type CollectionPageProps = {
   params: Promise<{ market: string; slug: string }>;
-  searchParams: Promise<{ sort?: string | string[] }>;
+  searchParams: Promise<ProductListSearchParams>;
 };
 
 export async function generateMetadata({
@@ -35,8 +37,7 @@ export async function generateMetadata({
   searchParams,
 }: CollectionPageProps): Promise<Metadata> {
   const { market: marketParam, slug } = await params;
-  const { sort: rawSort } = await searchParams;
-  const sort = parseProductListSort(rawSort);
+  const query = parseProductListQuery(await searchParams);
 
   if (!isMarketId(marketParam)) {
     return buildPageMetadata({ title: siteName, noIndex: true });
@@ -59,8 +60,8 @@ export async function generateMetadata({
     title: `${collection.title} | ${siteName}`,
     description: `Shop ${collection.title} — furniture for slower days.`,
     canonicalUrl: buildCanonicalUrl(marketParam, path),
-    // 排序组合不进索引，避免 SEO 垃圾页
-    noIndex: Boolean(sort),
+    // 筛选、排序和无效查询均指向规范集合页，不单独索引。
+    noIndex: Boolean(query.sort || query.hasFilters || query.issues.length),
   });
 }
 
@@ -86,22 +87,19 @@ async function CollectionProductList({
   searchParams,
 }: {
   params: Promise<{ market: string; slug: string }>;
-  searchParams: Promise<{ sort?: string | string[] }>;
+  searchParams: Promise<ProductListSearchParams>;
 }) {
   const { slug } = await params;
-  const { sort: rawSort } = await searchParams;
-  const sort = parseProductListSort(rawSort);
+  const rawQuery = await searchParams;
 
   await connection();
   const { catalog, market } = getCapabilities();
 
-  const collections = await catalog.listCollections();
-  const collection = findCollectionByHandle(collections, slug);
-  if (!collection) {
+  const listing = await loadCollectionListing(catalog, slug, rawQuery);
+  if (!listing) {
     notFound();
   }
-
-  const products = await catalog.listProducts({ collection: slug, sort });
+  const { collections, collection, products, sort, filters, availableColours, issues } = listing;
   const relatedCollections = pickRelatedCollections(collections, slug, market.id);
   const canonicalPath = withMarketPrefix(market.id, `/collections/${slug}`);
   const jsonLd =
@@ -122,6 +120,9 @@ async function CollectionProductList({
         collection={collection}
         marketId={market.id}
         sort={sort}
+        filters={filters}
+        availableColours={availableColours}
+        filterIssues={issues}
         relatedCollections={relatedCollections}
       />
     </CartMarketProvider>

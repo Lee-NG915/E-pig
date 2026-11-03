@@ -75,6 +75,20 @@ export type ProductDetail = ProductListItem & {
   availability: ProductAvailability;
   colourOptions: ProductColourOption[];
   variants: ProductVariant[];
+  /** Explicitly labelled sample content, never vendor/customer review claims. */
+  demoReviews?: ProductDemoReview[];
+  /** Optional curated companion; UI still selects a separate purchasable variant. */
+  bundleCompanionId?: string;
+};
+
+export type ProductDemoReview = {
+  id: string;
+  kind: "demo";
+  authorLabel: string;
+  rating: 1 | 2 | 3 | 4 | 5;
+  title: string;
+  body: string;
+  publishedAt: string;
 };
 
 export type Collection = {
@@ -88,6 +102,10 @@ export type ListProductsQuery = {
   collection?: string;
   sort?: "price-asc" | "price-desc" | "name";
   limit?: number;
+  colours?: string[];
+  minPrice?: number;
+  maxPrice?: number;
+  inStockOnly?: boolean;
 };
 
 export interface CatalogPort {

@@ -12,6 +12,7 @@ import type { Market } from "@/platform/config/markets";
 
 import { mockProducts, type MockProductRecord } from "./catalog-data";
 import tamarama from "./fixtures/showcase/tamarama.json";
+import { tamaramaDemoReviews } from "./fixtures/showcase/demo-reviews";
 
 /**
  * Mock CatalogAdapter：本地 typed 数据实现 CatalogPort。
@@ -73,11 +74,16 @@ export function createMockCatalogAdapter({ market }: { market: Market }): Catalo
     return variants;
   }
 
-  function toListItem(record: MockProductRecord): ProductListItem {
+  function variantColour(record: MockProductRecord, variant: ProductVariant): string {
+    return variant.options?.find(option => option.name === "Colour")?.value ?? record.colour;
+  }
+
+  function toListItem(record: MockProductRecord, matchingVariants?: ProductVariant[]): ProductListItem {
     const compareAt = record.compareAtByMarket?.[market.id];
-    const variants = toVariants(record);
+    const allVariants = toVariants(record);
+    const variants = matchingVariants ?? allVariants;
     const first = variants[0];
-    const colour = first.options?.find(option => option.name === "Colour")?.value ?? record.colour;
+    const colour = variantColour(record, first);
     const colours = new Set<string>();
     const variantPreviews = variants.flatMap(variant => {
       const value = variant.options?.find(option => option.name === "Colour")?.value;
@@ -93,12 +99,12 @@ export function createMockCatalogAdapter({ market }: { market: Market }): Catalo
       category: record.category,
       colour,
       image: first.image,
-      variantCount: variants.length,
+      variantCount: allVariants.length,
       defaultVariantId: first.id,
       price: first.price,
       gallery: first.gallery ?? toGallery(record),
       ...(variantPreviews.length ? { variantPreviews } : {}),
-      ...(compareAt !== undefined
+      ...(compareAt !== undefined && first.id === allVariants[0].id
         ? { compareAt: { amount: compareAt, currency: market.currency } }
         : {}),
     };
@@ -111,6 +117,14 @@ export function createMockCatalogAdapter({ market }: { market: Market }): Catalo
 
   return {
     async listProducts(query?: ListProductsQuery): Promise<ProductListItem[]> {
+      for (const price of [query?.minPrice, query?.maxPrice]) {
+        if (price !== undefined && (!Number.isFinite(price) || price < 0 || price > 1_000_000)) {
+          throw new AppError("validation", "Prices must be between 0 and 1,000,000.");
+        }
+      }
+      if (query?.minPrice !== undefined && query.maxPrice !== undefined && query.minPrice > query.maxPrice) {
+        throw new AppError("validation", "Minimum price must not exceed maximum price.");
+      }
       let records = mockProducts;
       if (query?.category) {
         records = records.filter((record) => record.category === query.category);
@@ -122,13 +136,23 @@ export function createMockCatalogAdapter({ market }: { market: Market }): Catalo
           return categoryToHandle(record.category) === query.collection;
         });
       }
+      const colours = query?.colours?.map(colour => colour.trim().toLowerCase());
+      let items = records.flatMap(record => {
+        const matchingVariants = toVariants(record).filter(variant =>
+          (!colours?.length || colours.includes(variantColour(record, variant).toLowerCase())) &&
+          (query?.minPrice === undefined || variant.price.amount >= query.minPrice) &&
+          (query?.maxPrice === undefined || variant.price.amount <= query.maxPrice) &&
+          (!query?.inStockOnly || (variant.availability === "in-stock" && variant.maxQuantity > 0)),
+        );
+        return matchingVariants.length ? [toListItem(record, matchingVariants)] : [];
+      });
       if (query?.sort) {
-        records = [...records].sort((a, b) => {
+        items = [...items].sort((a, b) => {
           switch (query.sort) {
             case "price-asc":
-              return a.priceByMarket[market.id] - b.priceByMarket[market.id];
+              return a.price.amount - b.price.amount;
             case "price-desc":
-              return b.priceByMarket[market.id] - a.priceByMarket[market.id];
+              return b.price.amount - a.price.amount;
             case "name":
               return a.name.localeCompare(b.name);
             default:
@@ -137,9 +161,9 @@ export function createMockCatalogAdapter({ market }: { market: Market }): Catalo
         });
       }
       if (query?.limit !== undefined) {
-        records = records.slice(0, query.limit);
+        items = items.slice(0, query.limit);
       }
-      return records.map(toListItem);
+      return items;
     },
 
     async getProduct(id: string): Promise<ProductDetail> {
@@ -156,6 +180,8 @@ export function createMockCatalogAdapter({ market }: { market: Market }): Catalo
         availability: record.availability ?? "in-stock",
         colourOptions: [],
         variants: toVariants(record),
+        ...(record.id === "tamarama-modular-sofa" ? { demoReviews: tamaramaDemoReviews } : {}),
+        ...(record.id === "bangalow-modular-sofa" ? { bundleCompanionId: "bangalow-modular-sofa-ottoman" } : {}),
       };
     },
 
@@ -179,7 +205,7 @@ export function createMockCatalogAdapter({ market }: { market: Market }): Catalo
             product.category.toLowerCase().includes(normalized),
         )
         .slice(0, 100)
-        .map(toListItem);
+        .map(record => toListItem(record));
     },
   };
 }

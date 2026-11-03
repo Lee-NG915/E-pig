@@ -2,8 +2,7 @@
 
 import Link from "next/link";
 
-import { withMarketPrefix } from "@/platform/config/market-path";
-import type { ProductListSort } from "@/modules/catalog/lib/plp-query";
+import { buildProductListHref, type ProductListFilters, type ProductListSort } from "@/modules/catalog/lib/plp-query";
 import { track } from "@/shared/lib/track";
 
 const SORT_OPTIONS: { value: ProductListSort; label: string }[] = [
@@ -16,14 +15,15 @@ type PlpSortNavProps = {
   marketId: string;
   handle: string;
   sort?: ProductListSort;
+  filters?: ProductListFilters;
 };
 
-export function PlpSortNav({ marketId, handle, sort }: PlpSortNavProps) {
+export function PlpSortNav({ marketId, handle, sort, filters = {} }: PlpSortNavProps) {
   return (
     <nav aria-label="Sort products" className="flex flex-wrap items-center gap-3">
       <span className="text-sm text-muted-foreground">Sort by:</span>
       {SORT_OPTIONS.map((option) => {
-        const href = `${withMarketPrefix(marketId, `/collections/${handle}`)}?sort=${option.value}`;
+        const href = buildProductListHref(marketId, handle, { ...filters, sort: option.value });
         const active = sort === option.value;
         return (
           <Link

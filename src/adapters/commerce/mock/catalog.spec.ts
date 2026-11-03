@@ -6,6 +6,7 @@ import { getMarket } from "@/platform/config/markets";
 import { createMockCatalogAdapter } from "./catalog";
 import { mockProducts } from "./catalog-data";
 import fixtureIndex from "./fixtures/koala/index.json";
+import tamarama from "./fixtures/showcase/tamarama.json";
 
 const sgCatalog = createMockCatalogAdapter({ market: getMarket("sg") });
 const auCatalog = createMockCatalogAdapter({ market: getMarket("au") });
@@ -163,6 +164,60 @@ describe("mock catalog adapter", () => {
 
 
 describe("sandbox variant coverage", () => {
+  it("provides honest demo review content and a resolvable existing companion", async () => {
+    const detail = await auCatalog.getProduct("tamarama-modular-sofa");
+    expect(detail.demoReviews).toHaveLength(4);
+    expect(detail.demoReviews?.every(review => review.kind === "demo" && review.authorLabel.startsWith("Example"))).toBe(true);
+    expect(detail.rating).toBeUndefined();
+    expect(detail.reviewCount).toBeUndefined();
+    const sofa = await auCatalog.getProduct("bangalow-modular-sofa");
+    const companion = await auCatalog.getProduct(sofa.bundleCompanionId!);
+    expect(companion.name).toBe("Bangalow Modular Ottoman");
+    expect(companion.variants[0].price.amount).toBe(450);
+    expect(companion.variants[0].availability).toBe("in-stock");
+    expect(companion.demoReviews).toBeUndefined();
+  });
+  it("does not combine a cheap colour with another variant's price or availability", async () => {
+    // Controlled input at the fixture boundary makes the wrong cross-variant AND observable.
+    const colourOption = tamarama.variants[0].options[0];
+    const originalColour = colourOption.value;
+    colourOption.value = "Only cheap colour";
+    const unavailable = { ...mockProducts[0], id: "filter-unavailable", slug: "filter-unavailable", colour: "Only cheap colour", availability: "out-of-stock" as const, priceByMarket: { au: 3550, sg: 3124, us: 2556 } };
+    mockProducts.push(unavailable);
+    try {
+      await expect(auCatalog.listProducts({ colours: ["Only cheap colour"], minPrice: 3000, inStockOnly: true })).resolves.toEqual([]);
+      expect((await auCatalog.listProducts({ colours: ["Only cheap colour"], minPrice: 3000 })).map(item => item.id)).toEqual(["filter-unavailable"]);
+    } finally {
+      colourOption.value = originalColour;
+      mockProducts.splice(mockProducts.indexOf(unavailable), 1);
+    }
+  });
+
+  it.each([NaN, Infinity, -1, 1_000_001])("rejects invalid price %s at the port boundary", async (minPrice) => {
+    await expect(auCatalog.listProducts({ minPrice })).rejects.toMatchObject({ kind: "validation" });
+  });
+
+  it("rejects reversed price ranges, and sorts the matched presentation price before limiting", async () => {
+    await expect(auCatalog.listProducts({ minPrice: 3000, maxPrice: 2000 })).rejects.toMatchObject({ kind: "validation" });
+    const sorted = await auCatalog.listProducts({ minPrice: 3000, sort: "price-asc" });
+    expectAscending(sorted.map(item => item.price.amount));
+    expect(sorted.find(item => item.id === "tamarama-modular-sofa")?.price.amount).toBe(3550);
+    expect(await auCatalog.listProducts({ minPrice: 3000, sort: "price-asc", limit: 2 })).toEqual(sorted.slice(0, 2));
+  });
+
+  it.each(["au", "sg", "us"] as const)("filters and presents a matching variant in %s, then sorts and limits", async (marketId) => {
+    const catalog = createMockCatalogAdapter({ market: getMarket(marketId) });
+    const price = { au: 3550, sg: 3124, us: 2556 }[marketId];
+    const items = await catalog.listProducts({ collection: "sofas", colours: ["  FOREST WALK "], minPrice: price, maxPrice: price, inStockOnly: true, sort: "price-asc", limit: 1 });
+    expect(items).toHaveLength(1);
+    expect(items[0]).toMatchObject({ id: "tamarama-modular-sofa", colour: "Forest Walk", defaultVariantId: "tamarama-modular-sofa-forest-walk-3-sections", variantCount: 4, price: { amount: price, currency: getMarket(marketId).currency } });
+    expect(items[0].image).toContain("TAM_FW_3S_R_01_PRODUCT");
+    expect(items[0].gallery?.[0].src).toBe(items[0].image);
+    expect(items[0].variantPreviews?.map(preview => preview.variantId)).toEqual(["tamarama-modular-sofa-forest-walk-3-sections"]);
+    expect(items[0].compareAt).toBeUndefined();
+    await expect(catalog.listProducts({ colours: ["Forest Walk"], maxPrice: price - 1000 })).resolves.toEqual([]);
+  });
+
   it.each([
     ["au", "AUD", 2600], ["sg", "SGD", 2288], ["us", "USD", 1872],
   ] as const)("preserves the existing Tamarama identity and %s test price", async (id, currency, amount) => {

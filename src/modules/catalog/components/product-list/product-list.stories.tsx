@@ -53,6 +53,7 @@ const meta = {
     products,
     collection: { handle: "living-room", title: "Living Room" },
     marketId: market.id,
+    availableColours: ["Moss weave", "Oat boucle", "Smoked ash"],
   },
   decorators: [
     (Story) => (
@@ -75,6 +76,9 @@ export const SortedByName: Story = {
 export const Empty: Story = {
   args: { products: [] },
 };
+
+export const NoFilterMatches: Story = { args: { products: [], sort: "price-asc", filters: { colours: ["Moss weave"], maxPrice: 100 } } };
+export const InvalidFilter: Story = { args: { products: [], filterIssues: ["Minimum price must be a number from 0 to 1,000,000."] } };
 
 /** Toggle between the two mobile densities; desktop columns stay unchanged. */
 export const MobileDensity: Story = {
