@@ -40,5 +40,10 @@
       "subject": "feat(catalog): integrate atomic sofa sets and advanced PDP tools"
     }
   ],
-  "publication": "All six task commits pushed individually; no merge or manual deploy."
+  "publication": "All six task commits pushed individually; no merge or manual deploy.",
+  "selectFollowup": {
+    "commit": "4e83814a162e517b7df6456e81dfd6666f15aca5",
+    "record": "retros/issues/ISSUE-003-select-design-system.md",
+    "validation": "59 application files / 359 tests; 22 library tests; quality constituents; Storybook build; Chrome desktop/mobile and real navigation"
+  }
 }
