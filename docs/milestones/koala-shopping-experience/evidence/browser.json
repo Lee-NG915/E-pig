@@ -1,0 +1,127 @@
+{
+  "date": "2026-11-03",
+  "homeAndNavigation": {
+    "date": "2026-11-03",
+    "target": "http://localhost:3000/au",
+    "browserContext": "koala-impl-home",
+    "pageId": 2,
+    "method": "Chrome DevTools device viewport emulation; DOM measurements and inline screenshots",
+    "viewports": [
+      {
+        "width": 320,
+        "height": 740,
+        "scrollWidth": 320,
+        "categoryColumns": [
+          138,
+          138
+        ],
+        "dialogWidth": 320
+      },
+      {
+        "width": 390,
+        "height": 844,
+        "scrollWidth": 390,
+        "categoryColumns": [
+          173,
+          173
+        ],
+        "dialogWidth": 384,
+        "heroHeight": 665.09375
+      },
+      {
+        "width": 1440,
+        "height": 1000,
+        "scrollWidth": 1440,
+        "categoryColumns": [
+          326,
+          326,
+          326,
+          326
+        ],
+        "heroColumns": [
+          600,
+          840
+        ]
+      }
+    ],
+    "navigation": {
+      "initialFocus": "Living category button inside dialog",
+      "shiftTabFromFirstItem": "Close button inside dialog",
+      "openSofas": "Sofas drill-in heading receives focus",
+      "back": "Sofas root button receives focus",
+      "escape": "Dialog closes; focus returns to Open menu; body scrolling restored",
+      "resize320To1440": "Dialog closes; body scrolling restored",
+      "marketLinks": [
+        "/au/collections/sofas",
+        "/au/collections/sofa-beds",
+        "/au/help/payment",
+        "/au/help/contact"
+      ]
+    },
+    "visibleChecks": [
+      "Sandbox notice remains readable at all three widths",
+      "Hero heading, body copy, CTA and image remain visible without overlap",
+      "Category labels remain separate from images and readable",
+      "Hero image alt corrected to match visible sofa, light wall and timber floor"
+    ],
+    "limitations": [
+      "Local development mode only; Next development indicator present",
+      "Emulation used rather than physical mobile hardware",
+      "Existing Outdoor category promo uses an indoor image; reported to parent for a shared-content correction",
+      "No checkout submission or payment was performed"
+    ]
+  },
+  "plp": {
+    "width": 390,
+    "scrollWidth": 390,
+    "twoColumns": [
+      171,
+      171
+    ],
+    "oneColumn": 358,
+    "variant": "tamarama-modular-sofa-forest-walk-2-sections",
+    "matchingProductLinks": 3,
+    "lifestyleImageLoaded": true
+  },
+  "pdp": {
+    "mobileWidth": 390,
+    "desktopWidth": 1440,
+    "desktopColumns": [
+      520,
+      520
+    ],
+    "variant": "tamarama-modular-sofa-forest-walk-3-sections",
+    "price": 3550,
+    "currency": "AUD",
+    "dimensionsCm": [
+      267,
+      104,
+      93
+    ],
+    "refreshPreservesSelection": true,
+    "duplicateQueryDisablesBothPurchaseButtons": true
+  },
+  "cartAndCheckout": {
+    "realCartApi": true,
+    "quantity": 1,
+    "variantLabel": "3 Sections / Regular / Forest Walk",
+    "subtotal": 3550,
+    "drawerZIndex": 50,
+    "purchaseBarZIndex": 30,
+    "checkoutImageLoaded": true,
+    "paymentSubmitted": false,
+    "testItemRemoved": true
+  },
+  "markets": {
+    "sg": "original runtime smoke passed via pnpm 10.34.5 JS entry",
+    "us": {
+      "market": true,
+      "currency": true,
+      "links": true,
+      "pdpPrice2556": true,
+      "pdpVariant": true,
+      "checkoutDisabled": true,
+      "foreignRedirect": true
+    }
+  }
+}

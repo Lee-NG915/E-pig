@@ -75,3 +75,8 @@ export const SortedByName: Story = {
 export const Empty: Story = {
   args: { products: [] },
 };
+
+/** Toggle between the two mobile densities; desktop columns stay unchanged. */
+export const MobileDensity: Story = {
+  parameters: { viewport: { defaultViewport: "mobile1" } },
+};

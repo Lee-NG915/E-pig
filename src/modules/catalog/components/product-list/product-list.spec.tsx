@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 
 import { cleanup, render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { ProductListItem } from "@/core/contracts/commerce/catalog";
@@ -13,7 +14,9 @@ vi.mock("@/modules/cart/lib/cart-store", async (importOriginal) => ({ ...await i
 import { ProductList } from "./product-list";
 
 vi.mock("next/image", () => ({
-  default: ({ alt }: { alt: string }) => <span role="img" aria-label={alt || "Product image"} />,
+  // Keep decorative thumbnails decorative, and preserve the observed image src.
+  // eslint-disable-next-line @next/next/no-img-element
+  default: ({ alt, src }: { alt: string; src: string }) => <img alt={alt} src={src} />,
 }));
 
 const market: CartMarket = { id: "au", currency: "AUD" };
@@ -84,5 +87,46 @@ describe("ProductList", () => {
     expect(nameLink.getAttribute("href")).toBe("/au/collections/living-room?sort=name");
     expect(priceAsc.getAttribute("aria-current")).toBe("true");
     expect(nameLink.getAttribute("aria-current")).toBeNull();
+  });
+
+  it("switches mobile density without changing the products, count or active sort", async () => {
+    renderList({ sort: "price-asc" });
+    const user = userEvent.setup();
+    const one = screen.getByRole("button", { name: "Show 1 product per row" });
+    const two = screen.getByRole("button", { name: "Show 2 products per row" });
+    expect(two.getAttribute("aria-pressed")).toBe("true");
+    expect(one.getAttribute("aria-pressed")).toBe("false");
+    await user.click(one);
+    expect(one.getAttribute("aria-pressed")).toBe("true");
+    expect(two.getAttribute("aria-pressed")).toBe("false");
+    expect(screen.getByText("2 pieces")).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Alto Modular Sofa" })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Nook Coffee Table" })).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Price: low to high" }).getAttribute("aria-current")).toBe("true");
+    await user.click(two);
+    expect(two.getAttribute("aria-pressed")).toBe("true");
+  });
+
+  it("does not offer density controls for an empty collection", () => {
+    renderList({ products: [] });
+    expect(screen.queryByRole("button", { name: /product.*per row/ })).toBeNull();
+  });
+
+  it("preserves a selected colour and variant link when density changes", async () => {
+    renderList({ products: [{
+      ...products[0],
+      variantCount: 2,
+      defaultVariantId: "moss",
+      variantPreviews: [
+        { variantId: "moss", colour: "Moss weave", image: "/moss.jpg", gallery: [], price: { amount: 2890, currency: "AUD" } },
+        { variantId: "oat", colour: "Oat", image: "/oat.jpg", gallery: [], price: { amount: 2990, currency: "AUD" } },
+      ],
+    }] });
+    const user = userEvent.setup();
+    await user.click(screen.getByRole("radio", { name: "Oat" }));
+    await user.click(screen.getByRole("button", { name: "Show 1 product per row" }));
+    expect(screen.getByRole("radio", { name: "Oat" })).toHaveProperty("checked", true);
+    expect(screen.getByRole("link", { name: /Choose options/ }).getAttribute("href")).toBe("/au/products/alto-modular-sofa?variant=oat");
+    expect(screen.getByText("$2,990")).toBeTruthy();
   });
 });

@@ -7,8 +7,8 @@ import { withMarketPrefix } from "@/platform/config/market-path";
 import type { ProductListSort } from "@/modules/catalog/lib/plp-query";
 
 import { PlpBreadcrumb } from "../plp-breadcrumb/plp-breadcrumb";
-import { ProductCard } from "../product-card/product-card";
 import { PlpSortNav } from "./plp-sort-nav";
+import { ProductListGrid } from "./product-list-grid";
 
 export type RelatedCollectionLink = {
   title: string;
@@ -65,11 +65,7 @@ export function ProductList({
       ) : null}
 
       {products.length > 0 ? (
-        <div className="grid gap-x-4 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
-          {products.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
+        <ProductListGrid products={products} />
       ) : (
         <div className="rounded-2xl border bg-secondary/30 py-24 text-center">
           <p className="font-display text-2xl tracking-[-0.02em]">This collection is empty</p>

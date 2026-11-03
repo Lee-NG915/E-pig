@@ -1,0 +1,79 @@
+{
+  "date": "2026-11-03",
+  "final": {
+    "status": "success",
+    "summary": "All quality checks passed on attempt 3 (typecheck → lint → test)",
+    "escalate": false,
+    "attempt": 3,
+    "max_attempts": 3,
+    "checks_run": [
+      "typecheck",
+      "lint",
+      "test"
+    ],
+    "changed_files": [
+      "AGENTS.md",
+      "DESIGN.md",
+      "PRODUCT.md",
+      "README.md",
+      "docs/codex/research/README.md",
+      "next.config.ts",
+      "src/adapters/commerce/mock/catalog.spec.ts",
+      "src/adapters/commerce/mock/catalog.ts",
+      "src/adapters/commerce/postgres/commerce.spec.ts",
+      "src/app/[market]/products/[slug]/page.tsx",
+      "src/core/contracts/commerce/catalog.ts",
+      "src/modules/cart/components/cart-flow.spec.tsx",
+      "src/modules/cart/components/cart-panel/cart-panel.md",
+      "src/modules/cart/components/cart-panel/cart-panel.spec.tsx",
+      "src/modules/cart/components/cart-panel/cart-panel.stories.tsx",
+      "src/modules/cart/components/cart-panel/cart-panel.tsx",
+      "src/modules/catalog/components/product-card/product-card.md",
+      "src/modules/catalog/components/product-card/product-card.spec.tsx",
+      "src/modules/catalog/components/product-card/product-card.stories.tsx",
+      "src/modules/catalog/components/product-card/product-card.tsx",
+      "src/modules/catalog/components/product-detail/product-detail.md",
+      "src/modules/catalog/components/product-detail/product-detail.spec.tsx",
+      "src/modules/catalog/components/product-detail/product-detail.stories.tsx",
+      "src/modules/catalog/components/product-detail/product-detail.tsx",
+      "src/modules/catalog/components/product-list/product-list.md",
+      "src/modules/catalog/components/product-list/product-list.spec.tsx",
+      "src/modules/catalog/components/product-list/product-list.stories.tsx",
+      "src/modules/catalog/components/product-list/product-list.tsx",
+      "src/modules/checkout/components/checkout-form/checkout-form.md",
+      "src/modules/checkout/components/checkout-form/checkout-form.spec.tsx",
+      "src/modules/checkout/components/checkout-form/checkout-form.stories.tsx",
+      "src/modules/checkout/components/checkout-form/checkout-form.tsx",
+      "src/modules/content/components/home-categories/home-categories.md",
+      "src/modules/content/components/home-categories/home-categories.spec.tsx",
+      "src/modules/content/components/home-categories/home-categories.stories.tsx",
+      "src/modules/content/components/home-categories/home-categories.tsx",
+      "src/modules/content/components/home-hero/home-hero-cta.tsx",
+      "src/modules/content/components/home-hero/home-hero.md",
+      "src/modules/content/components/home-hero/home-hero.spec.tsx",
+      "src/modules/content/components/home-hero/home-hero.stories.tsx",
+      "src/modules/content/components/home-hero/home-hero.tsx",
+      "src/modules/content/components/site-header/parts/mobile-nav.tsx"
+    ],
+    "current_diff_hash": "79a9a2fdb99ab908df4f4c1110a5fb61a627f022172bfaff95543bdad93e83f7  -",
+    "next_actions": [
+      "Quality gate green — proceed with the workflow"
+    ],
+    "artifacts": [
+      "/Users/lidonghai/a4x/E-pig/logs/remediation-koala-20261103.json"
+    ],
+    "duration_seconds": 48,
+    "generated_at": "2026-11-03T06:05:55.351Z"
+  },
+  "applicationTests": {
+    "files": 49,
+    "tests": 254,
+    "maxWorkers": 2
+  },
+  "happyDog": {
+    "files": 7,
+    "tests": 22
+  },
+  "harness": 8,
+  "defaultVerify": "env-policy.spec timeout (5s); all checks completed with constrained test concurrency"
+}

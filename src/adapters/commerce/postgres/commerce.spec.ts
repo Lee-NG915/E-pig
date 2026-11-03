@@ -7,6 +7,7 @@ import type { CatalogPort, ProductDetail } from "@/core/contracts/commerce/catal
 import type { PaymentPort, PaymentRequest, PaymentSession } from "@/core/contracts/capabilities/payment";
 import type { CheckoutInput } from "@/core/contracts/commerce/checkout";
 import { markets } from "@/platform/config/markets";
+import { createMockCatalogAdapter } from "@/adapters/commerce/mock/catalog";
 import { createPostgresCommerce } from "./commerce";
 import type { CommercePool } from "./pool";
 
@@ -85,6 +86,74 @@ describe("durable sandbox commerce (actual PostgreSQL SQL)", () => {
     expect(result.subtotal.amount).toBe(32.34);
     await expect(app.cart.addItem(cart.id, { ...line, quantity: 2 }, options)).rejects.toMatchObject({ kind: "conflict" });
     await expect(app.cart.addItem(cart.id, { ...line, quantity: 10 }, { idempotencyKey: key() })).rejects.toMatchObject({ kind: "validation" });
+  });
+  it("carries real Tamarama variants and merged quantities into the durable checkout and payment total", async () => {
+    catalog = createMockCatalogAdapter({ market: markets.au });
+    const app = service();
+    const created = await app.cart.createCart({ idempotencyKey: key() });
+    const productId = "tamarama-modular-sofa";
+    const defaultVariantId = "tamarama-modular-sofa-default";
+    const greenVariantId = "tamarama-modular-sofa-forest-walk-3-sections";
+    await app.cart.addItem(created.id, { productId, variantId: defaultVariantId, quantity: 1 }, { idempotencyKey: key() });
+    await app.cart.addItem(created.id, { productId, variantId: greenVariantId, quantity: 1 }, { idempotencyKey: key() });
+    await app.cart.addItem(created.id, { productId, variantId: greenVariantId, quantity: 1 }, { idempotencyKey: key() });
+
+    const cart = await service().cart.getCart(created.id);
+    expect(cart.lines).toHaveLength(2);
+    expect(cart.lines[0]).toMatchObject({
+      productId,
+      variantId: defaultVariantId,
+      variantLabel: "2 Sections / Regular / Winter Cream",
+      image: expect.stringContaining("TAM_WC_2S_R_01_PRODUCT"),
+      quantity: 1,
+      unitPrice: { amount: 2600, currency: "AUD" },
+      lineTotal: { amount: 2600, currency: "AUD" },
+    });
+    expect(cart.lines[1]).toMatchObject({
+      productId,
+      variantId: greenVariantId,
+      variantLabel: "3 Sections / Regular / Forest Walk",
+      image: expect.stringContaining("TAM_FW_3S_R_01_PRODUCT"),
+      quantity: 2,
+      unitPrice: { amount: 3550, currency: "AUD" },
+      lineTotal: { amount: 7100, currency: "AUD" },
+    });
+    expect(cart.lines[0].id).not.toBe(cart.lines[1].id);
+    expect(cart.subtotal).toEqual({ amount: 9700, currency: "AUD" });
+
+    const checkout = await app.checkout.start(cart.id, input(cart.revision, 9700), { idempotencyKey: key() });
+    expect(checkout.status).toBe("open");
+    expect(checkout.revision).toBe(cart.revision);
+    expect(checkout.lines).toEqual(cart.lines);
+    expect(checkout.total).toEqual(cart.subtotal);
+    expect(await service().checkout.get(cart.id, checkout.id)).toEqual(checkout);
+    expect(payment.createSession).toHaveBeenCalledExactlyOnceWith(
+      expect.objectContaining({
+        checkoutId: checkout.id,
+        cartId: cart.id,
+        market: "au",
+        total: { amount: 9700, currency: "AUD" },
+        email: "guest@example.com",
+      }),
+      `checkout:${checkout.id}`,
+    );
+    const locked = await service().cart.getCart(cart.id);
+    expect(locked.lockedCheckoutId).toBe(checkout.id);
+    expect(locked.lines).toEqual(checkout.lines);
+  });
+  it("removes one real Tamarama variant without changing the other variant", async () => {
+    catalog = createMockCatalogAdapter({ market: markets.au });
+    const app = service();
+    const created = await app.cart.createCart({ idempotencyKey: key() });
+    const productId = "tamarama-modular-sofa";
+    await app.cart.addItem(created.id, { productId, variantId: "tamarama-modular-sofa-default", quantity: 1 }, { idempotencyKey: key() });
+    const cart = await app.cart.addItem(created.id, { productId, variantId: "tamarama-modular-sofa-forest-walk-3-sections", quantity: 2 }, { idempotencyKey: key() });
+
+    const remaining = await app.cart.removeItem(cart.id, cart.lines[1].id, { idempotencyKey: key() });
+    expect(remaining.lines).toEqual([cart.lines[0]]);
+    expect(remaining.subtotal).toEqual({ amount: 2600, currency: "AUD" });
+    expect((await service().cart.getCart(cart.id)).lines).toEqual(remaining.lines);
+    expect(payment.createSession).not.toHaveBeenCalled();
   });
   it("keeps unavailable and removed product lines readable and independently removable", async () => {
     const { app, cart } = await populated();
