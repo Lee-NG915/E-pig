@@ -9,6 +9,9 @@ export type Order = {
   market: string;
   status: "paid";
   lines: CartLine[];
+  subtotal?: Money;
+  discount?: Money;
+  couponCode?: string;
   total: Money;
   contact: CheckoutContact;
   address: CheckoutAddress;

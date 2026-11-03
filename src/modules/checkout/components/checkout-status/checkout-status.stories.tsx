@@ -41,6 +41,13 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Pending: Story = {};
+export const DemoCoupon: Story = {
+  beforeEach: () => {
+    getStorefrontQueryClient().setQueryData(["checkout", "au", "story-checkout"], {
+      checkout: { ...checkout, subtotal: checkout.total, couponCode: "DEMO10", discount: { amount: 2, currency: "AUD" }, total: { amount: 18, currency: "AUD" } },
+    });
+  },
+};
 export const Paid: Story = {
   beforeEach: () => {
     getStorefrontQueryClient().setQueryData(

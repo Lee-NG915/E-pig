@@ -163,6 +163,10 @@ export function CheckoutStatus({
             <p className="mt-5 font-medium">
               {formatMarketPrice(checkout.total, market.id)}
             </p>
+            {checkout.discount ? <dl className="mt-3 space-y-2 text-sm">
+              {checkout.subtotal ? <div className="flex justify-between gap-3"><dt>Subtotal</dt><dd>{formatMarketPrice(checkout.subtotal, market.id)}</dd></div> : null}
+              <div className="flex justify-between gap-3"><dt>Discount{checkout.couponCode ? ` (${checkout.couponCode})` : ""}</dt><dd>−{formatMarketPrice(checkout.discount, market.id)}</dd></div>
+            </dl> : null}
             <ul className="mt-3 space-y-2 text-sm">
               {checkout.lines.map((line) => (
                 <li key={line.id}>

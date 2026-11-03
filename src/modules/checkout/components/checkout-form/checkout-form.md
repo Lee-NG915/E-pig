@@ -10,6 +10,8 @@ AU sandbox contact/address form and authoritative bag summary.
 
 ## 状态矩阵
 
+提交 expectedTotal 采用服务端 Cart.total；旧快照无 total 时回退 subtotal。摘要显示冻结前的原价小计、单码折扣与最终金额，不在客户端重新计算优惠。Postcode 下的配送时间是公开测试邮编示例，未知邮编不阻止合法地址提交；运费/税费仍为 0。
+
 | State | Trigger | Visible result |
 | --- | --- | --- |
 | Loading | GET pending | loading message |

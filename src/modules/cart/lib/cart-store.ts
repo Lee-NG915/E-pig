@@ -9,6 +9,8 @@ export type CartMarketIdentity = { id: string; currency: string };
 export type CartResponse = { cart: Cart | null; checkoutEnabled: boolean };
 type CartMutation =
   | ({ action: "add" } & AddCartLineInput)
+  | { action: "addItems"; items: AddCartLineInput[] }
+  | { action: "coupon"; code: string }
   | { action: "update"; lineId: string; quantity: number };
 type PendingMutation = { input: CartMutation; idempotencyKey: string };
 type UiState = { open: boolean; pending: boolean; error: string | null };
@@ -82,6 +84,14 @@ export class StorefrontHttpError extends Error {
     public readonly status: number,
   ) {
     super(message);
+  }
+}
+/** The attempted mutation was not sent; a different saved request still needs resolution. */
+export class CartMutationNotSentError extends Error {
+  readonly reason = "pending_conflict";
+  constructor() {
+    super("Your previous bag update is unconfirmed. Retry that update before making another change.");
+    this.name = "CartMutationNotSentError";
   }
 }
 export async function storefrontRequest<T>(
@@ -171,7 +181,7 @@ function readPending(market: CartMarketIdentity): PendingMutation | null {
   if (
     !value.idempotencyKey ||
     !value.input ||
-    !["add", "update"].includes(value.input.action)
+    !["add", "addItems", "update", "coupon"].includes(value.input.action)
   )
     throw new Error(
       "An unresolved bag request needs this browser session. Please retry in the original tab.",
@@ -180,7 +190,7 @@ function readPending(market: CartMarketIdentity): PendingMutation | null {
 }
 async function mutateCart(market: CartMarketIdentity, input?: CartMutation) {
   // Capture synchronously before pending disables the original add button.
-  if (!input || input.action === "add") rememberCartOpener(market);
+  if (!input || input.action === "add" || input.action === "addItems") rememberCartOpener(market);
   if (!navigator.locks?.request) {
     const message =
       "This browser needs Web Locks for safe bag updates. Use a current browser over HTTPS.";
@@ -197,14 +207,12 @@ async function mutateCart(market: CartMarketIdentity, input?: CartMutation) {
         input &&
         JSON.stringify(input) !== JSON.stringify(pending.input)
       )
-        throw new Error(
-          "Your previous bag update is unconfirmed. Retry that update before making another change.",
-        );
+        throw new CartMutationNotSentError();
       if (!pending) {
         if (!input) return;
         pending = { input, idempotencyKey: crypto.randomUUID() };
         // Shared storage plus Web Locks keeps an unresolved first creation key consistent across tabs.
-        // Only product IDs, quantities and the request key are stored; prices and identity cookies are never persisted.
+        // Only mutation inputs and the request key are stored; prices and identity cookies are never persisted.
         window.localStorage.setItem(
           pendingKey(market),
           JSON.stringify(pending),
@@ -224,7 +232,7 @@ async function mutateCart(market: CartMarketIdentity, input?: CartMutation) {
         acceptCart(market, result);
         window.localStorage.removeItem(pendingKey(market));
         updateUi(market, {
-          open: pending.input.action === "add" ? true : state(market).open,
+          open: pending.input.action === "add" || pending.input.action === "addItems" ? true : state(market).open,
         });
       } catch (error) {
         // 5xx/network results are ambiguous; keep the request for a safe replay.
@@ -252,6 +260,12 @@ export function addCartItem(
   input: AddCartLineInput,
 ) {
   return mutateCart(market, { action: "add", ...input });
+}
+export function addCartItems(market: CartMarketIdentity, items: AddCartLineInput[]) {
+  return mutateCart(market, { action: "addItems", items: items.map(({ productId, variantId, quantity }) => ({ productId, variantId, quantity })) });
+}
+export function applyCartCoupon(market: CartMarketIdentity, code: string) {
+  return mutateCart(market, { action: "coupon", code });
 }
 export function useCartStore(market: CartMarketIdentity) {
   const hydrated = useSyncExternalStore(
@@ -301,6 +315,8 @@ export function useCartActions(market: CartMarketIdentity) {
   const cart = useCartStore(market);
   return {
     addItem: (input: AddCartLineInput) => addCartItem(market, input),
+    addItems: (items: AddCartLineInput[]) => addCartItems(market, items),
+    applyCoupon: (code: string) => applyCartCoupon(market, code),
     updateItem: (lineId: string, quantity: number) =>
       mutateCart(market, { action: "update", lineId, quantity }),
     retry: () => mutateCart(market),

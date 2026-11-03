@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { getStorefrontQueryClient } from "@/modules/cart/lib/cart-store";
-import { marketFixture } from "@/modules/cart/components/cart-panel/cart-panel.mock";
+import { cartFixture, marketFixture } from "@/modules/cart/components/cart-panel/cart-panel.mock";
 import { OrderHistory } from "./order-history";
 const meta = {
   title: "Modules/order/OrderHistory",
@@ -18,3 +18,12 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Empty: Story = {};
+export const DemoCoupon: Story = {
+  beforeEach: () => {
+    getStorefrontQueryClient().setQueryData(["orders", "au", "list"], {
+      orders: [{ id: "demo-order", status: "paid", createdAt: "2026-11-03T00:00:00Z", lines: cartFixture.lines,
+        subtotal: cartFixture.subtotal, couponCode: "DEMO10", discount: { amount: 2, currency: "AUD" }, total: { amount: 18, currency: "AUD" },
+      }],
+    });
+  },
+};

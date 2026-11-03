@@ -117,6 +117,10 @@ export function OrderHistory({
                 </li>
               ))}
             </ul>
+            {order.discount ? <dl className="mt-3 space-y-2 text-sm">
+              {order.subtotal ? <div className="flex justify-between gap-3"><dt>Subtotal</dt><dd>{formatMarketPrice(order.subtotal, market.id)}</dd></div> : null}
+              <div className="flex justify-between gap-3"><dt>Discount{order.couponCode ? ` (${order.couponCode})` : ""}</dt><dd>−{formatMarketPrice(order.discount, market.id)}</dd></div>
+            </dl> : null}
             {orderId ? (
               <div className="mt-4 border-t pt-5 text-sm leading-6">
                 <h3 className="font-medium">Test contact and address</h3>

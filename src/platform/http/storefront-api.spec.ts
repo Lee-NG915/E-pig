@@ -10,7 +10,7 @@ const id = "e87cd5ec-2cea-49cf-ad35-5159c8830478";
 const cart: Cart = { id, market: "au", revision: 0, lines: [], subtotal: { amount: 0, currency: "AUD" } };
 function fixture(configuredOrigin = origin) {
   const ports = {
-    cart: { createCart: vi.fn().mockResolvedValue(cart), getCart: vi.fn().mockResolvedValue(cart), addItem: vi.fn().mockResolvedValue(cart), updateItem: vi.fn().mockResolvedValue(cart), removeItem: vi.fn(), applyCoupon: vi.fn() },
+    cart: { createCart: vi.fn().mockResolvedValue(cart), getCart: vi.fn().mockResolvedValue(cart), addItem: vi.fn().mockResolvedValue(cart), addItems: vi.fn().mockResolvedValue(cart), updateItem: vi.fn().mockResolvedValue(cart), removeItem: vi.fn(), applyCoupon: vi.fn().mockResolvedValue(cart) },
     checkout: { start: vi.fn(), get: vi.fn(), reconcile: vi.fn(), cancel: vi.fn() },
     orders: { list: vi.fn().mockResolvedValue([]), get: vi.fn() },
   };
@@ -23,6 +23,29 @@ function request(method = "GET", body?: unknown, cookie?: string, suppliedOrigin
 const add = { action: "add", productId: "chair", variantId: "chair-default", quantity: 1, idempotencyKey: "728fe92a-066f-48bd-9883-d13b858ebba9" };
 
 describe("storefront HTTP boundary", () => {
+  it("validates every bundle item and creates a signed cart only for a valid first bundle", async () => {
+    const { api, cart: port } = fixture();
+    const item = { productId: "chair", variantId: "chair-default", quantity: 1 };
+    for (const items of [[], [item, item, item], [item, { ...item, quantity: 0 }], [item, { ...item, variantId: "" }]]) {
+      expect((await api(request("POST", { action: "addItems", items, idempotencyKey: add.idempotencyKey }), "au", "cart")).status).toBe(400);
+    }
+    expect(port.createCart).not.toHaveBeenCalled();
+    const response = await api(request("POST", { action: "addItems", items: [item, { ...item, price: 1 }], idempotencyKey: add.idempotencyKey, cartId: "foreign" }), "au", "cart");
+    expect(response.status).toBe(200);
+    expect(port.addItems).toHaveBeenCalledExactlyOnceWith(id, [item, item], { idempotencyKey: add.idempotencyKey });
+    expect(port.addItem).not.toHaveBeenCalled();
+    expect(response.headers.get("set-cookie")).toContain("HttpOnly");
+  });
+  it("requires an existing owned cart for coupons and accepts an empty removal code", async () => {
+    const { api, cart: port } = fixture();
+    const body = { action: "coupon", code: "", idempotencyKey: add.idempotencyKey };
+    expect((await api(request("POST", body), "au", "cart")).status).toBe(401);
+    expect(port.createCart).not.toHaveBeenCalled();
+    const response = await api(request("POST", body, signCartCookie(id, "au", secret)), "au", "cart");
+    expect(response.status).toBe(200);
+    expect(port.applyCoupon).toHaveBeenCalledWith(id, "", { idempotencyKey: add.idempotencyKey });
+    expect(response.headers.get("set-cookie")).toBeNull();
+  });
   it("normalizes a valid configured origin before checking the browser Origin header", async () => {
     const { api } = fixture(`${origin}:443/`);
     expect((await api(request("POST", add), "au", "cart")).status).toBe(200);

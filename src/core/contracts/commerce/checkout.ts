@@ -44,6 +44,9 @@ export type Checkout = {
   revision: number;
   status: "creating" | "open" | "paid" | "expired";
   lines: CartLine[];
+  subtotal?: Money;
+  discount?: Money;
+  couponCode?: string;
   total: Money;
   contact: CheckoutContact;
   address: CheckoutAddress;

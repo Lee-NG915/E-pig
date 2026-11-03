@@ -8,6 +8,19 @@ afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
 });
+it.each([false, true])("renders legacy and discounted paid snapshots without recomputing totals (coupon=%s)", async discounted => {
+  const order = { id: "order-1", status: "paid", lines: [], createdAt: "2026-11-03T00:00:00Z", total: { amount: discounted ? 18 : 20, currency: "AUD" },
+    ...(discounted ? { subtotal: { amount: 20, currency: "AUD" }, discount: { amount: 2, currency: "AUD" }, couponCode: "DEMO10" } : {}),
+  };
+  vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(JSON.stringify({ orders: [order] }))));
+  render(<OrderHistory market={{ id: "au", currency: "AUD" }} />);
+  expect(await screen.findByText(discounted ? "$18" : "$20")).toBeTruthy();
+  if (discounted) {
+    expect(screen.getByText("Discount (DEMO10)")).toBeTruthy();
+    expect(screen.getByText("−$2")).toBeTruthy();
+    expect(screen.getByText("$20")).toBeTruthy();
+  } else expect(screen.queryByText(/Discount/)).toBeNull();
+});
 it("shows no private order details after an ownership rejection", async () => {
   vi.stubGlobal(
     "fetch",

@@ -62,6 +62,32 @@ it("retains a readable summary when a line has no image", async () => {
   expect(within(summary).getAllByText("$20")).toHaveLength(2);
 });
 
+it.each(["2000", "9999"])("submits the server-discounted total while %s delivery timing stays informational", async postalCode => {
+  const requests: Record<string, unknown>[] = [];
+  vi.stubGlobal("fetch", vi.fn(async (_url: string, init?: RequestInit) => {
+    if (init?.method === "POST") {
+      requests.push(JSON.parse(String(init.body)));
+      return new Response(JSON.stringify({ error: { message: "Test payment unavailable" } }), { status: 503 });
+    }
+    return new Response(JSON.stringify({ cart: { ...cartFixture, couponCode: "DEMO10", discount: { amount: 2, currency: "AUD" }, total: { amount: 18, currency: "AUD" } }, checkoutEnabled: true }));
+  }));
+  render(<CheckoutForm market={marketFixture} />);
+  const user = userEvent.setup();
+  await user.type(await screen.findByLabelText("Full name"), "Test Buyer");
+  await user.type(screen.getByLabelText("Email"), "buyer@example.com");
+  await user.type(screen.getByLabelText("Address line 1"), "1 Test Street");
+  await user.type(screen.getByLabelText("City / suburb"), "Sydney");
+  await user.type(screen.getByLabelText("Postcode"), postalCode);
+  expect(screen.getByText(postalCode === "2000" ? /2–4 business days/ : /No demo estimate is configured/)).toBeTruthy();
+  expect(screen.queryByLabelText("Demo delivery postcode")).toBeNull();
+  expect(screen.getByText("Discount (DEMO10)")).toBeTruthy();
+  expect(screen.getByText("−$2")).toBeTruthy();
+  expect(screen.getByText("$18")).toBeTruthy();
+  await user.click(screen.getByRole("button", { name: "Continue to test card payment" }));
+  await waitFor(() => expect(requests).toHaveLength(1));
+  expect(requests[0]).toMatchObject({ expectedTotal: { amount: 18, currency: "AUD" }, address: { postalCode } });
+});
+
 it("validates AU postcode before sending checkout and keeps entered data after a failed request", async () => {
   const requests: unknown[] = [];
   vi.stubGlobal(

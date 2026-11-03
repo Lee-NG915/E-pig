@@ -9,9 +9,12 @@ import { CART_COOKIE_MAX_AGE, cartCookieName, readCartCookie, signCartCookie } f
 
 const requestKey = z.string().uuid();
 const id = z.string().min(1).max(160);
+const cartLineInput = z.object({ productId: id, variantId: id, quantity: z.number().int().min(1).max(10) });
 const cartInput = z.discriminatedUnion("action", [
   z.object({ action: z.literal("add"), productId: id, variantId: id, quantity: z.number().int().min(1).max(10), idempotencyKey: requestKey }),
   z.object({ action: z.literal("update"), lineId: id, quantity: z.number().int().min(0).max(10), idempotencyKey: requestKey }),
+  z.object({ action: z.literal("addItems"), items: z.array(cartLineInput).min(1).max(2), idempotencyKey: requestKey }),
+  z.object({ action: z.literal("coupon"), code: z.string().max(40), idempotencyKey: requestKey }),
 ]);
 export type StorefrontApiDependencies = {
   market: string; origin: string; cookieSecret: string; secure: boolean; checkoutEnabled: boolean;
@@ -54,11 +57,13 @@ export function createStorefrontApi(deps: StorefrontApiDependencies) {
         const port = deps.getCommerce().cart;
         if (request.method === "GET") return privateJson({ cart: await port.getCart(cartId!), checkoutEnabled });
         const body = cartInput.parse(await jsonInput(request));
-        if (!cartId && body.action !== "add") throw new AppError("unauthorized", "Start a new bag by adding an item.");
+        if (!cartId && body.action !== "add" && body.action !== "addItems") throw new AppError("unauthorized", "Start a new bag by adding an item.");
         const ownedId = cartId ?? (await port.createCart({ idempotencyKey: `create:${body.idempotencyKey}` })).id;
         const options = { idempotencyKey: body.idempotencyKey };
         const cart = body.action === "add"
           ? await port.addItem(ownedId, { productId: body.productId, variantId: body.variantId, quantity: body.quantity }, options)
+          : body.action === "addItems" ? await port.addItems(ownedId, body.items, options)
+          : body.action === "coupon" ? await port.applyCoupon(ownedId, body.code, options)
           : await port.updateItem(ownedId, body.lineId, body.quantity, options);
         const response = privateJson({ cart, checkoutEnabled });
         if (!cartId) response.cookies.set(cartCookieName(market), signCartCookie(ownedId, market, deps.cookieSecret), { httpOnly: true, secure: deps.secure, sameSite: "lax", path: "/", maxAge: CART_COOKIE_MAX_AGE });

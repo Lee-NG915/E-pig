@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { createElement } from "react";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { getStorefrontQueryClient, setCartOpen, useCartStore } from "../../lib/cart-store";
@@ -13,6 +13,7 @@ beforeEach(() => {
   getStorefrontQueryClient().clear();
   localStorage.clear();
   sessionStorage.clear();
+  Object.defineProperty(navigator, "locks", { configurable: true, value: { request: vi.fn(async (_name: string, callback: () => unknown) => callback()) } });
 });
 afterEach(() => {
   cleanup();
@@ -41,6 +42,35 @@ it("shows server line total and freezes controls during payment", async () => {
       .getAttribute("href"),
   ).toBe("/au/checkout/return?checkoutId=checkout-1");
   expect(screen.getAllByText("$20")).toHaveLength(2);
+  expect(screen.getByLabelText("Demo coupon").closest("fieldset")).toHaveProperty("disabled", true);
+});
+
+it("applies and removes a demo code using server totals, preserving a valid code after rejection", async () => {
+  const user = userEvent.setup();
+  let current = { ...cartFixture };
+  const requests: { code: string; action: string }[] = [];
+  vi.stubGlobal("fetch", vi.fn(async (_url: string, init?: RequestInit) => {
+    if (init?.method === "POST") {
+      const body = JSON.parse(String(init.body)); requests.push(body);
+      if (body.code === "EXPIRED10") return new Response(JSON.stringify({ error: { message: "This demo coupon has expired" } }), { status: 400 });
+      current = body.code ? { ...cartFixture, revision: 3, couponCode: "DEMO10", discount: { amount: 2, currency: "AUD" }, total: { amount: 18, currency: "AUD" } } as typeof current : { ...cartFixture, revision: 4 };
+    }
+    return new Response(JSON.stringify({ cart: current, checkoutEnabled: true }));
+  }));
+  render(<CartPanel market={marketFixture} />);
+  const code = await screen.findByLabelText("Demo coupon");
+  await user.type(code, "DEMO10");
+  await user.click(screen.getByRole("button", { name: "Apply demo code" }));
+  expect(await screen.findByText("$18")).toBeTruthy();
+  expect(screen.getByText("−$2")).toBeTruthy();
+  expect(screen.getByText("Discount (DEMO10)")).toBeTruthy();
+  await user.type(code, "EXPIRED10");
+  await user.click(screen.getByRole("button", { name: "Apply demo code" }));
+  expect(await screen.findByText("This demo coupon has expired")).toBeTruthy();
+  expect(screen.getByText("$18")).toBeTruthy();
+  await user.click(screen.getByRole("button", { name: "Remove demo code" }));
+  await waitFor(() => expect(screen.queryByText("Discount (DEMO10)")).toBeNull());
+  expect(requests.map(item => [item.action, item.code])).toEqual([["coupon", "DEMO10"], ["coupon", "EXPIRED10"], ["coupon", ""]]);
 });
 
 it("shows the server-selected image and links its exact variant back to the market PDP", async () => {

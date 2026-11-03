@@ -29,6 +29,8 @@ export type Cart = {
   subtotal: Money;
   discount?: Money;
   couponCode?: string;
+  /** Final server-calculated total; absent on legacy snapshots. */
+  total?: Money;
 };
 
 export type AddCartLineInput = {
@@ -51,6 +53,8 @@ export interface CartPort {
     input: AddCartLineInput,
     options: CartMutationOptions,
   ): Promise<Cart>;
+  /** Atomically add 1–2 lines. Any invalid item rejects the whole operation. */
+  addItems(cartId: string, items: AddCartLineInput[], options: CartMutationOptions): Promise<Cart>;
   /** quantity <= 0 等价于 removeItem */
   updateItem(
     cartId: string,

@@ -11,7 +11,6 @@ import type { Logger } from "@/platform/logging/logger";
 import type { Market } from "@/platform/config/markets";
 
 const DEMO_COUPON = "DEMO10";
-const DEMO_COUPON_RATE = 0.1;
 
 /**
  * Mock CartAdapter：进程内内存实现，证明 CartPort seam 可工作。
@@ -41,7 +40,10 @@ export function createMockCartAdapter({
     cart.revision += 1;
     const subtotal = cart.lines.reduce((total, line) => total + line.lineTotal.amount, 0);
     cart.subtotal = money(subtotal);
-    cart.discount = cart.couponCode === DEMO_COUPON ? money(subtotal * DEMO_COUPON_RATE) : undefined;
+    const subtotalCents = Math.round(subtotal * 100);
+    const discountCents = market.id === "au" && cart.couponCode === DEMO_COUPON ? Math.round(subtotalCents / 10) : 0;
+    cart.discount = market.id === "au" && cart.couponCode === DEMO_COUPON ? money(discountCents / 100) : undefined;
+    cart.total = money((subtotalCents - discountCents) / 100);
     return cart;
   }
 
@@ -78,7 +80,13 @@ export function createMockCartAdapter({
     }
 
     const previous = cartQueues.get(cartId) ?? Promise.resolve();
-    const result = previous.then(async () => cloneCart(await operation(requireCart(cartId))));
+    const result = previous.then(async () => {
+      const draft = cloneCart(requireCart(cartId));
+      if (draft.lockedCheckoutId) throw new AppError("conflict", "Cart is locked for payment");
+      const updated = await operation(draft);
+      carts.set(cartId, cloneCart(updated));
+      return cloneCart(updated);
+    });
     const queueTail = result.then(
       () => undefined,
       () => undefined,
@@ -97,19 +105,36 @@ export function createMockCartAdapter({
   }
 
   async function buildLine(input: AddCartLineInput): Promise<CartLine> {
+    if (!Number.isInteger(input.quantity) || input.quantity < 1 || input.quantity > 10) throw new AppError("validation", "Quantity must be between 1 and 10");
     const product = await catalog.getProduct(input.productId);
+    const variant = product.variants.find(item => item.id === input.variantId);
+    if (!variant || variant.availability !== "in-stock" || input.quantity > variant.maxQuantity) throw new AppError("validation", "This variant or quantity is unavailable");
+    if (variant.price.currency !== market.currency || !Number.isFinite(variant.price.amount) || variant.price.amount <= 0) throw new AppError("validation", "This variant cannot currently be priced");
     return {
       id: crypto.randomUUID(),
       productId: product.id,
       variantId: input.variantId,
-      variantLabel: product.variants.find(v => v.id === input.variantId)?.label ?? product.colour,
+      variantLabel: variant.label,
       name: product.name,
       colour: product.colour,
-      image: product.image,
+      image: variant.image,
       quantity: input.quantity,
-      unitPrice: product.price,
-      lineTotal: money(product.price.amount * input.quantity),
+      unitPrice: variant.price,
+      lineTotal: money(variant.price.amount * input.quantity),
+      availability: variant.availability,
     };
+  }
+  async function appendItems(cart: Cart, items: AddCartLineInput[]): Promise<Cart> {
+    if (!Array.isArray(items) || items.length < 1 || items.length > 2) throw new AppError("validation", "Add one or two items at a time");
+    for (const input of items) {
+      if (!Number.isInteger(input.quantity) || input.quantity < 1) throw new AppError("validation", "quantity must be a positive integer");
+      const index = cart.lines.findIndex(line => line.productId === input.productId && line.variantId === input.variantId);
+      const existing = cart.lines[index];
+      const line = await buildLine({ ...input, quantity: input.quantity + (existing?.quantity ?? 0) });
+      if (existing) cart.lines[index] = { ...line, id: existing.id };
+      else cart.lines.push(line);
+    }
+    return recompute(cart);
   }
 
   return {
@@ -126,6 +151,7 @@ export function createMockCartAdapter({
         revision: 0,
         lines: [],
         subtotal: money(0),
+        total: money(0),
       };
       carts.set(cart.id, cart);
       createKeys.set(key, cart.id);
@@ -139,28 +165,14 @@ export function createMockCartAdapter({
 
     async addItem(cartId, input, options) {
       const signature = JSON.stringify(["add", input.productId, input.variantId, input.quantity]);
-      return mutateOnce(cartId, options, signature, async (cart) => {
-        if (!Number.isInteger(input.quantity) || input.quantity < 1) {
-          throw new AppError("validation", "quantity must be a positive integer");
-        }
-        const existing = cart.lines.find((line) => line.productId === input.productId && line.variantId === input.variantId);
-        if (existing) {
-          existing.quantity += input.quantity;
-          existing.lineTotal = money(existing.unitPrice.amount * existing.quantity);
-        } else {
-          cart.lines.push(await buildLine(input));
-        }
-        logger.info("cart.item_added", {
-          cartId,
-          productId: input.productId,
-          quantity: input.quantity,
-        });
-        return recompute(cart);
-      });
+      return mutateOnce(cartId, options, signature, cart => appendItems(cart, [input]));
+    },
+    async addItems(cartId, items, options) {
+      return mutateOnce(cartId, options, JSON.stringify(["addItems", items]), cart => appendItems(cart, items));
     },
 
     async updateItem(cartId, lineId, quantity, options) {
-      return mutateOnce(cartId, options, JSON.stringify(["update", lineId, quantity]), (cart) => {
+      return mutateOnce(cartId, options, JSON.stringify(["update", lineId, quantity]), async (cart) => {
         if (!Number.isInteger(quantity)) {
           throw new AppError("validation", "quantity must be an integer");
         }
@@ -169,8 +181,7 @@ export function createMockCartAdapter({
         if (quantity <= 0) {
           cart.lines = cart.lines.filter((item) => item.id !== lineId);
         } else {
-          line.quantity = quantity;
-          line.lineTotal = money(line.unitPrice.amount * quantity);
+          Object.assign(line, await buildLine({ productId: line.productId, variantId: line.variantId, quantity }), { id: lineId });
         }
         return recompute(cart);
       });
@@ -186,8 +197,11 @@ export function createMockCartAdapter({
     async applyCoupon(cartId, code, options) {
       const normalized = code.trim().toUpperCase();
       return mutateOnce(cartId, options, JSON.stringify(["coupon", normalized]), (cart) => {
-        if (!normalized) throw new AppError("validation", "coupon code must not be empty");
-        cart.couponCode = normalized;
+        if (market.id !== "au") throw new AppError("validation", "Demo coupons are available in AU only");
+        if (normalized && normalized !== DEMO_COUPON) throw new AppError("validation", normalized === "EXPIRED10" ? "This demo coupon has expired" : "This demo coupon is not valid");
+        if (normalized && !cart.lines.length) throw new AppError("validation", "Add an item before applying a demo coupon");
+        if (normalized) cart.couponCode = normalized;
+        else delete cart.couponCode;
         return recompute(cart);
       });
     },

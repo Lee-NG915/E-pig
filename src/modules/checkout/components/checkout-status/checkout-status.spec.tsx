@@ -32,6 +32,16 @@ afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
 });
+it("explains the frozen coupon alongside the final checkout total", async () => {
+  vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(JSON.stringify({ checkout: {
+    ...checkout, subtotal: checkout.total, couponCode: "DEMO10", discount: { amount: 2, currency: "AUD" }, total: { amount: 18, currency: "AUD" },
+  } }))));
+  render(<CheckoutStatus market={marketFixture} checkoutId="checkout-1" />);
+  expect(await screen.findByText("Discount (DEMO10)")).toBeTruthy();
+  expect(screen.getByText("−$2")).toBeTruthy();
+  expect(screen.getByText("$18")).toBeTruthy();
+  expect(screen.getByText("$20")).toBeTruthy();
+});
 it("treats a return as pending and leaves the bag frozen when cancellation fails", async () => {
   vi.stubGlobal(
     "fetch",

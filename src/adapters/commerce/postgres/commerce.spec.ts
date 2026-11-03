@@ -171,6 +171,114 @@ describe("durable sandbox commerce (actual PostgreSQL SQL)", () => {
     expect((await app.cart.getCart(cart.id)).lines[0].problem).toBeTruthy();
     expect((await app.cart.updateItem(cart.id, remaining.lines[0].id, 0, { idempotencyKey: key() })).lines).toEqual([]);
   });
+  it("atomically adds a real two-variant bundle and freezes DEMO10 through payment and order", async () => {
+    catalog = createMockCatalogAdapter({ market: markets.au });
+    const app = service();
+    const empty = await app.cart.createCart({ idempotencyKey: key() });
+    expect(empty.total).toEqual(empty.subtotal);
+    const items = [
+      { productId: "tamarama-modular-sofa", variantId: "tamarama-modular-sofa-default", quantity: 1 },
+      { productId: "tamarama-modular-sofa", variantId: "tamarama-modular-sofa-forest-walk-3-sections", quantity: 2 },
+    ];
+    const options = { idempotencyKey: key() };
+    const added = await app.cart.addItems(empty.id, items, options);
+    expect(added.revision).toBe(1);
+    expect(added.lines.map(line => line.quantity)).toEqual([1, 2]);
+    expect(added.subtotal).toEqual({ amount: 9700, currency: "AUD" });
+    expect(added.total).toEqual(added.subtotal);
+    expect(await service().cart.addItems(empty.id, items, options)).toEqual(added);
+    await expect(app.cart.addItems(empty.id, items.slice(0, 1), options)).rejects.toMatchObject({ kind: "conflict" });
+    const cart = await app.cart.applyCoupon(empty.id, " demo10 ", { idempotencyKey: key() });
+    expect(cart).toMatchObject({ couponCode: "DEMO10", discount: { amount: 970, currency: "AUD" }, total: { amount: 8730, currency: "AUD" } });
+    expect(cart.subtotal).toEqual(added.subtotal);
+    expect(cart.lines).toEqual(added.lines);
+    await expect(app.checkout.start(cart.id, input(cart.revision, 9700), { idempotencyKey: key() })).rejects.toMatchObject({ kind: "conflict" });
+    const checkout = await app.checkout.start(cart.id, input(cart.revision, 8730), { idempotencyKey: key() });
+    expect(checkout).toMatchObject({ subtotal: cart.subtotal, discount: cart.discount, couponCode: "DEMO10", total: cart.total, lines: cart.lines });
+    expect(vi.mocked(payment.createSession).mock.calls[0][0].total).toEqual(cart.total);
+    await expect(app.cart.applyCoupon(cart.id, "", { idempotencyKey: key() })).rejects.toMatchObject({ kind: "conflict" });
+    await expect(app.cart.addItems(cart.id, items, { idempotencyKey: key() })).rejects.toMatchObject({ kind: "conflict" });
+    const session = [...sessions.values()][0]; session.status = "complete"; session.paid = true;
+    const paid = await app.checkout.reconcile(cart.id, checkout.id);
+    expect(await app.orders.get(cart.id, paid.orderId!)).toMatchObject({ subtotal: cart.subtotal, discount: cart.discount, couponCode: "DEMO10", total: cart.total });
+    const cleared = await app.cart.getCart(cart.id);
+    expect(cleared.lines).toEqual([]);
+    expect(cleared.couponCode).toBeUndefined();
+    expect(cleared.discount).toBeUndefined();
+    expect(cleared.total).toEqual({ amount: 0, currency: "AUD" });
+  });
+  it("rolls back an entire bundle on invalid, unavailable or over-limit items", async () => {
+    catalog = createMockCatalogAdapter({ market: markets.au });
+    const app = service();
+    const empty = await app.cart.createCart({ idempotencyKey: key() });
+    const base = { productId: "tamarama-modular-sofa", variantId: "tamarama-modular-sofa-default", quantity: 1 };
+    const green = { ...base, variantId: "tamarama-modular-sofa-forest-walk-3-sections" };
+    const before = await app.cart.addItem(empty.id, base, { idempotencyKey: key() });
+    for (const invalid of [
+      { ...base, variantId: "missing" },
+      { productId: "bangalow-modular-sofa", variantId: "bangalow-modular-sofa-unavailable-test", quantity: 1 },
+      { ...base, quantity: 5 },
+      { ...base, quantity: 0 },
+    ]) {
+      await expect(app.cart.addItems(empty.id, [green, invalid], { idempotencyKey: key() })).rejects.toMatchObject({ kind: "validation" });
+      expect(await app.cart.getCart(empty.id)).toEqual(before);
+    }
+    for (const invalidItems of [[], [base, green, base]]) {
+      await expect(app.cart.addItems(empty.id, invalidItems, { idempotencyKey: key() })).rejects.toMatchObject({ kind: "validation" });
+      expect(await app.cart.getCart(empty.id)).toEqual(before);
+    }
+    const merged = await app.cart.addItems(empty.id, [green, green], { idempotencyKey: key() });
+    expect(merged.lines).toHaveLength(2);
+    expect(merged.lines[1].quantity).toBe(2);
+    expect(merged.revision).toBe(before.revision + 1);
+  });
+  it("rounds coupon cents, preserves a valid code on rejection, and removes it with an empty code", async () => {
+    const { app, cart } = await populated();
+    const couponKey = { idempotencyKey: key() };
+    const discounted = await app.cart.applyCoupon(cart.id, "DEMO10", couponKey);
+    expect(discounted).toMatchObject({ subtotal: { amount: 12.34 }, discount: { amount: 1.23 }, total: { amount: 11.11 }, couponCode: "DEMO10" });
+    expect(await app.cart.applyCoupon(cart.id, "demo10", couponKey)).toEqual(discounted);
+    for (const invalid of ["INVALID", "EXPIRED10", "DEMO10,DEMO10"]) {
+      await expect(app.cart.applyCoupon(cart.id, invalid, { idempotencyKey: key() })).rejects.toMatchObject({ kind: "validation" });
+      expect(await app.cart.getCart(cart.id)).toEqual(discounted);
+    }
+    await expect(app.cart.applyCoupon(cart.id, "", couponKey)).rejects.toMatchObject({ kind: "conflict" });
+    const removed = await app.cart.applyCoupon(cart.id, "  ", { idempotencyKey: key() });
+    expect(removed.couponCode).toBeUndefined();
+    expect(removed.discount).toBeUndefined();
+    expect(removed.total).toEqual(removed.subtotal);
+    const empty = await app.cart.createCart({ idempotencyKey: key() });
+    await expect(app.cart.applyCoupon(empty.id, "DEMO10", { idempotencyKey: key() })).rejects.toMatchObject({ kind: "validation" });
+  });
+  it("preserves the coupon on verified cancellation and reprices the unlocked bag", async () => {
+    const { app, cart } = await populated();
+    const discounted = await app.cart.applyCoupon(cart.id, "DEMO10", { idempotencyKey: key() });
+    const checkout = await app.checkout.start(cart.id, input(discounted.revision, 11.11), { idempotencyKey: key() });
+    const changed = structuredClone(product); changed.variants[0].price.amount = 15;
+    vi.mocked(catalog.getProduct).mockResolvedValue(changed);
+    expect((await app.cart.getCart(cart.id)).total).toEqual({ amount: 11.11, currency: "AUD" });
+    await app.checkout.cancel(cart.id, checkout.id);
+    expect(await app.cart.getCart(cart.id)).toMatchObject({ couponCode: "DEMO10", subtotal: { amount: 15 }, discount: { amount: 1.5 }, total: { amount: 13.5 } });
+    expect((await app.checkout.get(cart.id, checkout.id)).total).toEqual({ amount: 11.11, currency: "AUD" });
+  });
+  it("rounds a half-cent demo discount upward before subtracting it from the subtotal", async () => {
+    const halfCent = structuredClone(product);
+    halfCent.variants[0].price.amount = 12.35;
+    vi.mocked(catalog.getProduct).mockResolvedValue(halfCent);
+    const { app, cart } = await populated();
+    const discounted = await app.cart.applyCoupon(cart.id, "DEMO10", { idempotencyKey: key() });
+    expect(discounted.subtotal).toEqual({ amount: 12.35, currency: "AUD" });
+    expect(discounted.discount).toEqual({ amount: 1.24, currency: "AUD" });
+    expect(discounted.total).toEqual({ amount: 11.11, currency: "AUD" });
+    expect(discounted.lines[0].lineTotal).toEqual(discounted.subtotal);
+  });
+  it.each([markets.sg, markets.us])("rejects coupons in $id without changing the bag", async market => {
+    const app = createPostgresCommerce({ pool, catalog: createMockCatalogAdapter({ market }), payment, market, origin: "https://shop.example" });
+    const empty = await app.cart.createCart({ idempotencyKey: key() });
+    const before = await app.cart.addItem(empty.id, { productId: "tamarama-modular-sofa", variantId: "tamarama-modular-sofa-default", quantity: 1 }, { idempotencyKey: key() });
+    await expect(app.cart.applyCoupon(empty.id, "DEMO10", { idempotencyKey: key() })).rejects.toMatchObject({ kind: "validation" });
+    expect(await app.cart.getCart(empty.id)).toEqual(before);
+  });
   it.each(["paid", "expired"] as const)("recovers an aged unknown create from a verified %s event without another session", async (terminal) => {
     const { app, cart } = await populated(); const create = payment.createSession;
     vi.mocked(payment.createSession).mockImplementationOnce(async (request, id) => { await create(request, id); throw new Error("response lost"); });
@@ -230,16 +338,50 @@ describe("durable sandbox commerce (actual PostgreSQL SQL)", () => {
   });
   it("retries an uncertain provider create using the identical durable payload", async () => {
     const { app, cart } = await populated();
+    const discounted = await app.cart.applyCoupon(cart.id, "DEMO10", { idempotencyKey: key() });
     const create = payment.createSession;
     vi.mocked(payment.createSession).mockImplementationOnce(async (request, id) => { await create(request, id); throw new Error("response lost"); });
-    await expect(app.checkout.start(cart.id, input(cart.revision), { idempotencyKey: key() })).rejects.toThrow("response lost");
+    await expect(app.checkout.start(cart.id, input(discounted.revision, 11.11), { idempotencyKey: key() })).rejects.toThrow("response lost");
     const locked = await app.cart.getCart(cart.id);
+    const changed = structuredClone(product); changed.variants[0].price.amount = 15;
+    vi.mocked(catalog.getProduct).mockResolvedValue(changed);
     time += 60_000;
     const recovered = await service().checkout.reconcile(cart.id, locked.lockedCheckoutId!);
     expect(recovered.status).toBe("open");
     expect(sessions.size).toBe(1);
     const calls = vi.mocked(payment.createSession).mock.calls;
     expect(calls.at(-1)).toEqual(calls[0]);
+    expect(calls[0][0].total).toEqual({ amount: 11.11, currency: "AUD" });
+    expect(recovered).toMatchObject({ couponCode: "DEMO10", subtotal: { amount: 12.34 }, discount: { amount: 1.23 }, total: { amount: 11.11 } });
+  });
+  it("accepts a real Bangalow sofa and ottoman together as one bundle revision", async () => {
+    catalog = createMockCatalogAdapter({ market: markets.au });
+    const app = service();
+    const empty = await app.cart.createCart({ idempotencyKey: key() });
+    const sofa = await catalog.getProduct("bangalow-modular-sofa");
+    const ottoman = await catalog.getProduct("bangalow-modular-sofa-ottoman");
+    const result = await app.cart.addItems(empty.id, [
+      { productId: sofa.id, variantId: sofa.variants[0].id, quantity: 1 },
+      { productId: ottoman.id, variantId: ottoman.variants[0].id, quantity: 1 },
+    ], { idempotencyKey: key() });
+    expect(result.revision).toBe(1);
+    expect(result.lines.map(line => [line.productId, line.variantId, line.unitPrice])).toEqual([
+      [sofa.id, sofa.variants[0].id, sofa.variants[0].price], [ottoman.id, ottoman.variants[0].id, ottoman.variants[0].price],
+    ]);
+    expect(result.total).toEqual({ amount: sofa.variants[0].price.amount + ottoman.variants[0].price.amount, currency: "AUD" });
+  });
+  it("settles an older checkout snapshot without inventing discount fields", async () => {
+    const { app, cart } = await populated();
+    const checkout = await app.checkout.start(cart.id, input(cart.revision), { idempotencyKey: key() });
+    delete checkout.subtotal; delete checkout.discount; delete checkout.couponCode;
+    await db.query("UPDATE commerce_checkouts SET data = $1 WHERE id = $2", [JSON.stringify(checkout), checkout.id]);
+    const session = [...sessions.values()][0]; session.status = "complete"; session.paid = true;
+    const paid = await app.checkout.reconcile(cart.id, checkout.id);
+    const order = await app.orders.get(cart.id, paid.orderId!);
+    expect(order.total).toEqual({ amount: 12.34, currency: "AUD" });
+    expect(order.subtotal).toBeUndefined();
+    expect(order.discount).toBeUndefined();
+    expect(order.couponCode).toBeUndefined();
   });
   it("rolls back a failed order write and recovers a paid session without another payment", async () => {
     const { app, cart } = await populated();

@@ -143,7 +143,7 @@ describe("mock cart adapter", () => {
     expect(emptied.subtotal.amount).toBe(0);
   });
 
-  it("applyCoupon DEMO10 产生 10% 折扣；空 code 抛 validation", async () => {
+  it("applyCoupon DEMO10 produces a final total, rejects invalid replacements and removes an empty code", async () => {
     const { cart } = setup();
     const created = await cart.createCart({ idempotencyKey: "op-coupon" });
     await cart.addItem(created.id, { productId: "suffolk-armchair", variantId: "suffolk-armchair-default", quantity: 1 }, { idempotencyKey: "c1" });
@@ -153,10 +153,38 @@ describe("mock cart adapter", () => {
     });
     expect(discounted.couponCode).toBe("DEMO10");
     expect(discounted.discount?.amount).toBeCloseTo(discounted.subtotal.amount * 0.1, 2);
+    expect(discounted.total?.amount).toBeCloseTo(discounted.subtotal.amount - discounted.discount!.amount, 2);
+    for (const code of ["INVALID", "EXPIRED10"]) {
+      await expect(cart.applyCoupon(created.id, code, { idempotencyKey: code })).rejects.toMatchObject({ kind: "validation" });
+      expect(await cart.getCart(created.id)).toEqual(discounted);
+    }
+    const removed = await cart.applyCoupon(created.id, "  ", { idempotencyKey: "coupon-empty" });
+    expect(removed.couponCode).toBeUndefined();
+    expect(removed.discount).toBeUndefined();
+    expect(removed.total).toEqual(removed.subtotal);
+  });
 
-    await expect(
-      cart.applyCoupon(created.id, "  ", { idempotencyKey: "coupon-empty" }),
-    ).rejects.toMatchObject({ kind: "validation" });
+  it("atomically merges a bundle with variant prices and rolls back invalid second items", async () => {
+    const { cart } = setup();
+    const created = await cart.createCart({ idempotencyKey: "bundle" });
+    const line = { productId: "tamarama-modular-sofa", variantId: "tamarama-modular-sofa-forest-walk-3-sections", quantity: 1 };
+    const items = [line, line];
+    const merged = await cart.addItems(created.id, items, { idempotencyKey: "bundle-add" });
+    expect(merged.lines).toHaveLength(1);
+    expect(merged.lines[0]).toMatchObject({ quantity: 2, unitPrice: { amount: 3550 }, lineTotal: { amount: 7100 }, image: expect.stringContaining("TAM_FW_3S_R") });
+    expect(merged.revision).toBe(1);
+    expect(await cart.addItems(created.id, items, { idempotencyKey: "bundle-add" })).toEqual(merged);
+    for (const invalid of [{ ...line, variantId: "missing" }, { ...line, quantity: 5 }]) {
+      await expect(cart.addItems(created.id, [line, invalid], { idempotencyKey: JSON.stringify(invalid) })).rejects.toMatchObject({ kind: "validation" });
+      expect(await cart.getCart(created.id)).toEqual(merged);
+    }
+  });
+
+  it.each(["sg", "us"] as const)("rejects coupons in %s", async id => {
+    const market = getMarket(id);
+    const cart = createMockCartAdapter({ catalog: createMockCatalogAdapter({ market }), market, logger: createLogger() });
+    const created = await cart.createCart({ idempotencyKey: "coupon-market" });
+    await expect(cart.applyCoupon(created.id, "DEMO10", { idempotencyKey: "coupon" })).rejects.toMatchObject({ kind: "validation" });
   });
 
   it("getCart 未知 id 抛 not_found", async () => {

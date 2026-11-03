@@ -1,7 +1,7 @@
 import "server-only";
 import { createHash, randomUUID } from "node:crypto";
 import type { CatalogPort, Money } from "@/core/contracts/commerce/catalog";
-import type { Cart, CartLine, CartMutationOptions, CartPort } from "@/core/contracts/commerce/cart";
+import type { AddCartLineInput, Cart, CartLine, CartMutationOptions, CartPort } from "@/core/contracts/commerce/cart";
 import { checkoutInputSchema, type Checkout, type CheckoutInput, type CheckoutPort } from "@/core/contracts/commerce/checkout";
 import type { Order, OrderPort } from "@/core/contracts/commerce/order";
 import type { PaymentEvent, PaymentPort, PaymentRequest, PaymentSession } from "@/core/contracts/capabilities/payment";
@@ -72,7 +72,20 @@ export function createPostgresCommerce({ pool, catalog, market, payment, origin,
   }
   async function reprice(cart: Cart, strict: boolean | string[] = false): Promise<Cart> {
     const lines = await Promise.all(cart.lines.map((line) => priceLine(line, strict === true || (Array.isArray(strict) && strict.includes(line.id)))));
-    return { ...cart, lines, subtotal: money(lines.reduce((sum, line) => sum + line.lineTotal.amount, 0)) };
+    const subtotalCents = Math.round(lines.reduce((sum, line) => sum + line.lineTotal.amount, 0) * 100);
+    const discountCents = market.id === "au" && cart.couponCode === "DEMO10" ? Math.round(subtotalCents / 10) : 0;
+    return { ...cart, lines, subtotal: money(subtotalCents / 100), discount: cart.couponCode === "DEMO10" && market.id === "au" ? money(discountCents / 100) : undefined, total: money((subtotalCents - discountCents) / 100) };
+  }
+  function appendItems(current: Cart, items: AddCartLineInput[]): string[] {
+    if (!Array.isArray(items) || items.length < 1 || items.length > 2) throw new AppError("validation", "Add one or two items at a time");
+    return items.map(input => {
+      if (!Number.isInteger(input.quantity) || input.quantity < 1) throw new AppError("validation", "Quantity must be a positive integer");
+      const existing = current.lines.find(line => line.productId === input.productId && line.variantId === input.variantId);
+      if (existing) { existing.quantity += input.quantity; return existing.id; }
+      const lineId = randomUUID();
+      current.lines.push({ id: lineId, productId: input.productId, variantId: input.variantId, quantity: input.quantity } as CartLine);
+      return lineId;
+    });
   }
   async function mutate(cartId: string, options: CartMutationOptions, payload: unknown, change: (cart: Cart) => string[]): Promise<Cart> {
     const key = requestKey(options); const hash = signature(payload);
@@ -94,7 +107,7 @@ export function createPostgresCommerce({ pool, catalog, market, payment, origin,
   const cart: CartPort = {
     async createCart(options) {
       const key = requestKey(options);
-      const created: Cart = { id: randomUUID(), market: market.id, revision: 0, lines: [], subtotal: money(0) };
+      const created: Cart = { id: randomUUID(), market: market.id, revision: 0, lines: [], subtotal: money(0), total: money(0) };
       const { rows } = await pool.query("INSERT INTO commerce_carts(id, market, creation_key, data) VALUES ($1, $2, $3, $4) ON CONFLICT (market, creation_key) DO UPDATE SET creation_key = EXCLUDED.creation_key RETURNING data", [created.id, market.id, key, JSON.stringify(created)]);
       return rows[0].data as Cart;
     },
@@ -104,14 +117,10 @@ export function createPostgresCommerce({ pool, catalog, market, payment, origin,
       return current.lockedCheckoutId ? current : reprice(current);
     },
     addItem(id, input, options) {
-      return mutate(id, options, ["add", input.productId, input.variantId, input.quantity], (current) => {
-        if (!Number.isInteger(input.quantity) || input.quantity < 1) throw new AppError("validation", "Quantity must be a positive integer");
-        const existing = current.lines.find((line) => line.productId === input.productId && line.variantId === input.variantId);
-        if (existing) { existing.quantity += input.quantity; return [existing.id]; }
-        const lineId = randomUUID();
-        current.lines.push({ id: lineId, productId: input.productId, variantId: input.variantId, quantity: input.quantity } as CartLine);
-        return [lineId];
-      });
+      return mutate(id, options, ["add", input.productId, input.variantId, input.quantity], current => appendItems(current, [input]));
+    },
+    addItems(id, items, options) {
+      return mutate(id, options, ["addItems", items], current => appendItems(current, items));
     },
     updateItem(id, lineId, quantity, options) {
       return mutate(id, options, ["update", lineId, quantity], (current) => {
@@ -124,7 +133,17 @@ export function createPostgresCommerce({ pool, catalog, market, payment, origin,
       });
     },
     removeItem(id, lineId, options) { return mutate(id, options, ["remove", lineId], (current) => { current.lines = current.lines.filter((line) => line.id !== lineId); return []; }); },
-    async applyCoupon() { throw new AppError("validation", "Coupons are not available in the sandbox"); },
+    applyCoupon(id, code, options) {
+      const normalized = code.trim().toUpperCase();
+      return mutate(id, options, ["coupon", normalized], current => {
+        if (market.id !== "au") throw new AppError("validation", "Demo coupons are available in AU only");
+        if (normalized && normalized !== "DEMO10") throw new AppError("validation", normalized === "EXPIRED10" ? "This demo coupon has expired" : "This demo coupon is not valid");
+        if (normalized && !current.lines.length) throw new AppError("validation", "Add an item before applying a demo coupon");
+        if (normalized) current.couponCode = normalized;
+        else delete current.couponCode;
+        return [];
+      });
+    },
   };
 
   async function readCheckout(db: CommerceQuery, cartId: string, id: string): Promise<StoredCheckout> {
@@ -148,10 +167,10 @@ export function createPostgresCommerce({ pool, catalog, market, payment, origin,
       if (session.paid && session.status !== "complete") throw new AppError("conflict", "Inconsistent payment status");
       if (session.paid) {
         if (current.status === "expired" || currentCart.lockedCheckoutId !== current.id) throw new AppError("conflict", "Terminal checkout requires manual reconciliation");
-        const order: Order = { id: randomUUID(), checkoutId: current.id, cartId, market: market.id, status: "paid", lines: current.lines, total: current.total, contact: current.contact, address: current.address, createdAt: now().toISOString() };
+        const order: Order = { id: randomUUID(), checkoutId: current.id, cartId, market: market.id, status: "paid", lines: current.lines, subtotal: current.subtotal, discount: current.discount, couponCode: current.couponCode, total: current.total, contact: current.contact, address: current.address, createdAt: now().toISOString() };
         await db.query("INSERT INTO commerce_orders(id, checkout_id, cart_id, market, data) VALUES ($1, $2, $3, $4, $5)", [order.id, current.id, cartId, market.id, JSON.stringify(order)]);
         current.status = "paid"; current.orderId = order.id; delete current.paymentUrl;
-        currentCart.lines = []; currentCart.subtotal = money(0); currentCart.revision += 1; delete currentCart.lockedCheckoutId;
+        currentCart.lines = []; currentCart.subtotal = money(0); currentCart.total = money(0); currentCart.revision += 1; delete currentCart.lockedCheckoutId; delete currentCart.couponCode; delete currentCart.discount;
         await saveCart(db, currentCart);
       } else if (session.status === "expired") {
         current.status = "expired"; delete current.paymentUrl;
@@ -198,10 +217,11 @@ export function createPostgresCommerce({ pool, catalog, market, payment, origin,
           if (current.revision !== input.revision || current.lockedCheckoutId) throw new AppError("conflict", "Cart changed or is locked");
           const priced = await reprice(current, true);
           if (!priced.lines.length) throw new AppError("validation", "Your cart is empty");
-          if (priced.subtotal.amount !== input.expectedTotal.amount || priced.subtotal.currency !== input.expectedTotal.currency) throw new AppError("conflict", "Prices changed; review your cart before continuing", { publicMessage: "Prices changed. Refresh your cart and review the new total before continuing." });
+          const total = priced.total ?? priced.subtotal;
+          if (total.amount !== input.expectedTotal.amount || total.currency !== input.expectedTotal.currency) throw new AppError("conflict", "Prices changed; review your cart before continuing", { publicMessage: "Prices changed. Refresh your cart and review the new total before continuing." });
           id = randomUUID();
           const createdAt = now();
-          const created: Checkout = { id, cartId, market: market.id, revision: current.revision, status: "creating", lines: priced.lines, total: priced.subtotal, contact: input.contact, address: input.address, createdAt: createdAt.toISOString() };
+          const created: Checkout = { id, cartId, market: market.id, revision: current.revision, status: "creating", lines: priced.lines, subtotal: priced.subtotal, discount: priced.discount, couponCode: priced.couponCode, total, contact: input.contact, address: input.address, createdAt: createdAt.toISOString() };
           const returnUrl = `${site.origin}/${market.id}/checkout/return?checkoutId=${id}`;
           const request: PaymentRequest = { checkoutId: id, cartId, market: "au", total: created.total, email: input.contact.email, expiresAt: Math.floor(createdAt.getTime() / 1000) + 23 * 60 * 60, successUrl: returnUrl, cancelUrl: `${returnUrl}&cancelled=1` };
           await db.query("INSERT INTO commerce_checkouts(id, cart_id, market, revision, input_signature, data, payment_request, first_attempt_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)", [id, cartId, market.id, current.revision, hash, JSON.stringify(created), JSON.stringify(request), createdAt.toISOString()]);

@@ -2,7 +2,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@e-pig/happy-dog/components/button";
@@ -18,6 +18,7 @@ import {
   useCartStore,
   type CartMarketIdentity,
 } from "@/modules/cart/lib/cart-store";
+import { DeliveryEstimate } from "../delivery-estimate/delivery-estimate";
 
 const formSchema = checkoutInputSchema.pick({ contact: true, address: true });
 type FormValues = z.infer<typeof formSchema>;
@@ -58,6 +59,7 @@ export function CheckoutForm({ market }: { market: CartMarketIdentity }) {
       },
     },
   });
+  const postalCode = useWatch({ control: form.control, name: "address.postalCode" });
   const submit = form.handleSubmit(async (values) => {
     if (!cart.cart || busy) return;
     setBusy(true);
@@ -66,7 +68,7 @@ export function CheckoutForm({ market }: { market: CartMarketIdentity }) {
     const request = pendingRequest ?? {
       ...values,
       revision: cart.revision,
-      expectedTotal: cart.cart.subtotal,
+      expectedTotal: cart.cart.total ?? cart.cart.subtotal,
       idempotencyKey: crypto.randomUUID(),
     };
     setPendingRequest(request);
@@ -293,6 +295,9 @@ export function CheckoutForm({ market }: { market: CartMarketIdentity }) {
             )}
           </div>
           {renderField(postcodeField)}
+          <div className="sm:col-span-2">
+            <DeliveryEstimate marketId={market.id} postalCode={postalCode} />
+          </div>
         </fieldset>
         {error && (
           <p role="alert" className="rounded-lg border p-4">
@@ -367,6 +372,10 @@ export function CheckoutForm({ market }: { market: CartMarketIdentity }) {
           ))}
         </ul>
         <dl className="space-y-3 text-sm">
+          {cart.cart.discount && cart.cart.couponCode ? <>
+            <div className="flex justify-between gap-3"><dt>Subtotal</dt><dd>{formatMarketPrice(cart.cart.subtotal, market.id)}</dd></div>
+            <div className="flex justify-between gap-3"><dt>Discount ({cart.cart.couponCode})</dt><dd>−{formatMarketPrice(cart.cart.discount, market.id)}</dd></div>
+          </> : null}
           <div className="flex justify-between">
             <dt>Shipping (sandbox)</dt>
             <dd>$0</dd>
@@ -377,7 +386,7 @@ export function CheckoutForm({ market }: { market: CartMarketIdentity }) {
           </div>
           <div className="flex justify-between border-t pt-4 text-lg font-medium">
             <dt>Total</dt>
-            <dd>{formatMarketPrice(cart.cart.subtotal, market.id)}</dd>
+            <dd>{formatMarketPrice(cart.cart.total ?? cart.cart.subtotal, market.id)}</dd>
           </div>
         </dl>
         <p className="text-xs leading-6 text-muted-foreground">

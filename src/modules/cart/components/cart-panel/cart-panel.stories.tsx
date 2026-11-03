@@ -19,6 +19,14 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Ready: Story = {};
+export const DemoCoupon: Story = {
+  beforeEach: () => {
+    getStorefrontQueryClient().setQueryData(cartQueryKey(marketFixture), {
+      cart: { ...cartFixture, couponCode: "DEMO10", discount: { amount: 2, currency: "AUD" }, total: { amount: 18, currency: "AUD" } },
+      checkoutEnabled: true,
+    });
+  },
+};
 export const SelectedVariant: Story = {
   beforeEach: () => {
     getStorefrontQueryClient().setQueryData(cartQueryKey(marketFixture), {

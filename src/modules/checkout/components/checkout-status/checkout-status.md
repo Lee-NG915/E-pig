@@ -8,6 +8,8 @@ Trusted payment reconciliation; a return URL never marks paid or unlocks a cart.
 
 ## 状态矩阵
 
+有优惠的冻结快照显示原价小计、优惠码和折扣；支付状态总额始终使用 Checkout.total。旧快照缺少可选优惠字段时保留原有总额展示，不从当前购物车或目录重算历史金额。
+
 | State | Trigger | Visible result |
 | --- | --- | --- |
 | Creating | server creating | preparing state, bounded polling |

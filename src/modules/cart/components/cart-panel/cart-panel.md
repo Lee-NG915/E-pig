@@ -10,6 +10,8 @@ Server-authoritative bag used by both the page and drawer.
 
 ## 状态矩阵
 
+AU 的非空购物车支持单个示例优惠码 DEMO10；输入框与移除入口经现有 CartPort mutation / Web Lock 发出请求。优惠仅由服务端按分计算，展示原始 Subtotal、Discount 和最终 Total；失败保留现有优惠并提供安全重试。空码表示移除。锁车或 pending 时禁止改码，SG/US 不展示入口。
+
 | State | Trigger | Visible result |
 | --- | --- | --- |
 | Loading | request pending | status text |
@@ -17,6 +19,8 @@ Server-authoritative bag used by both the page and drawer.
 | Unavailable | HTTP/network error | alert and retry, no false empty state |
 | Legacy demo | prior storage exists | re-add notice, old storage untouched |
 | Ready | server lines | selected image, full variant label, exact variant PDP link, quantities and server subtotal |
+| Coupon applied | server coupon snapshot | original subtotal, discount, final total and removal action |
+| Coupon rejected | invalid/expired code | previous server discount remains; actionable error |
 | Missing image | line has no image | stable placeholder; item controls remain available |
 | Locked | lockedCheckoutId | controls disabled, payment status link |
 

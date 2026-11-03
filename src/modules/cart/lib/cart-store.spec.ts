@@ -35,6 +35,63 @@ beforeEach(async () => {
   store = await import("./cart-store");
 });
 describe("server cart", () => {
+  it.each(["single-to-bundle", "bundle-to-single", "bundle-to-coupon"] as const)("rejects an unsent conflicting mutation without replacing the original retry (%s)", async direction => {
+    const item = { productId: "sofa", variantId: "small", quantity: 1 };
+    const items = [item, { ...item, variantId: "large" }];
+    const posts: Record<string, unknown>[] = [];
+    const fetcher = vi.fn(async (_url: string, init?: RequestInit) => {
+      if (init?.method === "POST") {
+        posts.push(JSON.parse(String(init.body)));
+        if (posts.length === 1) throw new TypeError("response lost");
+      }
+      return response({ cart, checkoutEnabled: true });
+    });
+    vi.stubGlobal("fetch", fetcher);
+    const original = () => direction === "single-to-bundle" ? store.addCartItem(market, item) : store.addCartItems(market, items);
+    const conflict = () => direction === "single-to-bundle" ? store.addCartItems(market, items)
+      : direction === "bundle-to-single" ? store.addCartItem(market, item) : store.applyCartCoupon(market, "DEMO10");
+    await expect(original()).rejects.toThrow("response lost");
+    const saved = localStorage.getItem("e-pig:pending-cart:v1:au");
+    const callCount = fetcher.mock.calls.length;
+    await expect(conflict()).rejects.toMatchObject({ name: "CartMutationNotSentError", reason: "pending_conflict" });
+    expect(fetcher).toHaveBeenCalledTimes(callCount);
+    expect(posts).toHaveLength(1);
+    expect(localStorage.getItem("e-pig:pending-cart:v1:au")).toBe(saved);
+    await original();
+    expect(posts).toHaveLength(2);
+    expect(posts[1]).toEqual(posts[0]);
+    expect(localStorage.getItem("e-pig:pending-cart:v1:au")).toBeNull();
+  });
+  it("captures bundle item identifiers before awaiting a refresh", async () => {
+    const fetcher = vi.fn().mockResolvedValueOnce(response({ cart, checkoutEnabled: true })).mockResolvedValueOnce(response({ cart, checkoutEnabled: true }));
+    vi.stubGlobal("fetch", fetcher);
+    const items = [{ productId: "sofa", variantId: "small", quantity: 1 }];
+    const pending = store.addCartItems(market, items);
+    items[0].variantId = "changed-after-submit";
+    await pending;
+    expect(JSON.parse(fetcher.mock.calls[1][1].body).items).toEqual([{ productId: "sofa", variantId: "small", quantity: 1 }]);
+  });
+  it.each(["addItems", "coupon"] as const)("replays one %s request and key after an ambiguous result", async action => {
+    const items = [{ productId: "sofa", variantId: "small", quantity: 1 }, { productId: "sofa", variantId: "large", quantity: 1 }];
+    const discounted = { ...cart, couponCode: "DEMO10", discount: { amount: 1, currency: "AUD" }, total: { amount: 9, currency: "AUD" } };
+    const fetcher = vi.fn()
+      .mockResolvedValueOnce(response({ cart, checkoutEnabled: true }))
+      .mockRejectedValueOnce(new TypeError("response lost"))
+      .mockResolvedValueOnce(response({ cart, checkoutEnabled: true }))
+      .mockResolvedValueOnce(response({ cart: discounted, checkoutEnabled: true }));
+    vi.stubGlobal("fetch", fetcher);
+    const send = () => action === "addItems" ? store.addCartItems(market, items) : store.applyCartCoupon(market, "DEMO10");
+    await expect(send()).rejects.toThrow("response lost");
+    await expect(store.applyCartCoupon(market, "DIFFERENT")).rejects.toThrow(/previous bag update is unconfirmed/);
+    await send();
+    const first = JSON.parse(fetcher.mock.calls[1][1].body);
+    const replay = JSON.parse(fetcher.mock.calls[3][1].body);
+    expect(replay).toEqual(first);
+    expect(first).toEqual({ action, ...(action === "addItems" ? { items } : { code: "DEMO10" }), idempotencyKey: expect.any(String) });
+    expect(localStorage.getItem("e-pig:pending-cart:v1:au")).toBeNull();
+    expect(store.getCartSnapshot(market).cart?.total).toEqual(discounted.total);
+    expect(store.getCartSnapshot(market).open).toBe(action === "addItems");
+  });
   it("never imports or deletes the legacy local cart", () => {
     const legacy = '{"lines":[{"priceAmount":1}]}';
     localStorage.setItem(store.getCartStorageKey("au"), legacy);

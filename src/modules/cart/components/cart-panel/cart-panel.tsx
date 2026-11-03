@@ -1,6 +1,10 @@
 "use client";
+import { useId, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { Button } from "@e-pig/happy-dog/components/button";
 import { formatMarketPrice } from "@/platform/config/format-market-price";
 import { withMarketPrefix } from "@/platform/config/market-path";
@@ -10,6 +14,8 @@ import {
   useCartStore,
   type CartMarketIdentity,
 } from "../../lib/cart-store";
+
+const couponSchema = z.object({ code: z.string().trim().max(40, "Use 40 characters or fewer") });
 
 export function CartPanel({
   market,
@@ -21,6 +27,17 @@ export function CartPanel({
   const cart = useCartStore(market);
   const actions = useCartActions(market);
   const disabled = cart.pending || !!cart.lockedCheckoutId;
+  const couponId = useId();
+  const [couponFeedback, setCouponFeedback] = useState("");
+  const couponForm = useForm<{ code: string }>({ resolver: zodResolver(couponSchema), defaultValues: { code: "" } });
+  async function applyCoupon(code: string) {
+    setCouponFeedback("");
+    try {
+      await actions.applyCoupon(code);
+      couponForm.reset({ code: "" });
+      setCouponFeedback(code ? "Demo coupon applied." : "Demo coupon removed.");
+    } catch { /* The cart store exposes the actionable error and safe retry. */ }
+  }
   return (
     <div className="space-y-6">
       {cart.legacyCart && (
@@ -196,6 +213,31 @@ export function CartPanel({
                 {cart.cart && formatMarketPrice(cart.cart.subtotal, market.id)}
               </span>
             </div>
+            {cart.cart?.discount && cart.cart.couponCode ? <>
+              <div className="flex justify-between gap-3 text-sm">
+                <span>Discount ({cart.cart.couponCode})</span>
+                <span>−{formatMarketPrice(cart.cart.discount, market.id)}</span>
+              </div>
+              <div className="flex justify-between gap-3 text-lg font-medium">
+                <span>Total</span>
+                <span>{formatMarketPrice(cart.cart.total ?? cart.cart.subtotal, market.id)}</span>
+              </div>
+            </> : null}
+            {market.id === "au" ? <form onSubmit={couponForm.handleSubmit(({ code }) => applyCoupon(code))} noValidate>
+              <fieldset disabled={disabled} className="min-w-0 space-y-3 rounded-lg border p-4">
+                <legend className="px-1 text-sm font-medium">Sandbox discount</legend>
+                <p className="text-sm text-foreground/80">AU demo: DEMO10 saves 10%. One code at a time.</p>
+                <label className="block text-sm font-medium" htmlFor={couponId}>Demo coupon</label>
+                <div className="flex flex-wrap gap-2">
+                  <input id={couponId} autoComplete="off" className="h-11 min-w-0 flex-1 rounded-md border bg-background px-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    aria-invalid={!!couponForm.formState.errors.code} aria-describedby={couponForm.formState.errors.code ? `${couponId}-error` : undefined} {...couponForm.register("code")} />
+                  <Button type="submit" variant="outline">Apply demo code</Button>
+                </div>
+                {couponForm.formState.errors.code ? <p id={`${couponId}-error`} role="alert" className="text-sm">{couponForm.formState.errors.code.message}</p> : null}
+                {cart.cart?.couponCode ? <Button type="button" variant="outline" onClick={() => void applyCoupon("")}>Remove demo code</Button> : null}
+              </fieldset>
+              {couponFeedback ? <p role="status" className="mt-2 text-sm">{couponFeedback}</p> : null}
+            </form> : null}
             <p className="text-sm text-muted-foreground">
               Sandbox only. No real charge or delivery. Shipping and tax:{" "}
               {formatMarketPrice(
