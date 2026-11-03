@@ -6,7 +6,7 @@
 - Status: done
 - Agent: Codex + independent Test AI / Review AI
 - Domain: cart / checkout / order
-- Commit: see ../evidence/commits.json (C04)
+- Commit: `0923f2668e56e5e41161f84338586d79db2097c1`
 - 验收映射: contracts.md 的 C04 与 failure rules
 
 ## Summary

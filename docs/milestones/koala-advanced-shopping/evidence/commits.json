@@ -1,0 +1,44 @@
+{
+  "branch": "codex/koala-advanced-shopping",
+  "baseline": "828b5170d4ef4501f5acf99d651e39735252f5b5",
+  "sourceHead": "d83853449915e3b18e329c6f5219cc50d3dadab6",
+  "taskCommits": [
+    {
+      "task": "C02",
+      "commit": "89dc42bf62b774742f66d478298cf465fd4729e8",
+      "record": "tasks/C02-comparison.md",
+      "subject": "feat(catalog): add variant comparison with stable URL slots"
+    },
+    {
+      "task": "C01",
+      "commit": "a8bd7cf25cdeddafc4794d97c567ae94ad032b18",
+      "record": "tasks/C01-filters.md",
+      "subject": "feat(catalog): filter matching variants by colour price and availability"
+    },
+    {
+      "task": "C03",
+      "commit": "73107c07b0a8220b51de538ed8c347172f8e2e7a",
+      "record": "tasks/C03-delivery.md",
+      "subject": "feat(checkout): share clearly labelled demo delivery estimates"
+    },
+    {
+      "task": "C04",
+      "commit": "0923f2668e56e5e41161f84338586d79db2097c1",
+      "record": "tasks/C04-coupons.md",
+      "subject": "feat(cart): apply demo discounts and add sets atomically"
+    },
+    {
+      "task": "C05",
+      "commit": "316ed3566b9d7b3d823d2a620a9c202f8d1c0b91",
+      "record": "tasks/C05-demo-reviews.md",
+      "subject": "feat(catalog): add labelled demo review filtering and details"
+    },
+    {
+      "task": "C06",
+      "commit": "d83853449915e3b18e329c6f5219cc50d3dadab6",
+      "record": "tasks/C06-atomic-set.md",
+      "subject": "feat(catalog): integrate atomic sofa sets and advanced PDP tools"
+    }
+  ],
+  "publication": "All six task commits pushed individually; no merge or manual deploy."
+}

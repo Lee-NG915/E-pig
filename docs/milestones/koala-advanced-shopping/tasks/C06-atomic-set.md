@@ -6,7 +6,7 @@
 - Status: done
 - Agent: Codex + independent Test AI / Review AI
 - Domain: catalog / cart
-- Commit: see ../evidence/commits.json (C06)
+- Commit: `d83853449915e3b18e329c6f5219cc50d3dadab6`
 - 验收映射: contracts.md 的 C06 与 failure rules
 
 ## Summary

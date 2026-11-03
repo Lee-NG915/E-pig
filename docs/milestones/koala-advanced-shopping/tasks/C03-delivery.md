@@ -6,7 +6,7 @@
 - Status: done
 - Agent: Codex + independent Test AI / Review AI
 - Domain: checkout
-- Commit: see ../evidence/commits.json (C03)
+- Commit: `73107c07b0a8220b51de538ed8c347172f8e2e7a`
 - 验收映射: contracts.md 的 C03 与 failure rules
 
 ## Summary

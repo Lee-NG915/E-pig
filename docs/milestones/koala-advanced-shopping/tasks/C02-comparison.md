@@ -6,7 +6,7 @@
 - Status: done
 - Agent: Codex + independent Test AI / Review AI
 - Domain: catalog
-- Commit: see ../evidence/commits.json (C02)
+- Commit: `89dc42bf62b774742f66d478298cf465fd4729e8`
 - 验收映射: contracts.md 的 C02 与 failure rules
 
 ## Summary
