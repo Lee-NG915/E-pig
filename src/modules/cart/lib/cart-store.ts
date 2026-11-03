@@ -217,9 +217,14 @@ async function mutateCart(market: CartMarketIdentity, input?: CartMutation) {
         JSON.stringify(input) !== JSON.stringify(pending.input)
       )
         throw new CartMutationNotSentError();
+      const mutation = pending?.input ?? input;
+      if (!mutation) return;
+      // Cookie identity may have changed while this lock was queued. A failed
+      // read has not sent a mutation and must not create a new unresolved request.
+      // An existing pending request remains intact: its earlier POST may have succeeded.
+      await refreshCart(market);
       if (!pending) {
-        if (!input) return;
-        pending = { input, idempotencyKey: crypto.randomUUID() };
+        pending = { input: mutation, idempotencyKey: crypto.randomUUID() };
         // Shared storage plus Web Locks keeps an unresolved first creation key consistent across tabs.
         // Only mutation inputs and the request key are stored; prices and identity cookies are never persisted.
         window.localStorage.setItem(
@@ -227,8 +232,6 @@ async function mutateCart(market: CartMarketIdentity, input?: CartMutation) {
           JSON.stringify(pending),
         );
       }
-      // Cookie identity may have changed in a different tab while this lock was queued.
-      await refreshCart(market);
       try {
         const result = await storefrontRequest<CartResponse>(
           `/api/${market.id}/cart`,

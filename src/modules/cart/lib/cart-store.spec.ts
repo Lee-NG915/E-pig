@@ -35,6 +35,90 @@ beforeEach(async () => {
   store = await import("./cart-store");
 });
 describe("server cart", () => {
+  it.each(["network", "server"] as const)("does not block a different update when the first preflight GET fails (%s)", async failure => {
+    const fetcher = vi.fn();
+    if (failure === "network") fetcher.mockRejectedValueOnce(new TypeError("Preflight offline"));
+    else fetcher.mockResolvedValueOnce(new Response(JSON.stringify({ error: { message: "Preflight unavailable" } }), { status: 503 }));
+    fetcher.mockImplementation(async () => response({ cart, checkoutEnabled: true }));
+    vi.stubGlobal("fetch", fetcher);
+
+    await expect(store.addCartItem(market, { productId: "sofa", variantId: "small", quantity: 1 })).rejects.toThrow(/Preflight/);
+    expect(fetcher).toHaveBeenCalledTimes(1);
+    expect(fetcher.mock.calls[0][1].method).toBe("GET");
+    expect(localStorage.getItem("e-pig:pending-cart:v1:au")).toBeNull();
+    expect(store.getCartSnapshot(market).pending).toBe(false);
+
+    await store.applyCartCoupon(market, "DEMO10");
+    expect(fetcher).toHaveBeenCalledTimes(3);
+    expect(JSON.parse(fetcher.mock.calls[2][1].body)).toMatchObject({ action: "coupon", code: "DEMO10" });
+    expect(localStorage.getItem("e-pig:pending-cart:v1:au")).toBeNull();
+  });
+
+  it("persists the request after preflight succeeds and before POST can be sent", async () => {
+    let resolvePreflight!: (value: Response) => void;
+    const preflight = new Promise<Response>(resolve => { resolvePreflight = resolve; });
+    let savedAtPost: unknown;
+    let sentBody: unknown;
+    const fetcher = vi.fn(async (_url: string, init?: RequestInit) => {
+      if (init?.method === "GET") return preflight;
+      savedAtPost = JSON.parse(localStorage.getItem("e-pig:pending-cart:v1:au")!);
+      sentBody = JSON.parse(String(init?.body));
+      return response({ cart, checkoutEnabled: true });
+    });
+    vi.stubGlobal("fetch", fetcher);
+    const update = store.addCartItem(market, { productId: "sofa", variantId: "small", quantity: 1 });
+    expect(localStorage.getItem("e-pig:pending-cart:v1:au")).toBeNull();
+    expect(store.getCartSnapshot(market).pending).toBe(true);
+    resolvePreflight(response({ cart, checkoutEnabled: true }));
+    await update;
+    expect(savedAtPost).toEqual({ input: { action: "add", productId: "sofa", variantId: "small", quantity: 1 }, idempotencyKey: expect.any(String) });
+    const saved = savedAtPost as { input: object; idempotencyKey: string };
+    expect(sentBody).toEqual({ ...saved.input, idempotencyKey: saved.idempotencyKey });
+    expect(localStorage.getItem("e-pig:pending-cart:v1:au")).toBeNull();
+    expect(store.getCartSnapshot(market).pending).toBe(false);
+  });
+
+  it("does not send a mutation if its recovery record cannot be saved", async () => {
+    const fetcher = vi.fn().mockResolvedValue(response({ cart, checkoutEnabled: true }));
+    vi.stubGlobal("fetch", fetcher);
+    vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => { throw new DOMException("Storage unavailable", "QuotaExceededError"); });
+    await expect(store.addCartItem(market, { productId: "sofa", variantId: "small", quantity: 1 })).rejects.toThrow("Storage unavailable");
+    expect(fetcher).toHaveBeenCalledTimes(1);
+    expect(fetcher.mock.calls[0][1].method).toBe("GET");
+    expect(localStorage.getItem("e-pig:pending-cart:v1:au")).toBeNull();
+    expect(store.getCartSnapshot(market).pending).toBe(false);
+    expect(store.getCartSnapshot(market).error).toBe("Your bag could not be updated. Please retry.");
+  });
+
+  it.each(["network", "server"] as const)("retains an existing ambiguous POST when its retry preflight fails (%s)", async failure => {
+    const input = { productId: "sofa", variantId: "small", quantity: 1 };
+    const posts: unknown[] = [];
+    let preflightFails = false;
+    const fetcher = vi.fn(async (_url: string, init?: RequestInit) => {
+      if (init?.method === "POST") {
+        posts.push(JSON.parse(String(init.body)));
+        if (posts.length === 1) throw new TypeError("Response lost after POST");
+      } else if (preflightFails) {
+        if (failure === "network") throw new TypeError("Retry preflight offline");
+        return new Response(JSON.stringify({ error: { message: "Retry preflight offline" } }), { status: 503 });
+      }
+      return response({ cart, checkoutEnabled: true });
+    });
+    vi.stubGlobal("fetch", fetcher);
+    await expect(store.addCartItem(market, input)).rejects.toThrow("Response lost after POST");
+    const saved = localStorage.getItem("e-pig:pending-cart:v1:au");
+    preflightFails = true;
+    await expect(store.addCartItem(market, input)).rejects.toThrow("Retry preflight offline");
+    expect(localStorage.getItem("e-pig:pending-cart:v1:au")).toBe(saved);
+    await expect(store.applyCartCoupon(market, "DEMO10")).rejects.toBeInstanceOf(store.CartMutationNotSentError);
+    expect(posts).toHaveLength(1);
+    preflightFails = false;
+    await store.addCartItem(market, input);
+    expect(posts).toHaveLength(2);
+    expect(posts[1]).toEqual(posts[0]);
+    expect(localStorage.getItem("e-pig:pending-cart:v1:au")).toBeNull();
+  });
+
   it.each(["single-to-bundle", "bundle-to-single", "bundle-to-coupon"] as const)("rejects an unsent conflicting mutation without replacing the original retry (%s)", async direction => {
     const item = { productId: "sofa", variantId: "small", quantity: 1 };
     const items = [item, { ...item, variantId: "large" }];
