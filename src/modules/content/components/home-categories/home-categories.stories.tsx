@@ -12,3 +12,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {};
+
+export const UnitedStates: Story = { args: { marketId: "us" } };
+
+export const Dark: Story = { globals: { theme: "dark" } };

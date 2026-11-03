@@ -14,6 +14,8 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {};
 
+export const Singapore: Story = { args: { marketId: "sg" } };
+
 /** dark 主题下的首屏 */
 export const Dark: Story = {
   globals: { theme: "dark" },

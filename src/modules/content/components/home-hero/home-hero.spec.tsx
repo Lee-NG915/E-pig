@@ -12,18 +12,21 @@ vi.mock("next/image", () => ({
 afterEach(cleanup);
 
 describe("HomeHero", () => {
-  it("渲染主标题与指向市场前缀 PLP 的 CTA", () => {
-    render(<HomeHero marketId="au" />);
+  it.each(["au", "sg", "us"])("keeps readable hero content and both destinations in the %s market", (marketId) => {
+    render(<HomeHero marketId={marketId} />);
+
+    expect(screen.getByRole("region", { name: "Furniture for slower days." })).toBeTruthy();
+    expect(screen.getByRole("img", { name: /sofa.*living room/i })).toBeTruthy();
 
     expect(
       screen.getByRole("heading", { level: 1, name: "Furniture for slower days." }),
     ).toBeTruthy();
 
     expect(screen.getByRole("link", { name: /Shop sofas/i }).getAttribute("href")).toBe(
-      "/au/collections/sofas",
+      `/${marketId}/collections/sofas`,
     );
     expect(screen.getByRole("link", { name: /Explore living/i }).getAttribute("href")).toBe(
-      "/au/collections/living-room",
+      `/${marketId}/collections/living-room`,
     );
   });
 });

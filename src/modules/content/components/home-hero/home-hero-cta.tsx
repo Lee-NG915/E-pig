@@ -8,7 +8,7 @@ import { Button } from "@e-pig/happy-dog/components/button";
 
 export function HomeHeroCta({ href }: { href: string }) {
   return (
-    <Button asChild size="lg" className="rounded-full px-7">
+    <Button asChild size="lg" className="px-7">
       <Link
         href={href}
         prefetch={false}

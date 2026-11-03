@@ -12,12 +12,13 @@ vi.mock("next/image", () => ({
 afterEach(cleanup);
 
 describe("HomeCategories", () => {
-  it("渲染四个分类链并向市场前缀 PLP", () => {
-    render(<HomeCategories marketId="sg" />);
+  it.each(["au", "sg", "us"])("gives each image card a readable category heading and a %s destination", (marketId) => {
+    render(<HomeCategories marketId={marketId} />);
     expect(screen.getByRole("heading", { name: /Find your next piece/i })).toBeTruthy();
-    for (const label of ["Living", "Bedroom", "Outdoor", "Sofas"]) {
-      const link = screen.getByRole("link", { name: new RegExp(label, "i") });
-      expect(link.getAttribute("href")?.startsWith("/sg/collections/")).toBe(true);
+    for (const [label, slug] of [["Living", "living-room"], ["Bedroom", "bedroom"], ["Outdoor", "outdoor"], ["Sofas", "sofas"]]) {
+      expect(screen.getByRole("heading", { name: label, level: 3 })).toBeTruthy();
+      const link = screen.getByRole("link", { name: label });
+      expect(link.getAttribute("href")).toBe(`/${marketId}/collections/${slug}`);
     }
   });
 });
