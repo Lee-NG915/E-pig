@@ -6,7 +6,7 @@
 - Status: done
 - Agent: Codex + independent task agents
 - Date: 2026-11-03
-- Commit: recorded in milestone README after task commit
+- Commit: 004bfc55fe4a722048c6d0b3759c15f2efe59e0f
 - Acceptance: [冻结范围](../contracts.md)，对应 T05
 
 ## Summary

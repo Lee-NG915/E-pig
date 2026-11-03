@@ -18,7 +18,15 @@
 
 ## Task commits
 
-提交映射在任务提交后回填。各任务均附 tests / review / follow-ups。
+| Task | 提交 | 范围 |
+| --- | --- | --- |
+| T01 | [dd6e4d6](https://github.com/Lee-NG915/E-pig/commit/dd6e4d63354cc5d51ad1dd44c1ec8ed1902f2df1) | 受控规格 / DTO / 图片来源 |
+| T02 | [e8010e0](https://github.com/Lee-NG915/E-pig/commit/e8010e093fff41e01009b9207bd19f0fa9fe0c29) | 卡片 / PDP / 深链 |
+| T03 | [bbc817c](https://github.com/Lee-NG915/E-pig/commit/bbc817c4898684e1c86e46dfee4dcb8bf54c1132) | 购物袋 / 结账表单 |
+| T04 | [f03293c](https://github.com/Lee-NG915/E-pig/commit/f03293c24d9e6ffabef598dd40ac06ae075e51b1) | 首页 / 移动导航 |
+| T05 | [004bfc5](https://github.com/Lee-NG915/E-pig/commit/004bfc55fe4a722048c6d0b3759c15f2efe59e0f) | 密度切换 / 集成验证 |
+
+各任务均附 tests / review / follow-ups。五批已推送到同一分支，未合并主干。
 
 ## Validation
 
