@@ -50,5 +50,11 @@
     "commit": "3cff0b97b60d588215dda46362ad3e4190e29ca5",
     "record": "tasks/C02-browse-comparison.md",
     "validation": "64 application files / 405 tests; 22 library tests; all quality constituents; production and Storybook builds; SG runtime smoke; Chrome browse/shortlist/detail journey and 320/390/1440 viewports"
+  },
+  "cartPreflightFollowup": {
+    "commit": "84bf4dd1b1f39ea16d0d49a0475f9b9f58681363",
+    "record": "tasks/C04-cart-preflight.md",
+    "validation": "64 application files / 411 tests; typecheck and lint PASS; six new regressions; independent review has no remaining findings",
+    "scope": "Does not prove this was the user-specific original failure; existing pending requests retained for safe replay."
   }
 }

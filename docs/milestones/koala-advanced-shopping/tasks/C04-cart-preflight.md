@@ -3,7 +3,7 @@
 更新日期：2026-11-03
 
 - Scope: cart-store mutation preflight only; no checkout/payment/API or UI changes.
-- Commit: see evidence/commits.json cartPreflightFollowup.
+- Commit: `84bf4dd1b1f39ea16d0d49a0475f9b9f58681363`.
 - Root cause and recovery: [ISSUE-005](../retros/issues/ISSUE-005-cart-preflight-pending.md).
 
 ## AI Test Record
