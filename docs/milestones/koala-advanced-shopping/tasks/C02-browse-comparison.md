@@ -5,7 +5,7 @@
 - Status: done, locally validated
 - Agent: Codex with independent Test AI and Review AI
 - Branch: `codex/koala-advanced-shopping`
-- Commit: recorded in `../evidence/commits.json` after the implementation commit
+- Commit: `3cff0b97b60d588215dda46362ad3e4190e29ca5`
 - Supersedes: C02's URL-driven full-catalog selection flow; historical tests remain historical evidence.
 
 ## Product and interaction review

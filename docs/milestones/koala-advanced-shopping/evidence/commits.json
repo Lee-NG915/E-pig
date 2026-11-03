@@ -45,5 +45,10 @@
     "commit": "4e83814a162e517b7df6456e81dfd6666f15aca5",
     "record": "retros/issues/ISSUE-003-select-design-system.md",
     "validation": "59 application files / 359 tests; 22 library tests; quality constituents; Storybook build; Chrome desktop/mobile and real navigation"
+  },
+  "comparisonJourneyFollowup": {
+    "commit": "3cff0b97b60d588215dda46362ad3e4190e29ca5",
+    "record": "tasks/C02-browse-comparison.md",
+    "validation": "64 application files / 405 tests; 22 library tests; all quality constituents; production and Storybook builds; SG runtime smoke; Chrome browse/shortlist/detail journey and 320/390/1440 viewports"
   }
 }
