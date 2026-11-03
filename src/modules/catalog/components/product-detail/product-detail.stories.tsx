@@ -67,3 +67,17 @@ export const OutOfStock: Story = {
     product: { ...product, variants: product.variants.map(variant => ({ ...variant, availability: "out-of-stock" })) },
   },
 };
+
+const configured: ProductDetailData = {
+  ...product,
+  name: "Demo modular sofa",
+  description: "Explore colours and sizes. These options and prices are controlled story data.",
+  variants: [
+    { ...product.variants[0], id: "cream-2", label: "Cream / 2 Sections", options: [{ name: "Colour", value: "Cream" }, { name: "Size", value: "2 Sections" }], dimensions: { width: 190, depth: 104, height: 93, unit: "cm" } },
+    { ...product.variants[0], id: "green-2", label: "Green / 2 Sections", image: "/pdp/pdp-main.png", options: [{ name: "Colour", value: "Green" }, { name: "Size", value: "2 Sections" }], dimensions: { width: 190, depth: 104, height: 93, unit: "cm" } },
+    { ...product.variants[0], id: "green-3", label: "Green / 3 Sections", image: "/pdp/pdp-main.png", price: { amount: 1500, currency: "AUD" }, options: [{ name: "Colour", value: "Green" }, { name: "Size", value: "3 Sections" }], dimensions: { width: 267, depth: 104, height: 93, unit: "cm" } },
+  ],
+};
+
+export const SelectedConfiguration: Story = { args: { product: configured, initialVariantId: "green-3" } };
+export const InvalidDeepLink: Story = { args: { product: configured, initialVariantId: "removed-variant" } };

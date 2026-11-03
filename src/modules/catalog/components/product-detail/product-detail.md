@@ -1,5 +1,7 @@
 # ProductDetail
 
+更新日期：2026-11-03
+
 ## 用户故事
 
 Renders the selected controlled catalog variant with its price, image, availability and quantity boundary. Native radios support keyboard selection. Add to bag sends product/variant identifiers and quantity only through the market cart action.
@@ -13,5 +15,10 @@ Renders the selected controlled catalog variant with its price, image, availabil
 | Success | Live status names the added option |
 | Missing reviews | Rating and review count omitted |
 | Single image | No duplicated image or gallery navigation |
+| Explicit query | Restores the exact local `variant` ID from the server route; absent query uses the first variant |
+| Invalid or repeated query | Alert and disabled purchase until an explicit option is selected; never silently purchases a default |
+| Structured options | Colour / Size / Section width groups preserve other dimensions; nonexistent combinations are disabled |
+| Selected media | Variant-specific gallery, price and width/depth/height change together; changing options resets the gallery |
+| Mobile | Fixed purchase bar shares the selected variant, add function and duplicate-request guard with the primary CTA |
 
-Prices and availability are sandbox values, with no physical stock or fulfillment claim. Alternative test options identify themselves as sandbox fixtures. No wishlist, preview or duplicate basket action is shown.
+Prices and availability are sandbox values, with no physical stock or fulfillment claim. Alternative test options identify themselves as sandbox fixtures. The route resolves async searchParams inside Suspense; selection uses native history replaceState, preserving other query parameters. The parent keys the component by product/query for navigation resets. No new cache or transaction state is introduced.

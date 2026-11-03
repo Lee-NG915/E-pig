@@ -7,7 +7,7 @@ import { CartMarketProvider } from "@/modules/cart/components/cart-market-contex
 import { ProductDetail } from "./product-detail";
 const actions = vi.hoisted(() => ({ addItem: vi.fn(), pending: false, error: null as string | null }));
 vi.mock("@/modules/cart/lib/cart-store", async (importOriginal) => ({ ...await importOriginal<typeof import("@/modules/cart/lib/cart-store")>(), useCartActions: () => actions }));
-vi.mock("next/image", () => ({ default: ({ alt }: { alt: string }) => <span role="img" aria-label={alt || "Product image"} /> }));
+vi.mock("next/image", () => ({ default: ({ alt, src }: { alt: string; src: string }) => <span role="img" aria-label={alt || "Product image"} data-src={src} /> }));
 const product: ProductDetailData = {
   id: "chair", slug: "chair", name: "Chair", category: "Armchairs", colour: "Moss", image: "/chair.jpg", price: { amount: 100, currency: "AUD" },
   description: "A comfortable chair.", materials: ["Fabric"], gallery: [{ src: "/chair.jpg", alt: "Chair" }], availability: "in-stock", colourOptions: [],
@@ -17,8 +17,8 @@ const product: ProductDetailData = {
     { id: "unavailable", sku: "SANDBOX-UNAVAILABLE", label: "Unavailable test", price: { amount: 100, currency: "AUD" }, image: "/chair.jpg", availability: "out-of-stock", maxQuantity: 5 },
   ],
 };
-function show(item = product) { render(<CartMarketProvider market={{ id: "au", currency: "AUD" }}><ProductDetail product={item} /></CartMarketProvider>); }
-beforeEach(() => { actions.pending = false; actions.error = null; actions.addItem.mockReset().mockResolvedValue(undefined); });
+function show(item = product, initialVariantId?: string | string[]) { render(<CartMarketProvider market={{ id: "au", currency: "AUD" }}><ProductDetail product={item} initialVariantId={initialVariantId} /></CartMarketProvider>); }
+beforeEach(() => { window.history.replaceState({}, "", "/au/products/chair"); actions.pending = false; actions.error = null; actions.addItem.mockReset().mockResolvedValue(undefined); });
 afterEach(cleanup);
 describe("ProductDetail", () => {
   it("hides absent reviews, fake gallery controls and dead wishlist", () => {
@@ -31,7 +31,7 @@ describe("ProductDetail", () => {
   it("selects a real variant and submits only server identifiers", async () => {
     show(); const user = userEvent.setup();
     await user.click(screen.getByRole("radio", { name: "Sandbox test option" }));
-    expect(screen.getByText("$120")).toBeTruthy();
+    expect(screen.getAllByText("$120").length).toBeGreaterThan(0);
     expect(screen.getByRole("img", { name: "Chair — Sandbox test option" })).toBeTruthy();
     await user.click(screen.getByRole("button", { name: "Add to bag" }));
     expect(actions.addItem).toHaveBeenCalledWith({ productId: "chair", variantId: "test", quantity: 1 });
@@ -55,9 +55,53 @@ describe("ProductDetail", () => {
     actions.addItem.mockImplementation(() => new Promise<void>(resolve => { finish = resolve; }));
     show(); const user = userEvent.setup();
     await user.dblClick(screen.getByRole("button", { name: "Add to bag" }));
+    await user.click(screen.getByRole("button", { name: "Add selected option to bag" }));
     expect(actions.addItem).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole("button", { name: "Add selected option to bag" }).hasAttribute("disabled")).toBe(true);
     finish();
     expect(await screen.findByRole("status")).toBeTruthy();
+  });
+
+  it("restores an explicit variant and updates its URL without dropping unrelated query parameters", async () => {
+    window.history.replaceState({}, "", "/au/products/chair?ref=home&variant=test");
+    show(product, "test");
+    expect(screen.getByRole("radio", { name: "Sandbox test option" }).getAttribute("aria-checked")).toBe("true");
+    expect(screen.getByRole("img", { name: "Chair — Sandbox test option" }).getAttribute("data-src")).toBe("/test.jpg");
+    await userEvent.setup().click(screen.getByRole("radio", { name: "Moss" }));
+    expect(new URL(window.location.href).searchParams.get("variant")).toBe("moss");
+    expect(new URL(window.location.href).searchParams.get("ref")).toBe("home");
+  });
+
+  it.each(["unknown", ["moss", "test"]])("blocks an invalid query until the shopper explicitly selects an option", async query => {
+    show(product, query);
+    expect(screen.getByRole("alert").textContent).toContain("Choose an available option");
+    expect(screen.getByRole("button", { name: "Add selected option to bag" }).hasAttribute("disabled")).toBe(true);
+    expect(actions.addItem).not.toHaveBeenCalled();
+    await userEvent.setup().click(screen.getByRole("radio", { name: "Moss" }));
+    expect(screen.queryByRole("alert")).toBeNull();
+    await userEvent.setup().click(screen.getByRole("button", { name: "Add to bag" }));
+    expect(actions.addItem).toHaveBeenCalledWith({ productId: "chair", variantId: "moss", quantity: 1 });
+  });
+
+  it("keeps dimensions, gallery, price and add identifiers aligned when changing colour and size", async () => {
+    const configured: ProductDetailData = { ...product, variants: [
+      ["cream-2", "Cream", "2 Sections", 190, 100], ["green-2", "Green", "2 Sections", 190, 100], ["green-3", "Green", "3 Sections", 267, 150],
+    ].map(([id, colour, size, width, amount]) => ({ ...product.variants[0], id: String(id), label: `${colour} / ${size}`, image: `/${id}.jpg`,
+      options: [{ name: "Colour", value: String(colour) }, { name: "Size", value: String(size) }], price: { amount: Number(amount), currency: "AUD" },
+      dimensions: { width: Number(width), depth: 104, height: 93, unit: "cm" },
+      gallery: [{ src: `/${id}.jpg`, alt: String(id) }, { src: `/${id}-room.jpg`, alt: `${id} room` }],
+    })) };
+    show(configured); const user = userEvent.setup();
+    await user.click(screen.getByRole("button", { name: "Next product image" }));
+    expect(screen.getByRole("img", { name: "cream-2 room" }).getAttribute("data-src")).toBe("/cream-2-room.jpg");
+    await user.click(screen.getByRole("radio", { name: "Green" }));
+    await user.click(screen.getByRole("radio", { name: "3 Sections" }));
+    expect(screen.getByRole("radio", { name: "Cream" }).hasAttribute("disabled")).toBe(true);
+    expect(screen.getAllByText("$150").length).toBeGreaterThan(0);
+    expect(screen.getByText("267 × 104 × 93 cm")).toBeTruthy();
+    expect(screen.getByRole("img", { name: "green-3" }).getAttribute("data-src")).toBe("/green-3.jpg");
+    await user.click(screen.getByRole("button", { name: "Add selected option to bag" }));
+    expect(actions.addItem).toHaveBeenCalledWith({ productId: "chair", variantId: "green-3", quantity: 1 });
   });
 
 });

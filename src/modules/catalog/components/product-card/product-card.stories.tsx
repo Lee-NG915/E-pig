@@ -53,3 +53,39 @@ export const WithBadgeAndCompareAt: Story = {
     },
   },
 };
+
+/** Curated Koala display imagery; these remain the demo's controlled test prices. */
+export const WithColourPreviews: Story = {
+  args: {
+    product: {
+      id: "tamarama-modular-sofa",
+      slug: "tamarama-modular-sofa",
+      name: "Tamarama Modular Sofa",
+      category: "Sofas",
+      colour: "Winter Cream",
+      price: { amount: 2600, currency: "AUD" },
+      image: "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/TAM_WC_2S_R_01_PRODUCT.webp?v=1778828181",
+      gallery: [
+        { src: "https://au.koala.com/cdn/shop/files/TAM_WC_2S_S_01_LIFESTYLE.webp?v=1780387674", alt: "Winter Cream sofa in a room setting" },
+      ],
+      defaultVariantId: "tamarama-modular-sofa-default",
+      variantCount: 4,
+      variantPreviews: [
+        {
+          variantId: "tamarama-modular-sofa-default",
+          colour: "Winter Cream",
+          image: "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/TAM_WC_2S_R_01_PRODUCT.webp?v=1778828181",
+          gallery: [{ src: "https://au.koala.com/cdn/shop/files/TAM_WC_2S_S_01_LIFESTYLE.webp?v=1780387674", alt: "Winter Cream sofa in a room setting" }],
+          price: { amount: 2600, currency: "AUD" },
+        },
+        {
+          variantId: "tamarama-modular-sofa-forest-walk-2-sections",
+          colour: "Forest Walk",
+          image: "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/TAM_FW_2S_R_01_PRODUCT_b09ee6dc-1684-4022-a090-8a72294dd978.png?v=1778477102",
+          gallery: [{ src: "https://au.koala.com/cdn/shop/files/TAM_FW_2S_S_01_LIFESTYLE.webp?v=1780387811", alt: "Forest Walk sofa in a room setting" }],
+          price: { amount: 2600, currency: "AUD" },
+        },
+      ],
+    },
+  },
+};

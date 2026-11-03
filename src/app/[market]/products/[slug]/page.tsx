@@ -23,6 +23,7 @@ import {
 
 type ProductPageProps = {
   params: Promise<{ market: string; slug: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
 export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
@@ -67,10 +68,10 @@ async function MarketChrome() {
 /** request-time PDP 数据边界：params 与商品数据在 Suspense 内解析。 */
 async function ProductDetailSection({
   params,
-}: {
-  params: Promise<{ market: string; slug: string }>;
-}) {
+  searchParams,
+}: ProductPageProps) {
   const { slug } = await params;
+  const { variant } = await searchParams;
 
   await connection();
   const { catalog, market } = getCapabilities();
@@ -101,7 +102,7 @@ async function ProductDetailSection({
   return (
     <CartMarketProvider market={{ id: market.id, currency: market.currency }}>
       {jsonLd ? <script {...jsonLdScriptProps(jsonLd)} /> : null}
-      <ProductDetail product={product} />
+      <ProductDetail key={`${product.id}:${JSON.stringify(variant)}`} product={product} initialVariantId={variant} />
     </CartMarketProvider>
   );
 }
@@ -119,7 +120,7 @@ function ProductSkeleton() {
   );
 }
 
-export default function ProductPage({ params }: ProductPageProps) {
+export default function ProductPage({ params, searchParams }: ProductPageProps) {
   return (
     <div className="min-h-screen">
       <Suspense fallback={<HeaderSkeleton />}>
@@ -127,7 +128,7 @@ export default function ProductPage({ params }: ProductPageProps) {
       </Suspense>
       <main>
         <Suspense fallback={<ProductSkeleton />}>
-          <ProductDetailSection params={params} />
+          <ProductDetailSection params={params} searchParams={searchParams} />
         </Suspense>
       </main>
       <SiteFooter />

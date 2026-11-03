@@ -8,21 +8,34 @@ import type { ProductDetail as ProductDetailData } from "@/core/contracts/commer
 import { formatMarketPrice } from "@/platform/config/format-market-price";
 import { useCartMarket } from "@/modules/cart/components/cart-market-context/cart-market-context";
 import { useCartActions } from "@/modules/cart/lib/cart-store";
+import { getVariantOptionGroups, resolveInitialVariant, resolveVariantOption } from "@/modules/catalog/lib/variant-selection";
 
-export function ProductDetail({ product }: { product: ProductDetailData }) {
+export function ProductDetail({ product, initialVariantId }: { product: ProductDetailData; initialVariantId?: string | string[] }) {
   const market = useCartMarket();
   const { addItem, pending, error } = useCartActions(market);
-  const [selectedId, setSelectedId] = useState(product.variants[0]?.id);
+  const [selectedId, setSelectedId] = useState(() => resolveInitialVariant(product.variants, initialVariantId).variant?.id);
   const [activeIndex, setActiveIndex] = useState(0);
   const [feedback, setFeedback] = useState("");
   const [failure, setFailure] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const submittingRef = useRef(false);
-  const selected = product.variants.find(variant => variant.id === selectedId) ?? product.variants[0];
+  const selected = product.variants.find(variant => variant.id === selectedId);
+  const invalidSelection = !selected && initialVariantId !== undefined;
+  const optionGroups = getVariantOptionGroups(product.variants);
+  const busy = pending || submitting;
   const available = selected?.availability === "in-stock" && selected.maxQuantity > 0;
-  const gallery = product.gallery.length ? product.gallery.filter((image, index, all) => all.findIndex(other => other.src === image.src) === index) : [{ src: product.image, alt: product.name }];
+  const sourceGallery = selected?.gallery?.length ? selected.gallery : product.gallery;
+  const firstImage = { src: selected?.image ?? product.image, alt: `${product.name}${selected ? ` — ${selected.label}` : ""}` };
+  const images = sourceGallery[0]?.src === firstImage.src ? sourceGallery : [firstImage, ...sourceGallery];
+  const gallery = images.filter((image, index, all) => all.findIndex(other => other.src === image.src) === index);
   const activeImage = gallery[activeIndex] ?? gallery[0];
-  const image = activeIndex === 0 && selected ? { src: selected.image, alt: `${product.name} — ${selected.label}` } : activeImage;
+  const image = activeIndex === 0 && !selected?.gallery?.length ? firstImage : activeImage;
+  function selectVariant(id: string) {
+    setSelectedId(id); setActiveIndex(0); setFeedback(""); setFailure("");
+    const url = new URL(window.location.href);
+    url.searchParams.set("variant", id);
+    window.history.replaceState(null, "", url);
+  }
   async function add() {
     if (!selected || !available || pending || submittingRef.current) return;
     submittingRef.current = true; setSubmitting(true); setFailure(""); setFeedback("");
@@ -31,7 +44,7 @@ export function ProductDetail({ product }: { product: ProductDetailData }) {
     finally { submittingRef.current = false; setSubmitting(false); }
   }
   return (
-    <section className="bg-background" aria-labelledby="product-detail-title">
+    <section className="bg-background pb-28 lg:pb-0" aria-labelledby="product-detail-title">
       <div className="mx-auto grid max-w-6xl gap-10 px-4 py-10 sm:px-6 lg:grid-cols-2 lg:gap-16 lg:py-16">
         <div className="min-w-0">
           <div className="relative aspect-square overflow-hidden rounded-xl bg-secondary">
@@ -50,18 +63,33 @@ export function ProductDetail({ product }: { product: ProductDetailData }) {
           <p className="mt-6 text-2xl font-medium">{formatMarketPrice(selected?.price ?? product.price, market.id)}</p>
           <p className="mt-2 text-sm text-muted-foreground">{available ? "Available for sandbox checkout" : "Unavailable for sandbox checkout"}</p>
           <p className="mt-6 max-w-prose leading-7 text-muted-foreground">{product.description}</p>
-          <fieldset className="mt-8" disabled={pending || submitting}>
+          {optionGroups.length ? <div className="mt-8 space-y-5">{optionGroups.map(group => <fieldset key={group.name} disabled={busy}>
+            <legend className="mb-3 font-medium">{group.name}</legend>
+            <div className="flex flex-wrap gap-3">{group.values.map(value => {
+              const target = resolveVariantOption(product.variants, selected, group.name, value);
+              const checked = selected?.options?.some(option => option.name === group.name && option.value === value) ?? false;
+              return <label key={value} className={`rounded-md border px-4 py-3 text-sm focus-within:ring-2 focus-within:ring-ring ${checked ? "border-primary bg-primary/10" : "border-border"} ${target ? "cursor-pointer" : "cursor-not-allowed opacity-50"}`}>
+                <input type="radio" name={`${product.id}-${group.name}`} className="sr-only" value={value} checked={checked} aria-checked={checked} disabled={!target} onChange={() => { if (target) selectVariant(target.id); }} />{value}
+              </label>;
+            })}</div>
+          </fieldset>)}</div> : <fieldset className="mt-8" disabled={busy}>
             <legend className="mb-3 font-medium">Choose an option</legend>
             <div className="flex flex-wrap gap-3">{product.variants.map(variant => <label key={variant.id} className={`cursor-pointer rounded-md border px-4 py-3 text-sm focus-within:ring-2 focus-within:ring-ring ${selected?.id === variant.id ? "border-primary bg-primary/10" : "border-border"}`}>
-              <input type="radio" name={`variant-${product.id}`} className="sr-only" value={variant.id} checked={selected?.id === variant.id} aria-checked={selected?.id === variant.id} onChange={() => { setSelectedId(variant.id); setActiveIndex(0); setFeedback(""); setFailure(""); }} />{variant.label}
+              <input type="radio" name={`variant-${product.id}`} className="sr-only" value={variant.id} checked={selected?.id === variant.id} aria-checked={selected?.id === variant.id} onChange={() => selectVariant(variant.id)} />{variant.label}
             </label>)}</div>
-          </fieldset>
+          </fieldset>}
+          {invalidSelection ? <p role="alert" className="mt-4 text-sm text-destructive">This option is no longer available. Choose an available option before adding to your bag.</p> : null}
           <Button className="mt-6 w-full sm:w-auto" size="lg" disabled={!available || pending || submitting} onClick={() => void add()}>{pending || submitting ? "Adding…" : available ? "Add to bag" : "Unavailable for sandbox checkout"}</Button>
           {failure || error ? <p role="alert" className="mt-3 text-sm text-destructive">{failure || error}</p> : null}
           {feedback ? <p role="status" className="mt-3 text-sm">{feedback}</p> : null}
           <p className="mt-6 text-sm leading-6 text-muted-foreground">Sandbox store. Test options and prices are for checkout testing. No real payment, stock reservation or delivery.</p>
+          {selected?.dimensions ? <div className="mt-8 border-t pt-6"><h2 className="font-medium">Dimensions</h2><p className="mt-2 text-sm">{selected.dimensions.width} × {selected.dimensions.depth} × {selected.dimensions.height} {selected.dimensions.unit}</p><p className="mt-1 text-xs text-muted-foreground">Width × depth × height</p></div> : null}
           {product.materials.length ? <div className="mt-8 border-t pt-6"><h2 className="font-medium">Materials in the catalog</h2><p className="mt-2 text-sm text-muted-foreground">{product.materials.join(", ")}</p></div> : null}
         </div>
+      </div>
+      <div className="fixed inset-x-0 bottom-0 z-30 flex items-center gap-4 border-t bg-background px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] lg:hidden" aria-label="Selected option">
+        <div className="min-w-0 flex-1"><p className="truncate text-xs text-muted-foreground">{selected?.label ?? "Choose an option"}</p><p className="font-medium">{formatMarketPrice(selected?.price ?? product.price, market.id)}</p></div>
+        <Button aria-label="Add selected option to bag" disabled={!available || busy} onClick={() => void add()}>{busy ? "Adding…" : available ? "Add to bag" : "Unavailable"}</Button>
       </div>
     </section>
   );
