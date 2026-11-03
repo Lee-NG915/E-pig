@@ -56,5 +56,12 @@
     "record": "tasks/C04-cart-preflight.md",
     "validation": "64 application files / 411 tests; typecheck and lint PASS; six new regressions; independent review has no remaining findings",
     "scope": "Does not prove this was the user-specific original failure; existing pending requests retained for safe replay."
+  },
+  "cartRecoveryFollowup": {
+    "commit": "a0af64feb0adabf52c5782ce750990b9c887c180",
+    "record": "tasks/C04-cart-recovery.md",
+    "evidence": "evidence/cart-recovery.json",
+    "validation": "64 application files / 476 tests; 22 library tests; typecheck, lint, quality constituents, production build and modules Storybook build PASS; independent review has no remaining P1/P2",
+    "scope": "Browser visual acceptance pending due tool approval capacity/timeouts. No original user cart modification, merge, manual deploy or hosted payment."
   }
 }
