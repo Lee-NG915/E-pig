@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@e-pig/happy-dog/components/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@e-pig/happy-dog/components/select";
 import type { ProductListItem } from "@/core/contracts/commerce/catalog";
 import { formatMarketPrice } from "@/platform/config/format-market-price";
 import { withMarketPrefix } from "@/platform/config/market-path";
@@ -12,7 +13,8 @@ import type { ComparisonData } from "../../lib/compare-data";
 import { buildCompareHref, MAX_COMPARE_ITEMS, type CompareItem } from "../../lib/compare-query";
 
 type Props = ComparisonData & { marketId: string; products: ProductListItem[] };
-const selectClass = "mt-2 h-12 w-full min-w-0 rounded-md border bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60";
+const triggerClass = "mt-2 min-w-0 [&>span]:truncate";
+const contentClass = "w-[var(--radix-select-trigger-width)] max-w-[calc(100vw-2rem)] max-h-[min(18rem,var(--radix-select-content-available-height))]";
 
 export function ProductComparison({ marketId, products, entries, issues }: Props) {
   const router = useRouter();
@@ -33,19 +35,19 @@ export function ProductComparison({ marketId, products, entries, issues }: Props
     returnFocusId.current = null;
   }, [pending, entries]);
 
-  function navigate(items: CompareItem[]) {
+  function navigate(items: CompareItem[], focusId?: string) {
     const keys = items.map((item) => JSON.stringify(item));
     if (new Set(keys).size !== keys.length) {
       setSelectionError("This option is already in your comparison. Choose a different option.");
       return;
     }
     setSelectionError("");
-    returnFocusId.current = document.activeElement instanceof HTMLElement && document.activeElement.id
-      ? document.activeElement.id : "compare-add-product";
+    returnFocusId.current = focusId ?? (document.activeElement instanceof HTMLElement && document.activeElement.id
+      ? document.activeElement.id : "compare-add-product");
     startTransition(() => router.push(buildCompareHref(marketId, items), { scroll: false }));
   }
-  function replace(index: number, item: CompareItem) {
-    navigate(current.map((previous, position) => position === index ? item : previous));
+  function replace(index: number, item: CompareItem, focusId: string) {
+    navigate(current.map((previous, position) => position === index ? item : previous), focusId);
   }
 
   return (
@@ -68,25 +70,30 @@ export function ProductComparison({ marketId, products, entries, issues }: Props
       }}>
         <div className="min-w-0 flex-1">
           <label htmlFor="compare-add-product" className="text-sm font-medium">Add a product</label>
-          <select id="compare-add-product" className={selectClass} value={newProductId} disabled={full || pending} onChange={(event) => {
-            setNewProductId(event.target.value);
-            const selected = products.find((product) => product.id === event.target.value);
-            const detail = entries.find((entry) => entry.product?.id === event.target.value)?.product;
+          <Select value={newProductId} disabled={full || pending} onValueChange={(value) => {
+            setNewProductId(value);
+            const selected = products.find((product) => product.id === value);
+            const detail = entries.find((entry) => entry.product?.id === value)?.product;
             setNewVariantId(selected?.defaultVariantId ?? detail?.variants[0]?.id ?? "");
           }}>
-            <option value="">Choose a product</option>
-            {products.map((product) => <option key={product.id} value={product.id}>{product.name}</option>)}
-          </select>
+            <SelectTrigger id="compare-add-product" className={triggerClass}><SelectValue placeholder="Choose a product" /></SelectTrigger>
+            <SelectContent className={contentClass}>
+              {products.map((product) => <SelectItem key={product.id} value={product.id}>{product.name}</SelectItem>)}
+            </SelectContent>
+          </Select>
         </div>
         {addDetail ? (
           <div className="min-w-0 flex-1">
             <label htmlFor="compare-add-option" className="text-sm font-medium">Option to add</label>
-            <select id="compare-add-option" className={selectClass} value={newVariantId} disabled={full || pending} onChange={(event) => setNewVariantId(event.target.value)}>
-              {addDetail.variants.map((variant) => <option key={variant.id} value={variant.id}>{variant.label}{variant.availability === "out-of-stock" ? " — Out of stock" : ""}</option>)}
-            </select>
+            <Select value={newVariantId} disabled={full || pending} onValueChange={setNewVariantId}>
+              <SelectTrigger id="compare-add-option" className={triggerClass}><SelectValue placeholder="Choose an option" /></SelectTrigger>
+              <SelectContent className={contentClass}>
+                {addDetail.variants.map((variant) => <SelectItem key={variant.id} value={variant.id}>{variant.label}{variant.availability === "out-of-stock" ? " — Out of stock" : ""}</SelectItem>)}
+              </SelectContent>
+            </Select>
           </div>
         ) : null}
-        <Button type="submit" size="lg" disabled={!addProduct || full || pending}>Add to comparison</Button>
+        <Button type="submit" disabled={!addProduct || full || pending}>Add to comparison</Button>
       </form>
       <p role="status" className="mb-6 text-sm text-foreground/80">
         {pending ? "Updating comparison…" : full ? "3 of 3 options selected. Remove one to add another." : `${entries.length} of 3 options selected.`}
@@ -110,21 +117,26 @@ export function ProductComparison({ marketId, products, entries, issues }: Props
                 </div>
                 <div className="mt-5">
                   <label htmlFor={`compare-product-${index}`} className="text-sm font-medium">Product for comparison {index + 1}</label>
-                  <select id={`compare-product-${index}`} className={selectClass} value={product?.id ?? item.productId} disabled={pending} onChange={(event) => {
-                    const selected = products.find((candidate) => candidate.id === event.target.value);
-                    if (selected) replace(index, { productId: selected.id, variantId: selected.defaultVariantId });
+                  <Select value={product?.id ?? item.productId} disabled={pending} onValueChange={(value) => {
+                    const selected = products.find((candidate) => candidate.id === value);
+                    if (selected) replace(index, { productId: selected.id, variantId: selected.defaultVariantId }, `compare-product-${index}`);
                   }}>
-                    {!products.some((candidate) => candidate.id === (product?.id ?? item.productId)) ? <option value={product?.id ?? item.productId}>Unavailable product</option> : null}
-                    {products.map((candidate) => <option key={candidate.id} value={candidate.id}>{candidate.name}</option>)}
-                  </select>
+                    <SelectTrigger id={`compare-product-${index}`} className={triggerClass}><SelectValue /></SelectTrigger>
+                    <SelectContent className={contentClass}>
+                      {!products.some((candidate) => candidate.id === (product?.id ?? item.productId)) ? <SelectItem value={product?.id ?? item.productId} disabled>Unavailable product</SelectItem> : null}
+                      {products.map((candidate) => <SelectItem key={candidate.id} value={candidate.id}>{candidate.name}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
                 </div>
                 {product ? (
                   <div className="mt-4">
                     <label htmlFor={`compare-variant-${index}`} className="text-sm font-medium">Option for comparison {index + 1}</label>
-                    <select id={`compare-variant-${index}`} className={selectClass} value={variant?.id ?? ""} disabled={pending || !product.variants.length} onChange={(event) => replace(index, { productId: product.id, variantId: event.target.value })}>
-                      {!variant ? <option value="" disabled>Choose an available catalog option</option> : null}
-                      {product.variants.map((option) => <option key={option.id} value={option.id}>{option.label}{option.availability === "out-of-stock" ? " — Out of stock" : ""}</option>)}
-                    </select>
+                    <Select value={variant?.id ?? ""} disabled={pending || !product.variants.length} onValueChange={(value) => replace(index, { productId: product.id, variantId: value }, `compare-variant-${index}`)}>
+                      <SelectTrigger id={`compare-variant-${index}`} className={triggerClass}><SelectValue placeholder="Choose an available catalog option" /></SelectTrigger>
+                      <SelectContent className={contentClass}>
+                        {product.variants.map((option) => <SelectItem key={option.id} value={option.id}>{option.label}{option.availability === "out-of-stock" ? " — Out of stock" : ""}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
                   </div>
                 ) : null}
                 {entry.error ? <p role="alert" className="mt-5 rounded-md border p-3 text-sm">{entry.error}</p> : null}

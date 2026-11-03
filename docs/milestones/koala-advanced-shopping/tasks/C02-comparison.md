@@ -11,6 +11,8 @@
 
 ## Summary
 
+后续 Select 设计系统修复及当前验证：[ISSUE-003](../retros/issues/ISSUE-003-select-design-system.md)。
+
 最多三项 product/variant 比较，明确缺失信息；规格、价格、图片与 PDP 链接一致。独立 URL 参数避免重复键造成页面状态碰撞，兼容旧重复 item 链接。
 
 ## Tests

@@ -19,3 +19,10 @@ export const ThreeOptions: Story = { args: { entries: [first,
   { item: { productId: product.id, variantId: product.variants[1].id }, product, variant: product.variants[1], usedDefault: false },
   { item: { productId: second.id, variantId: second.variants[0].id }, product: second, variant: second.variants[0], usedDefault: true },
 ] } };
+
+export const LongProductMenu: Story = {
+  args: {
+    entries: [],
+    products: Array.from({ length: 40 }, (_, index) => ({ ...product, id: `sample-${index}`, name: `Sample ${index + 1} — Modular sofa with a long configuration name` })),
+  },
+};

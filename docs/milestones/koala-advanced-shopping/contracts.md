@@ -35,6 +35,8 @@
 
 ## Invariants
 
+比较页的商品/规格选择器须复用已有 happy-dog Select。验收同时覆盖触发器与展开弹层、长列表滚动、窄屏边界、键盘取消，以及真实导航后原触发器焦点；只检查关闭态或原生 select 的功能测试不能替代这项验收。
+
 沿当前 Hard Rules：不缓存价格/库存/cart/checkout/payment；不改供应商支付 SDK/新支付渠道；不改 cookie 创建规则；不新增 CMS/账号/收藏/真实配送/税费，不把 fixture 当官方政策。主题沿 happy-dog；新交互含 md/spec/stories。
 
 原有未提交 AGENTS/DESIGN/PRODUCT/README/研究文档保留，本轮新增契约记录已授权功能范围，不夹带提交这些原有文档。各批提交/推送到本分支，不自动合并或手工部署。
