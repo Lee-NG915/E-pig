@@ -1,7 +1,9 @@
 "use client";
+import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@e-pig/happy-dog/components/button";
 import { formatMarketPrice } from "@/platform/config/format-market-price";
+import { withMarketPrefix } from "@/platform/config/market-path";
 import {
   setCartOpen,
   useCartActions,
@@ -52,6 +54,24 @@ export function CartPanel({
           <p className="mt-3 text-muted-foreground">
             Choose an item and its sandbox option to get started.
           </p>
+          <div className="mt-6 grid grid-cols-2 gap-3 text-sm">
+            {[
+              { handle: "sofas", label: "Shop sofas" },
+              { handle: "bedroom", label: "Shop bedroom" },
+            ].map((collection) => (
+              <Link
+                key={collection.handle}
+                href={withMarketPrefix(
+                  market.id,
+                  `/collections/${collection.handle}`,
+                )}
+                onClick={() => setCartOpen(market, false)}
+                className="rounded-lg border bg-card px-3 py-5 font-medium hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                {collection.label}
+              </Link>
+            ))}
+          </div>
           <Link
             href={`/${market.id}`}
             onClick={() => setCartOpen(market, false)}
@@ -80,18 +100,48 @@ export function CartPanel({
         <>
           <ul className="divide-y">
             {cart.lines.map((line) => (
-              <li key={line.id} className="flex gap-4 py-5">
+              <li
+                key={line.id}
+                className="grid grid-cols-[64px_minmax(0,1fr)] gap-3 py-5 sm:grid-cols-[80px_minmax(0,1fr)] sm:gap-4"
+              >
+                <div className="flex aspect-square h-16 w-16 items-center justify-center overflow-hidden rounded-lg bg-secondary sm:h-20 sm:w-20">
+                  {line.image ? (
+                    <Image
+                      src={line.image}
+                      alt={`${line.name} — ${line.variantLabel}`}
+                      width={80}
+                      height={80}
+                      className="h-full w-full object-contain"
+                    />
+                  ) : (
+                    <span className="px-1 text-center text-xs text-foreground/80">
+                      Image unavailable
+                    </span>
+                  )}
+                </div>
                 <div className="min-w-0 flex-1">
-                  <p className="font-medium">{line.name}</p>
-                  <p className="mt-1 text-sm text-muted-foreground">
+                  <Link
+                    href={`${withMarketPrefix(market.id, `/products/${encodeURIComponent(line.productId)}`)}?variant=${encodeURIComponent(line.variantId)}`}
+                    onClick={() => setCartOpen(market, false)}
+                    className="break-words font-medium hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    {line.name}
+                  </Link>
+                  <p className="mt-1 break-words text-sm text-muted-foreground">
                     {line.variantLabel}
+                  </p>
+                  <p className="mt-2 text-sm font-medium tabular-nums">
+                    {formatMarketPrice(line.lineTotal, market.id)}
+                    <span className="ml-2 text-xs font-normal text-muted-foreground">
+                      for {line.quantity}
+                    </span>
                   </p>
                   {line.problem && (
                     <p role="alert" className="mt-2 text-sm">
                       {line.problem} Remove this option to continue.
                     </p>
                   )}
-                  <div className="mt-4 flex flex-wrap items-center gap-3">
+                  <div className="mt-4 flex flex-wrap items-center gap-2">
                     <Button
                       size="icon"
                       variant="outline"
@@ -126,7 +176,7 @@ export function CartPanel({
                     </Button>
                     <button
                       aria-label={`Remove ${line.name}`}
-                      className="text-sm underline underline-offset-4 disabled:opacity-50"
+                      className="px-1 py-2 text-sm underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
                       disabled={disabled}
                       onClick={() =>
                         void actions.updateItem(line.id, 0).catch(() => {})
@@ -136,9 +186,6 @@ export function CartPanel({
                     </button>
                   </div>
                 </div>
-                <p className="shrink-0 text-sm font-medium">
-                  {formatMarketPrice(line.lineTotal, market.id)}
-                </p>
               </li>
             ))}
           </ul>

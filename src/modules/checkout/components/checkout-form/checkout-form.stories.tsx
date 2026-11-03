@@ -25,6 +25,21 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Ready: Story = {};
+export const SelectedVariant: Story = {
+  beforeEach: () => {
+    getStorefrontQueryClient().setQueryData(cartQueryKey(marketFixture), {
+      cart: {
+        ...cartFixture,
+        lines: [{
+          ...cartFixture.lines[0],
+          variantLabel: "2 Sections / Regular / Forest Walk · Sandbox option",
+          image: "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/TAM_FW_2S_R_01_PRODUCT_b09ee6dc-1684-4022-a090-8a72294dd978.png?v=1778477102",
+        }],
+      },
+      checkoutEnabled: true,
+    });
+  },
+};
 export const SgBrowseOnly: Story = {
   args: { market: { id: "sg", currency: "SGD" } },
 };

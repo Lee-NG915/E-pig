@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -161,7 +162,7 @@ export function CheckoutForm({ market }: { market: CartMarketIdentity }) {
         try again later.
       </p>
     );
-  const fields = [
+  const contactFields = [
     { name: "contact.name", label: "Full name", autoComplete: "name" },
     {
       name: "contact.email",
@@ -175,6 +176,8 @@ export function CheckoutForm({ market }: { market: CartMarketIdentity }) {
       autoComplete: "tel",
       type: "tel",
     },
+  ] as const;
+  const addressFields = [
     {
       name: "address.line1",
       label: "Address line 1",
@@ -190,12 +193,52 @@ export function CheckoutForm({ market }: { market: CartMarketIdentity }) {
       label: "City / suburb",
       autoComplete: "address-level2",
     },
-    {
-      name: "address.postalCode",
-      label: "Postcode",
-      autoComplete: "postal-code",
-    },
   ] as const;
+  const postcodeField = {
+    name: "address.postalCode",
+    label: "Postcode",
+    autoComplete: "postal-code",
+  } as const;
+  const renderField = (
+    field:
+      | (typeof contactFields)[number]
+      | (typeof addressFields)[number]
+      | typeof postcodeField,
+  ) => {
+    const issue = form.getFieldState(field.name, form.formState).error;
+    return (
+      <div
+        className={
+          field.name.startsWith("address.line") ||
+          field.name === "address.city" ||
+          field.name === "contact.name"
+            ? "min-w-0 sm:col-span-2"
+            : "min-w-0"
+        }
+        key={field.name}
+      >
+        <label htmlFor={field.name} className="mb-2 block text-sm font-medium">
+          {field.label}
+        </label>
+        <input
+          id={field.name}
+          type={"type" in field ? field.type : "text"}
+          autoComplete={field.autoComplete}
+          inputMode={field.name === "address.postalCode" ? "numeric" : undefined}
+          aria-invalid={!!issue}
+          aria-describedby={issue ? `${field.name}-error` : undefined}
+          className="h-12 w-full min-w-0 rounded-md border bg-background px-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          {...form.register(field.name)}
+        />
+        {issue && (
+          <p id={`${field.name}-error`} className="mt-2 text-sm" role="alert">
+            {issue.message}
+          </p>
+        )}
+      </div>
+    );
+  };
+  const stateIssue = form.getFieldState("address.state", form.formState).error;
   return (
     <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(280px,0.65fr)]">
       <form onSubmit={submit} noValidate className="min-w-0 space-y-6">
@@ -210,47 +253,19 @@ export function CheckoutForm({ market }: { market: CartMarketIdentity }) {
           disabled={busy || !!pendingRequest}
           className="grid min-w-0 gap-5 sm:grid-cols-2"
         >
-          <legend className="sr-only">Contact and Australian address</legend>
-          {fields.map((field) => {
-            const issue = form.getFieldState(field.name, form.formState).error;
-            return (
-              <div
-                className={
-                  field.name.startsWith("address.line") ? "sm:col-span-2" : ""
-                }
-                key={field.name}
-              >
-                <label
-                  htmlFor={field.name}
-                  className="mb-2 block text-sm font-medium"
-                >
-                  {field.label}
-                </label>
-                <input
-                  id={field.name}
-                  type={"type" in field ? field.type : "text"}
-                  autoComplete={field.autoComplete}
-                  inputMode={
-                    field.name === "address.postalCode" ? "numeric" : undefined
-                  }
-                  aria-invalid={!!issue}
-                  aria-describedby={issue ? `${field.name}-error` : undefined}
-                  className="h-12 w-full min-w-0 rounded-md border bg-background px-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  {...form.register(field.name)}
-                />
-                {issue && (
-                  <p
-                    id={`${field.name}-error`}
-                    className="mt-2 text-sm"
-                    role="alert"
-                  >
-                    {issue.message}
-                  </p>
-                )}
-              </div>
-            );
-          })}
-          <div>
+          <legend className="mb-5 font-display text-xl">Contact</legend>
+          {contactFields.map(renderField)}
+        </fieldset>
+        <fieldset
+          disabled={busy || !!pendingRequest}
+          className="grid min-w-0 gap-5 border-t pt-5 sm:grid-cols-2"
+        >
+          <legend className="pr-3 font-display text-xl">Delivery</legend>
+          <p className="text-sm text-foreground/80 sm:col-span-2">
+            Country: Australia
+          </p>
+          {addressFields.map(renderField)}
+          <div className="min-w-0">
             <label
               className="mb-2 block text-sm font-medium"
               htmlFor="checkout-state"
@@ -259,7 +274,10 @@ export function CheckoutForm({ market }: { market: CartMarketIdentity }) {
             </label>
             <select
               id="checkout-state"
-              className="h-12 w-full rounded-md border bg-background px-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              autoComplete="address-level1"
+              aria-invalid={!!stateIssue}
+              aria-describedby={stateIssue ? "checkout-state-error" : undefined}
+              className="h-12 w-full min-w-0 rounded-md border bg-background px-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               {...form.register("address.state")}
             >
               {["ACT", "NSW", "NT", "QLD", "SA", "TAS", "VIC", "WA"].map(
@@ -268,8 +286,13 @@ export function CheckoutForm({ market }: { market: CartMarketIdentity }) {
                 ),
               )}
             </select>
+            {stateIssue && (
+              <p id="checkout-state-error" className="mt-2 text-sm" role="alert">
+                {stateIssue.message}
+              </p>
+            )}
           </div>
-          <div className="self-center text-sm">Country: Australia</div>
+          {renderField(postcodeField)}
         </fieldset>
         {error && (
           <p role="alert" className="rounded-lg border p-4">
@@ -293,27 +316,53 @@ export function CheckoutForm({ market }: { market: CartMarketIdentity }) {
         </p>
       </form>
       <aside
-        className="min-w-0 space-y-5 rounded-xl border bg-card p-6"
+        className="min-w-0 space-y-5 rounded-xl border bg-card p-5 sm:p-6"
         aria-label="Checkout summary"
       >
-        <h2 className="font-display text-2xl">Order summary</h2>
+        <div className="flex flex-wrap items-baseline justify-between gap-3">
+          <h2 className="font-display text-2xl">Order summary</h2>
+          <Link
+            className="text-sm underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            href={`/${market.id}/cart`}
+          >
+            Edit bag
+          </Link>
+        </div>
         <ul className="divide-y">
           {cart.cart.lines.map((line) => (
             <li
               key={line.id}
-              className="flex justify-between gap-4 py-4 text-sm"
+              className="grid grid-cols-[64px_minmax(0,1fr)] gap-3 py-4 text-sm"
             >
+              <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-lg bg-secondary">
+                {line.image ? (
+                  <Image
+                    src={line.image}
+                    alt={`${line.name} — ${line.variantLabel}`}
+                    width={64}
+                    height={64}
+                    className="h-full w-full object-contain"
+                  />
+                ) : (
+                  <span className="px-1 text-center text-xs text-foreground/80">
+                    Image unavailable
+                  </span>
+                )}
+              </div>
               <div className="min-w-0">
-                <p>
-                  {line.name} × {line.quantity}
-                </p>
-                <p className="mt-1 text-muted-foreground">
+                <p className="break-words font-medium">{line.name}</p>
+                <p className="mt-1 break-words text-muted-foreground">
                   {line.variantLabel}
                 </p>
+                <div className="mt-2 flex flex-wrap justify-between gap-x-3 gap-y-1">
+                  <span className="text-muted-foreground">
+                    Quantity: {line.quantity}
+                  </span>
+                  <span className="font-medium">
+                    {formatMarketPrice(line.lineTotal, market.id)}
+                  </span>
+                </div>
               </div>
-              <span className="shrink-0">
-                {formatMarketPrice(line.lineTotal, market.id)}
-              </span>
             </li>
           ))}
         </ul>
