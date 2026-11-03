@@ -169,3 +169,15 @@ it("does not offer checkout in SG", async () => {
     screen.queryByRole("button", { name: "Continue to test card payment" }),
   ).toBeNull();
 });
+
+it("sends a direct checkout visitor to the saved bag recovery without starting payment", async () => {
+  Object.defineProperty(navigator, "locks", { configurable: true, value: { request: async (_name: string, callback: () => unknown) => callback() } });
+  const key = "e-pig:pending-cart:v1:au";
+  localStorage.setItem(key, JSON.stringify({ input: { action: "add", productId: "alto", variantId: "alto-small", quantity: 1 }, idempotencyKey: crypto.randomUUID(), expectedCartId: cartFixture.id, createdAt: Date.now(), autoAttempts: 2 }));
+  const fetcher = vi.fn(async () => new Response(JSON.stringify({ cart: cartFixture, checkoutEnabled: true }))); vi.stubGlobal("fetch", fetcher);
+  render(<CheckoutForm market={marketFixture} />);
+  expect((await screen.findByRole("link", { name: "Review saved bag update" })).getAttribute("href")).toBe("/au/cart");
+  expect(screen.queryByRole("button", { name: "Continue to test card payment" })).toBeNull();
+  expect(localStorage.getItem(key)).not.toBeNull();
+  localStorage.removeItem(key);
+});

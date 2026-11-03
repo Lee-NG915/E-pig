@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { cartQueryKey, getStorefrontQueryClient } from "../../lib/cart-store";
 import { CartPanel } from "./cart-panel";
-import { cartFixture, marketFixture } from "./cart-panel.mock";
+import { cartFixture, installCartRecoveryStory, marketFixture } from "./cart-panel.mock";
 const meta = {
   title: "Modules/cart/CartPanel",
   component: CartPanel,
@@ -62,3 +62,7 @@ export const Empty: Story = {
     });
   },
 };
+export const CheckingSavedUpdate: Story = { beforeEach: () => installCartRecoveryStory("checking") };
+export const RetrySavedUpdate: Story = { beforeEach: () => installCartRecoveryStory("needs_retry") };
+export const ReviewUnreadableUpdate: Story = { beforeEach: () => installCartRecoveryStory("unreadable") };
+export const NarrowRecovery: Story = { args: { compact: true }, beforeEach: () => installCartRecoveryStory("needs_retry"), decorators: [(Story) => <div className="w-[288px]"><Story /></div>] };

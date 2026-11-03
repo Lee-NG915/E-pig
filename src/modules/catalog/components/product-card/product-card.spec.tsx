@@ -45,9 +45,9 @@ const previewProduct: ProductListItem = {
   ],
 };
 
-const actions = vi.hoisted(() => ({ addItem: vi.fn(), pending: false, error: null as string | null }));
+const actions = vi.hoisted(() => ({ addItem: vi.fn(), pending: false, error: null as string | null, recovery: "idle" as "idle" | "checking" | "needs_retry" }));
 vi.mock("@/modules/cart/lib/cart-store", async (importOriginal) => ({ ...await importOriginal<typeof import("@/modules/cart/lib/cart-store")>(), useCartActions: () => actions }));
-beforeEach(() => { localStorage.clear(); comparison.resetCompareStoreForTests(); vi.restoreAllMocks(); actions.addItem.mockReset().mockResolvedValue(undefined); actions.pending = false; actions.error = null; });
+beforeEach(() => { localStorage.clear(); comparison.resetCompareStoreForTests(); vi.restoreAllMocks(); actions.addItem.mockReset().mockResolvedValue(undefined); actions.pending = false; actions.error = null; actions.recovery = "idle"; });
 
 afterEach(cleanup);
 
@@ -121,9 +121,23 @@ describe("ProductCard", () => {
     expect(screen.queryByRole("button", { name: /Add .* to bag/ })).toBeNull();
   });
   it("shows a quick-add rejection accessibly", async () => {
-    actions.addItem.mockRejectedValue(new Error("Unavailable")); renderCard();
+    actions.addItem.mockImplementationOnce(async () => { actions.error = "Unavailable"; throw new Error("Unavailable"); }); renderCard();
     await userEvent.setup().click(screen.getByRole("button", { name: "Add Alto Modular Sofa to bag" }));
     expect(await screen.findByRole("alert")).toBeTruthy();
+  });
+
+  it("removes a prior quick-add error after the shared recovery confirms it", async () => {
+    actions.addItem.mockImplementationOnce(async () => { actions.error = "Saved update unconfirmed"; throw new Error(actions.error); });
+    const view = render(<CartMarketProvider market={{ id: "au", currency: "AUD" }}><ProductCard product={product} /></CartMarketProvider>);
+    await userEvent.setup().click(screen.getByRole("button", { name: "Add Alto Modular Sofa to bag" }));
+    expect(screen.getByRole("alert").textContent).toContain("Saved update unconfirmed");
+    actions.recovery = "needs_retry";
+    view.rerender(<CartMarketProvider market={{ id: "au", currency: "AUD" }}><ProductCard product={product} /></CartMarketProvider>);
+    expect(screen.getByRole("button", { name: "Add Alto Modular Sofa to bag" })).toHaveProperty("disabled", true);
+    actions.error = null; actions.recovery = "idle";
+    view.rerender(<CartMarketProvider market={{ id: "au", currency: "AUD" }}><ProductCard product={product} /></CartMarketProvider>);
+    expect(screen.queryByRole("alert")).toBeNull();
+    expect(screen.getByRole("button", { name: "Add Alto Modular Sofa to bag" })).toHaveProperty("disabled", false);
   });
 
   it("selects a colour preview and keeps image, price and all PDP links on that variant", async () => {

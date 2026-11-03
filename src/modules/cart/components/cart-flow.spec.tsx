@@ -1,10 +1,12 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import type { ProductDetail as ProductDetailData } from "@/core/contracts/commerce/catalog";
 import {
   getStorefrontQueryClient,
+  recoverCart,
+  refreshCart,
   setCartOpen,
   type CartResponse,
 } from "../lib/cart-store";
@@ -19,8 +21,7 @@ vi.mock("next/image", () => ({
     <span role="img" aria-label={alt || "Product image"} />
   ),
 }));
-beforeEach(() => {
-  getStorefrontQueryClient().clear();
+beforeEach(async () => {
   localStorage.clear();
   sessionStorage.clear();
   setCartOpen(marketFixture, false);
@@ -28,21 +29,24 @@ beforeEach(() => {
     configurable: true,
     value: { request: async (_: string, fn: () => unknown) => fn() },
   });
+  vi.stubGlobal("fetch", vi.fn(async () => new Response(JSON.stringify({ cart: null, checkoutEnabled: true, mutationApplied: true }))));
+  await recoverCart(marketFixture); await refreshCart(marketFixture);
+  getStorefrontQueryClient().clear();
 });
 afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
 });
-it("keeps the original single-item retry available when an unsent bundle conflicts with it", async () => {
+it("recovers a lost single-add response automatically before allowing a new bundle update", async () => {
   const posts: { action: string; idempotencyKey: string; items?: unknown; productId?: string; variantId?: string; quantity?: number }[] = [];
   let state: CartResponse = { cart: null, checkoutEnabled: true };
-  vi.stubGlobal("fetch", vi.fn(async (_url: string, init?: RequestInit) => {
+  vi.stubGlobal("fetch", vi.fn(async (url: string, init?: RequestInit) => {
     if (init?.method === "POST") {
       const body = JSON.parse(String(init.body)); posts.push(body);
-      if (posts.length === 1) throw new TypeError("Single response lost");
       state = { checkoutEnabled: true, cart: { ...cartFixture, revision: posts.length } };
+      if (posts.length === 1) throw new TypeError("Single response lost");
     }
-    return new Response(JSON.stringify(state));
+    return new Response(JSON.stringify({ ...state, ...(url.includes("mutationKey=") ? { mutationApplied: true } : {}) }));
   }));
   const sofa: ProductDetailData = {
     id: "alto", slug: "alto", name: "Alto Sofa", category: "Sofas", colour: "Cream", image: "/sofa.jpg",
@@ -54,24 +58,46 @@ it("keeps the original single-item retry available when an unsent bundle conflic
   const user = userEvent.setup();
   const single = screen.getByRole("button", { name: "Add selected option to bag" });
   await user.click(single);
-  expect(await screen.findByText("Single response lost")).toBeTruthy();
-  const saved = localStorage.getItem("e-pig:pending-cart:v1:au");
-  await user.click(screen.getByRole("button", { name: "Add both items to bag" }));
-  expect(await screen.findByText(/previous bag update is unconfirmed/)).toBeTruthy();
+  expect(await screen.findByText("Compact / sandbox added to your bag.")).toBeTruthy();
   await waitFor(() => expect(single).toHaveProperty("disabled", false));
   expect(screen.getByLabelText("Companion option")).toHaveProperty("disabled", false);
   expect(screen.queryByRole("button", { name: "Retry set addition" })).toBeNull();
   expect(posts).toHaveLength(1);
-  expect(localStorage.getItem("e-pig:pending-cart:v1:au")).toBe(saved);
-  await user.click(single);
-  await waitFor(() => expect(posts).toHaveLength(2));
-  expect(posts[1]).toEqual(posts[0]);
   await waitFor(() => expect(localStorage.getItem("e-pig:pending-cart:v1:au")).toBeNull());
   await user.click(screen.getByRole("button", { name: "Add both items to bag" }));
   expect(await screen.findByText("Both selected items were added to your bag.")).toBeTruthy();
-  expect(posts).toHaveLength(3);
-  expect(posts[2]).toMatchObject({ action: "addItems", items: [{ productId: "alto", variantId: "alto-small", quantity: 1 }, { productId: "ottoman", variantId: "ottoman-default", quantity: 1 }] });
-  expect(posts[2].idempotencyKey).not.toBe(posts[0].idempotencyKey);
+  expect(posts).toHaveLength(2);
+  expect(posts[1]).toMatchObject({ action: "addItems", items: [{ productId: "alto", variantId: "alto-small", quantity: 1 }, { productId: "ottoman", variantId: "ottoman-default", quantity: 1 }] });
+  expect(posts[1].idempotencyKey).not.toBe(posts[0].idempotencyKey);
+});
+
+it("unlocks a saved bundle after background receipt confirmation without another addItems call", async () => {
+  const posts: { action: string; idempotencyKey: string }[] = [];
+  let canCheck = false;
+  vi.stubGlobal("fetch", vi.fn(async (url: string, init?: RequestInit) => {
+    if (init?.method === "POST") { posts.push(JSON.parse(String(init.body))); throw new TypeError("Response lost"); }
+    if (url.includes("mutationKey=") && !canCheck) throw new TypeError("Still offline");
+    return new Response(JSON.stringify({ cart: posts.length ? cartFixture : null, checkoutEnabled: true, mutationApplied: canCheck }));
+  }));
+  const sofa: ProductDetailData = {
+    id: "alto", slug: "alto", name: "Alto Sofa", category: "Sofas", colour: "Cream", image: "/sofa.jpg", price: { amount: 10, currency: "AUD" },
+    description: "Demo", materials: [], gallery: [], colourOptions: [], availability: "in-stock",
+    variants: [{ id: "alto-small", sku: "SOFA", label: "Compact / sandbox", image: "/sofa.jpg", price: { amount: 10, currency: "AUD" }, availability: "in-stock", maxQuantity: 5 }],
+  };
+  render(<CartMarketProvider market={marketFixture}><ProductDetail product={sofa} bundleCompanion={{ ...sofa, id: "ottoman", name: "Ottoman" }} /></CartMarketProvider>);
+  await userEvent.setup().click(await screen.findByRole("button", { name: "Add both items to bag" }));
+  expect(await screen.findByRole("button", { name: "Retry set addition" })).toBeTruthy();
+  expect(screen.getByLabelText("Companion option")).toHaveProperty("disabled", true);
+  expect(screen.getByRole("button", { name: "Add selected option to bag" })).toHaveProperty("disabled", true);
+  canCheck = true;
+  await act(async () => { window.dispatchEvent(new Event("online")); });
+  expect(await screen.findByText("Both selected items were added to your bag.")).toBeTruthy();
+  expect(screen.queryByRole("alert")).toBeNull();
+  expect(screen.queryByRole("button", { name: "Retry set addition" })).toBeNull();
+  expect(screen.getByLabelText("Companion option")).toHaveProperty("disabled", false);
+  expect(screen.getByRole("button", { name: "Add selected option to bag" })).toHaveProperty("disabled", false);
+  expect(posts).toHaveLength(1);
+  expect(localStorage.getItem("e-pig:pending-cart:v1:au")).toBeNull();
 });
 it("shares the server bag across separate product and header islands and updates/removes a variant", async () => {
   let state: CartResponse = { cart: null, checkoutEnabled: true };
@@ -127,7 +153,7 @@ it("shares the server bag across separate product and header islands and updates
   );
   const user = userEvent.setup();
   await user.click(
-    screen.getByRole("button", { name: "Add Alto Sofa to bag" }),
+    await screen.findByRole("button", { name: "Add Alto Sofa to bag" }),
   );
   expect(await screen.findByRole("dialog")).toBeTruthy();
   expect(

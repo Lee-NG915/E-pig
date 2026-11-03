@@ -16,7 +16,10 @@ AU 的非空购物车支持单个示例优惠码 DEMO10；输入框与移除入�
 | --- | --- | --- |
 | Loading | request pending | status text |
 | Empty | successful GET returns no lines | market collection links and home browse link |
-| Unavailable | HTTP/network error | alert and retry, no false empty state |
+| Unavailable | ordinary GET error | alert and Refresh bag only, no meaningless mutation retry or false empty state |
+| Checking saved update | recovery=checking | Checking your bag status independently of general errors; quantity, coupon and checkout disabled |
+| Saved update needs retry | recovery=needs_retry | original update stays saved; Retry saved update checks only the saved intent; Continue browsing closes a drawer or navigates the full page to the current market home; successful ordinary GET cannot hide this section |
+| Unreadable/different-session intent | recoveryCanReset=true | explicit Use current bag after reviewing the current snapshot; no re-send; normal ambiguous requests never offer this alternative |
 | Legacy demo | prior storage exists | re-add notice, old storage untouched |
 | Ready | server lines | selected image, full variant label, exact variant PDP link, quantities and server subtotal |
 | Coupon applied | server coupon snapshot | original subtotal, discount, final total and removal action |
@@ -25,3 +28,5 @@ AU 的非空购物车支持单个示例优惠码 DEMO10；输入框与移除入�
 | Locked | lockedCheckoutId | controls disabled, payment status link |
 
 同 revision 的旧 unlocked GET 不覆盖已确认的 checkout lock；服务端更高 revision 的合法解锁仍被接受。
+
+恢复和 pending 时结算显示真正 disabled button，不保留可由键盘触发的 checkout 链接。Stories 用受控 pending ID 和仅 /api/au/cart 的 fetch 边界演示 checking、可重试、不可读和 320px 布局；清理时回收请求并恢复边界。

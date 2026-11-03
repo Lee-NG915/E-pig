@@ -25,7 +25,8 @@
 - Coupon 影响 server total，不影响 unitPrice/lineTotal/subtotal 的原价语义；Checkout 的 expectedTotal、PaymentRequest.total 和订单总额一致。锁车时禁止修改优惠码；支付成功后清空 cart 优惠；取消后可重新计算。
 - 拒绝非 AU coupon；SG/US 保持支付关闭。配送估算不影响费用计算，因此也不影响付款锁车/幂等输入。
 - Bundle selection 属 catalog UI；加购原子性属 cart port/postgres adapter。选中无效时不可提交，pending 冻结所有选择；失败保留选择并可复用相同请求重试。
-- Cart 的首次 pending recovery record 必须在前置 GET 成功后、POST 发出前，在同一 Web Lock 内持久化。前置 GET 失败不新建未确认写入；既存 pending 在重试 GET 失败时必须原样保留，只有原请求的确定结果才能解除。
+- Cart 恢复升级按 [C04-cart-recovery](tasks/C04-cart-recovery.md)：先查原 key 回执，最多两轮自动恢复（8 秒请求上限、10 分钟自动重放窗口），同 key 安全重放；身份未知/过期或变化不盲目重放。恢复状态独立于普通 GET 错误，套装重试绑定原 key，直达 checkout 也引导回购物袋。
+- Cart 的首次 pending recovery record 必须在前置 GET 成功后、POST 发出前，在同一 Web Lock 内持久化。前置 GET 失败不新建未确认写入；既存 pending 在重试 GET 失败时必须原样保留，原请求的确定结果可以解除；身份变化/旧格式或损坏记录只允许用户在成功读取当前购物袋后明确退役，不将旧意图重发到新购物袋。
 - 未发送的 pending conflict 不得建立新的套装重试或锁；保留原 pending payload/key，并允许原入口恢复。套装成功提示必须绑定实际成功的商品与规格，切换为新组合后不得继续声称新组合已添加。
 
 ## Public test seams

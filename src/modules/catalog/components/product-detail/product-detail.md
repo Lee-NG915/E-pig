@@ -11,7 +11,8 @@ Renders the selected controlled catalog variant with its price, image, availabil
 | Available | Selected variant and Add to bag |
 | Unavailable | Explicit sandbox availability; addition disabled |
 | Pending | Adding label, duplicate submission blocked and selection disabled |
-| Failure | Accessible alert, selected option preserved for retry |
+| Failure | Accessible shared cart error, selected option preserved; confirmed recovery removes the error without stale local text |
+| Saved-update recovery | Both purchase paths and options disabled; open the bag to check the original saved update instead of adding again |
 | Success | Live status names the added option |
 | Missing reviews | Rating and review count omitted |
 | Single image | No duplicated image or gallery navigation |

@@ -6,7 +6,7 @@
 
 Displays catalog imagery, category, name, option label and market price. Image and heading link to the market PDP. A known single variant has quick add; multiple or unknown variants link to Choose options so the customer selects before adding.
 
-Quick add submits product/variant IDs and quantity only. Pending requests disable addition and reject duplicates. Failures remain visible as alerts. Default, compare price and optional badge display remain supported; catalog data does not manufacture promotional badges.
+Quick add submits product/variant IDs and quantity only. Pending and saved-update recovery disable addition and reject duplicates. Errors come from the shared cart state, so confirmed recovery clears the message without a stale local failure returning. A saved update offers Open bag to check saved update. Default, compare price and optional badge display remain supported; catalog data does not manufacture promotional badges.
 
 When the catalog supplies at least two colour previews, customers can select a real product thumbnail. Selection updates the displayed colour, image, price and every PDP link to the preview's explicit variant. Until a colour is selected, the original product display and default link are preserved. Multiple variants still require Choose options; colour previews never enable quick add.
 

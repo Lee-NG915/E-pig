@@ -15,6 +15,7 @@ AU sandbox contact/address form and authoritative bag summary.
 | State | Trigger | Visible result |
 | --- | --- | --- |
 | Loading | GET pending | loading message |
+| Saved bag update | automatic checking or unresolved cart intent | prevent payment submission and provide Review saved bag update link; entry remains actionable after refresh |
 | Ready | valid AU bag | Contact and Delivery groups, selected variant image, totals and Edit bag |
 | Missing image | line has no image | image placeholder; specification and amount remain readable |
 | Unavailable | payment service disabled | informative notice |

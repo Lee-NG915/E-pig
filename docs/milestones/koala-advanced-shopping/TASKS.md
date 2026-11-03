@@ -11,6 +11,7 @@
 | C03 | checkout delivery estimate helper/component、PDP/Checkout 挂载 | test postcodes / unknown / market | done |
 | C04 | cart/postgres/coupon totals、checkout/order展示 | money/reprice/lock/retry/paid snapshots | done |
 | C05 | catalog demo review fixture/component | label/filter/sort/empty | done |
+| C04-recovery | cart store/receipt API/adapters、恢复 UI、catalog/checkout 协作 | 同 key 自动恢复、身份保护、明确恢复入口、套装旧 Retry | implemented；自动化通过，浏览器视觉待验（tasks/C04-cart-recovery.md） |
 | C06 | catalog bundle UI、cart atomic batch、store/API | rollback/idempotency/max/pending/network | done |
 
 Test AI、红绿切片与独立 Review 已完成。最终 typecheck → lint → 全量测试首轮通过，其余 verify 项、build/Storybook、浏览器/市场检查通过，详见 validation.md。六批按依赖顺序 C02 → C01 → C03 → C04 → C05 → C06 提交；共享 DTO/data 和事务基础在各 task 记录中注明。测试最多 2 workers，默认全并发 verify 本轮未重跑，逐项完成组成检查。

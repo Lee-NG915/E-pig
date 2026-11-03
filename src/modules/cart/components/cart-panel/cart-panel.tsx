@@ -26,7 +26,8 @@ export function CartPanel({
 }) {
   const cart = useCartStore(market);
   const actions = useCartActions(market);
-  const disabled = cart.pending || !!cart.lockedCheckoutId;
+  const recovering = cart.recovery !== "idle";
+  const disabled = cart.pending || recovering || !!cart.lockedCheckoutId;
   const couponId = useId();
   const [couponFeedback, setCouponFeedback] = useState("");
   const couponForm = useForm<{ code: string }>({ resolver: zodResolver(couponSchema), defaultValues: { code: "" } });
@@ -46,26 +47,33 @@ export function CartPanel({
           those items to confirm current prices and options.
         </p>
       )}
-      {cart.error && (
+      {recovering ? (
+        <section aria-label="Saved bag update" className="space-y-3 rounded-lg border bg-muted/40 p-4 text-sm">
+          {cart.recovery === "checking" ? <p role="status">Checking your bag…</p> : <div role="alert" className="space-y-2">
+            <p>{cart.recoveryCanReset ? "We could not safely confirm the saved update. Review your current bag before continuing." : "Your original update is saved. You do not need to add the items again."}</p>
+            {cart.recoveryMessage ? <p>{cart.recoveryMessage}</p> : null}
+          </div>}
+          <div className="flex flex-wrap gap-3">
+            {cart.recovery === "needs_retry" ? <Button variant="outline" disabled={cart.pending} onClick={() => void actions.retry().catch(() => {})}>Retry saved update</Button> : null}
+            {cart.recoveryCanReset ? <Button variant="outline" disabled={cart.pending || cart.recovery === "checking"} onClick={() => void actions.useCurrentBag().catch(() => {})}>Use current bag</Button> : null}
+            {compact ? <Button variant="ghost" onClick={() => setCartOpen(market, false)}>Continue browsing</Button> : <Button asChild variant="ghost"><Link href={withMarketPrefix(market.id, "/")} onClick={() => setCartOpen(market, false)}>Continue browsing</Link></Button>}
+          </div>
+          {cart.recoveryCanReset ? <p>Review the current bag below. Use current bag keeps it as shown and does not re-send the saved update.</p> : null}
+        </section>
+      ) : null}
+      {cart.error && !recovering && (
         <div role="alert" className="space-y-3 rounded-lg border p-4">
           <p>{cart.error}</p>
           <div className="flex flex-wrap gap-3">
             <Button variant="outline" onClick={() => void cart.refresh()}>
               Refresh bag
             </Button>
-            <Button
-              variant="outline"
-              disabled={cart.pending}
-              onClick={() => void actions.retry().catch(() => {})}
-            >
-              Retry last update
-            </Button>
           </div>
         </div>
       )}
       {cart.loading ? (
         <p role="status">Loading your bag…</p>
-      ) : !cart.error && !cart.lines.length ? (
+      ) : !cart.error && !recovering && !cart.lines.length ? (
         <div className="py-10 text-center">
           <h2 className="font-display text-2xl">Nothing in your bag yet</h2>
           <p className="mt-3 text-muted-foreground">
@@ -246,14 +254,14 @@ export function CartPanel({
               )}
               .
             </p>
+            {recovering ? <p className="rounded-lg bg-muted p-4 text-sm">Confirm your saved bag update before continuing to checkout.</p> : null}
             {cart.checkoutEnabled && market.id === "au" ? (
               !cart.lockedCheckoutId &&
               !cart.lines.some((line) => line.problem) && (
-                <Link
+                disabled ? <Button className="w-full" disabled>Continue to sandbox checkout</Button> : <Link
                   href={`/${market.id}/checkout`}
                   onClick={() => setCartOpen(market, false)}
-                  aria-disabled={cart.pending}
-                  className={`block rounded-lg bg-primary px-5 py-3 text-center font-medium text-primary-foreground focus-visible:ring-2 focus-visible:ring-ring ${cart.pending ? "pointer-events-none opacity-50" : ""}`}
+                  className="block rounded-lg bg-primary px-5 py-3 text-center font-medium text-primary-foreground focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   Continue to sandbox checkout
                 </Link>

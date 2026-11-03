@@ -1,12 +1,13 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ProductDetail as ProductDetailData } from "@/core/contracts/commerce/catalog";
 import { CartMarketProvider } from "@/modules/cart/components/cart-market-context/cart-market-context";
 import { ProductDetail } from "./product-detail";
+import { CartUpdateUnconfirmedError, type useCartActions } from "@/modules/cart/lib/cart-store";
 import * as comparison from "../../lib/compare-store";
-const actions = vi.hoisted(() => ({ addItem: vi.fn(), addItems: vi.fn(), pending: false, error: null as string | null }));
+const actions = vi.hoisted(() => ({ addItem: vi.fn(), addItems: vi.fn(), retry: vi.fn(), pending: false, error: null as string | null, recovery: "idle" as "idle" | "checking" | "needs_retry", resolution: null as ReturnType<typeof useCartActions>["resolution"] }));
 vi.mock("@/modules/cart/lib/cart-store", async (importOriginal) => ({ ...await importOriginal<typeof import("@/modules/cart/lib/cart-store")>(), useCartActions: () => actions }));
 vi.mock("next/image", () => ({ default: ({ alt, src }: { alt: string; src: string }) => <span role="img" aria-label={alt || "Product image"} data-src={src} /> }));
 const product: ProductDetailData = {
@@ -19,7 +20,7 @@ const product: ProductDetailData = {
   ],
 };
 function show(item = product, initialVariantId?: string | string[], companion?: ProductDetailData) { render(<CartMarketProvider market={{ id: "au", currency: "AUD" }}><ProductDetail product={item} initialVariantId={initialVariantId} bundleCompanion={companion} /></CartMarketProvider>); }
-beforeEach(() => { localStorage.clear(); comparison.resetCompareStoreForTests(); vi.restoreAllMocks(); window.history.replaceState({}, "", "/au/products/chair"); actions.pending = false; actions.error = null; actions.addItem.mockReset().mockResolvedValue(undefined); actions.addItems.mockReset().mockResolvedValue(undefined); });
+beforeEach(() => { localStorage.clear(); comparison.resetCompareStoreForTests(); vi.restoreAllMocks(); window.history.replaceState({}, "", "/au/products/chair"); actions.pending = false; actions.error = null; actions.recovery = "idle"; actions.resolution = null; actions.retry.mockReset().mockResolvedValue(undefined); actions.addItem.mockReset().mockResolvedValue(undefined); actions.addItems.mockReset().mockResolvedValue(undefined); });
 afterEach(cleanup);
 describe("ProductDetail", () => {
   it("does not invent customer ratings, gallery controls or a dead wishlist", () => {
@@ -32,7 +33,7 @@ describe("ProductDetail", () => {
   });
 
   it("compares the selected variant and freezes both purchase paths while a set addition is uncertain", async () => {
-    actions.addItems.mockRejectedValueOnce(new TypeError("Connection lost"));
+    actions.addItems.mockRejectedValueOnce(new CartUpdateUnconfirmedError("saved-set"));
     show(product, "test", { ...product, id: "footrest", name: "Footrest" }); const user = userEvent.setup();
     const compare = vi.spyOn(comparison, "addCompareItem");
     await user.click(screen.getByRole("button", { name: "Add Chair to comparison" }));
@@ -40,12 +41,13 @@ describe("ProductDetail", () => {
     expect(window.location.pathname).toBe("/au/products/chair");
     expect(screen.getByRole("button", { name: "Chair is in comparison" }).getAttribute("aria-pressed")).toBe("true");
     await user.click(screen.getByRole("button", { name: "Add both items to bag" }));
-    expect(await screen.findByText("Connection lost")).toBeTruthy();
+    expect(await screen.findByText(/couldn’t confirm your bag update/)).toBeTruthy();
     expect(screen.getByRole("radio", { name: "Moss" }).matches(":disabled")).toBe(true);
     expect((screen.getByRole("button", { name: "Add selected option to bag" }) as HTMLButtonElement).disabled).toBe(true);
     expect((screen.getByRole("button", { name: "Resolve set addition below" }) as HTMLButtonElement).disabled).toBe(true);
+    actions.retry.mockImplementationOnce(async key => { actions.resolution = { key, input: { action: "addItems", items: [] }, status: "confirmed" }; });
     await user.click(screen.getByRole("button", { name: "Retry set addition" }));
-    expect(screen.getByRole("radio", { name: "Moss" }).matches(":disabled")).toBe(false);
+    await waitFor(() => expect(screen.getByRole("radio", { name: "Moss" }).matches(":disabled")).toBe(false));
     expect(actions.addItem).not.toHaveBeenCalled();
   });
   it("selects a real variant and submits only server identifiers", async () => {
@@ -64,11 +66,26 @@ describe("ProductDetail", () => {
     expect(screen.getByRole("button", { name: "Adding…" }).hasAttribute("disabled")).toBe(true);
   });
   it("preserves selection and reports a rejected request accessibly", async () => {
-    actions.addItem.mockRejectedValue(new Error("Try again")); show(); const user = userEvent.setup();
+    actions.addItem.mockImplementationOnce(async () => { actions.error = "Try again"; throw new Error("Try again"); }); show(); const user = userEvent.setup();
     await user.click(screen.getByRole("radio", { name: "Sandbox test option" }));
     await user.click(screen.getByRole("button", { name: "Add to bag" }));
     expect(await screen.findByRole("alert")).toBeTruthy();
     expect(screen.getByRole("radio", { name: "Sandbox test option" }).getAttribute("aria-checked")).toBe("true");
+  });
+  it("clears an earlier add error when shared recovery resolves and re-enables both purchase paths", async () => {
+    actions.addItem.mockImplementationOnce(async () => { actions.error = "Update saved for recovery"; throw new Error(actions.error); });
+    const view = render(<CartMarketProvider market={{ id: "au", currency: "AUD" }}><ProductDetail product={product} /></CartMarketProvider>);
+    await userEvent.setup().click(screen.getByRole("button", { name: "Add to bag" }));
+    expect(screen.getByRole("alert").textContent).toContain("Update saved for recovery");
+    actions.recovery = "needs_retry";
+    view.rerender(<CartMarketProvider market={{ id: "au", currency: "AUD" }}><ProductDetail product={product} /></CartMarketProvider>);
+    expect(screen.getByRole("button", { name: "Add to bag" })).toHaveProperty("disabled", true);
+    expect(screen.getByRole("button", { name: "Add selected option to bag" })).toHaveProperty("disabled", true);
+    actions.error = null; actions.recovery = "idle";
+    view.rerender(<CartMarketProvider market={{ id: "au", currency: "AUD" }}><ProductDetail product={product} /></CartMarketProvider>);
+    expect(screen.queryByRole("alert")).toBeNull();
+    expect(screen.getByRole("button", { name: "Add to bag" })).toHaveProperty("disabled", false);
+    expect(screen.getByRole("button", { name: "Add selected option to bag" })).toHaveProperty("disabled", false);
   });
   it("ignores duplicate clicks while an add request is unresolved", async () => {
     let finish!: () => void;

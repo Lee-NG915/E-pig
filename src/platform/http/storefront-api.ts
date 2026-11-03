@@ -9,12 +9,14 @@ import { CART_COOKIE_MAX_AGE, cartCookieName, readCartCookie, signCartCookie } f
 
 const requestKey = z.string().uuid();
 const id = z.string().min(1).max(160);
+const cartSessionChangedMessage = "Your bag session changed. Review your current bag before trying again.";
 const cartLineInput = z.object({ productId: id, variantId: id, quantity: z.number().int().min(1).max(10) });
+const cartMutationInput = { idempotencyKey: requestKey, expectedCartId: id.nullable().optional() };
 const cartInput = z.discriminatedUnion("action", [
-  z.object({ action: z.literal("add"), productId: id, variantId: id, quantity: z.number().int().min(1).max(10), idempotencyKey: requestKey }),
-  z.object({ action: z.literal("update"), lineId: id, quantity: z.number().int().min(0).max(10), idempotencyKey: requestKey }),
-  z.object({ action: z.literal("addItems"), items: z.array(cartLineInput).min(1).max(2), idempotencyKey: requestKey }),
-  z.object({ action: z.literal("coupon"), code: z.string().max(40), idempotencyKey: requestKey }),
+  z.object({ action: z.literal("add"), productId: id, variantId: id, quantity: z.number().int().min(1).max(10), ...cartMutationInput }),
+  z.object({ action: z.literal("update"), lineId: id, quantity: z.number().int().min(0).max(10), ...cartMutationInput }),
+  z.object({ action: z.literal("addItems"), items: z.array(cartLineInput).min(1).max(2), ...cartMutationInput }),
+  z.object({ action: z.literal("coupon"), code: z.string().max(40), ...cartMutationInput }),
 ]);
 export type StorefrontApiDependencies = {
   market: string; origin: string; cookieSecret: string; secure: boolean; checkoutEnabled: boolean;
@@ -49,14 +51,31 @@ export function createStorefrontApi(deps: StorefrontApiDependencies) {
       const token = new NextRequest(request.url, { headers: request.headers }).cookies.get(cartCookieName(market))?.value;
       const cartId = readCartCookie(token, market, deps.cookieSecret);
       const checkoutEnabled = deps.checkoutEnabled && market === "au";
+      const receiptKeys = resource === "cart" && request.method === "GET" ? new URL(request.url).searchParams.getAll("mutationKey") : [];
+      const mutationKey = receiptKeys.length ? z.array(requestKey).length(1).parse(receiptKeys)[0] : undefined;
       if (resource === "cart" && request.method === "GET" && !cartId) {
-        return privateJson({ cart: null, checkoutEnabled, ...(token ? { sessionExpired: true } : {}) });
+        return privateJson({ cart: null, checkoutEnabled, ...(mutationKey ? { mutationApplied: false } : {}), ...(token ? { sessionExpired: true } : {}) });
       }
       if (!deps.cookieSecret || deps.cookieSecret.length < 32) throw new AppError("upstream", "Cart credentials are not configured");
       if (resource === "cart") {
         const port = deps.getCommerce().cart;
-        if (request.method === "GET") return privateJson({ cart: await port.getCart(cartId!), checkoutEnabled });
+        if (request.method === "GET") {
+          // Read the snapshot after the receipt so an applied receipt never accompanies an older pre-commit cart.
+          const receipt = mutationKey ? { mutationApplied: await port.hasMutation(cartId!, mutationKey) } : {};
+          return privateJson({ cart: await port.getCart(cartId!), checkoutEnabled, ...receipt });
+        }
         const body = cartInput.parse(await jsonInput(request));
+        if (body.expectedCartId === null && token && !cartId && await port.findCartByCreationKey(`create:${body.idempotencyKey}`)) {
+          // A stale credential cannot reclaim an existing bag by replaying its creation key.
+          throw new AppError("conflict", cartSessionChangedMessage, { publicMessage: cartSessionChangedMessage });
+        }
+        if (body.expectedCartId !== undefined && body.expectedCartId !== cartId) {
+          // A first-add response may set the cookie before its body is lost. Only that creation key may replay.
+          const created = body.expectedCartId === null && cartId ? await port.findCartByCreationKey(`create:${body.idempotencyKey}`) : null;
+          if (!created || created.id !== cartId) {
+            throw new AppError("conflict", cartSessionChangedMessage, { publicMessage: cartSessionChangedMessage });
+          }
+        }
         if (!cartId && body.action !== "add" && body.action !== "addItems") throw new AppError("unauthorized", "Start a new bag by adding an item.");
         const ownedId = cartId ?? (await port.createCart({ idempotencyKey: `create:${body.idempotencyKey}` })).id;
         const options = { idempotencyKey: body.idempotencyKey };

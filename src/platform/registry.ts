@@ -57,7 +57,7 @@ export function getCapabilities(): Capabilities {
   // Public catalog rendering never needs a database connection. Transaction routes use getCommerce().
   const cart = env.COMMERCE_ADAPTER === "mock"
     ? createMockCartAdapter({ catalog, market, logger: createLogger({ module: "cart" }) })
-    : { createCart: unavailable, getCart: unavailable, addItem: unavailable, addItems: unavailable, updateItem: unavailable, removeItem: unavailable, applyCoupon: unavailable };
+    : { createCart: unavailable, getCart: unavailable, findCartByCreationKey: unavailable, hasMutation: unavailable, addItem: unavailable, addItems: unavailable, updateItem: unavailable, removeItem: unavailable, applyCoupon: unavailable };
 
   capabilitiesCache = { catalog, cart, market };
   logger.info("capabilities.initialized", {

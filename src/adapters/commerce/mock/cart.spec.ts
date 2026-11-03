@@ -7,14 +7,47 @@ import { createLogger } from "@/platform/logging/logger";
 import { createMockCartAdapter } from "./cart";
 import { createMockCatalogAdapter } from "./catalog";
 
-function setup() {
-  const market = getMarket("au");
+function setup(marketId: "au" | "sg" | "us" = "au") {
+  const market = getMarket(marketId);
   const catalog = createMockCatalogAdapter({ market });
   const cart = createMockCartAdapter({ catalog, market, logger: createLogger() });
   return { cart, catalog };
 }
 
 describe("mock cart adapter", () => {
+  it("reads existing creation identity and committed receipts without creating or crossing cart/market scope", async () => {
+    const { cart } = setup();
+    const creationKey = "create:read-only-test";
+    expect(await cart.findCartByCreationKey(creationKey)).toBeNull();
+    const first = await cart.createCart({ idempotencyKey: creationKey });
+    const other = await cart.createCart({ idempotencyKey: "create:other" });
+    expect(await cart.hasMutation(first.id, "add-receipt")).toBe(false);
+    const added = await cart.addItem(first.id, { productId: "tamarama-modular-sofa", variantId: "tamarama-modular-sofa-default", quantity: 1 }, { idempotencyKey: "add-receipt" });
+    expect(await cart.findCartByCreationKey(creationKey)).toEqual(added);
+    expect(await cart.hasMutation(first.id, "add-receipt")).toBe(true);
+    expect(await cart.hasMutation(other.id, "add-receipt")).toBe(false);
+    expect(await cart.findCartByCreationKey("never-created")).toBeNull();
+    const found = (await cart.findCartByCreationKey(creationKey))!;
+    found.lines[0].quantity = 99;
+    expect(await cart.getCart(first.id)).toEqual(added);
+    for (const marketId of ["sg", "us"] as const) {
+      const marketCart = setup(marketId).cart;
+      expect(await marketCart.findCartByCreationKey(creationKey)).toBeNull();
+      expect(await marketCart.hasMutation(first.id, "add-receipt")).toBe(false);
+      const own = await marketCart.createCart({ idempotencyKey: creationKey });
+      expect((await marketCart.findCartByCreationKey(creationKey))?.id).toBe(own.id);
+      expect(own.id).not.toBe(first.id);
+    }
+  });
+
+  it("does not report a receipt for a rejected mutation", async () => {
+    const { cart } = setup();
+    const first = await cart.createCart({ idempotencyKey: "create:failed-test" });
+    await expect(cart.addItem(first.id, { productId: "tamarama-modular-sofa", variantId: "missing", quantity: 1 }, { idempotencyKey: "failed-add" })).rejects.toMatchObject({ kind: "validation" });
+    expect(await cart.hasMutation(first.id, "failed-add")).toBe(false);
+    expect(await cart.getCart(first.id)).toEqual(first);
+  });
+
   it("createCart 幂等：同一 idempotencyKey 重放返回同一 cart", async () => {
     const { cart } = setup();
     const first = await cart.createCart({ idempotencyKey: "op-1" });

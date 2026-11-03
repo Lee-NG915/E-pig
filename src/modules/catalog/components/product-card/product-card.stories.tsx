@@ -7,6 +7,7 @@ import {
 } from "@/modules/cart/components/cart-market-context/cart-market-context";
 
 import { ProductCard } from "./product-card";
+import { installCartRecoveryStory } from "@/modules/cart/components/cart-panel/cart-panel.mock";
 
 /** story 专属 market：与 app（au/sg/us）及其它 story 的 demo cart 互不影响。 */
 const market: CartMarket = { id: "au", currency: "AUD" };
@@ -42,6 +43,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {};
+export const SavedBagUpdate: Story = { beforeEach: () => installCartRecoveryStory("needs_retry") };
 
 export const ExplicitDefaultAndComparison: Story = { args: { linkToDefaultVariant: true } };
 

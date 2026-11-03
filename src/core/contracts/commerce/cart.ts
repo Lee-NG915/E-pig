@@ -46,6 +46,10 @@ export type CartMutationOptions = {
 export interface CartPort {
   /** 同一 idempotencyKey 重复调用必须返回同一购物车，不创建新 cart */
   createCart(input: { idempotencyKey: string }): Promise<Cart>;
+  /** Read an existing creation key in this market; never creates a cart. */
+  findCartByCreationKey(idempotencyKey: string): Promise<Cart | null>;
+  /** True only for a committed mutation on this cart in this market. */
+  hasMutation(cartId: string, idempotencyKey: string): Promise<boolean>;
   /** 未找到时抛 AppError({ kind: "not_found" }) */
   getCart(cartId: string): Promise<Cart>;
   addItem(

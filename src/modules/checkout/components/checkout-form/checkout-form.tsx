@@ -61,7 +61,7 @@ export function CheckoutForm({ market }: { market: CartMarketIdentity }) {
   });
   const postalCode = useWatch({ control: form.control, name: "address.postalCode" });
   const submit = form.handleSubmit(async (values) => {
-    if (!cart.cart || busy) return;
+    if (!cart.cart || busy || cart.pending || cart.recovery !== "idle") return;
     setBusy(true);
     setError(null);
     // Keep the original input/key together after an ambiguous network result.
@@ -109,6 +109,12 @@ export function CheckoutForm({ market }: { market: CartMarketIdentity }) {
       </p>
     );
   if (cart.loading) return <p role="status">Loading your checkout…</p>;
+  if (cart.recovery !== "idle") return (
+    <section className="space-y-4 rounded-lg border bg-muted/40 p-6">
+      <p role={cart.recovery === "checking" ? "status" : "alert"}>{cart.recovery === "checking" ? "Checking your saved bag update…" : "Your bag has a saved update to confirm before checkout."}</p>
+      <Link className="inline-block underline underline-offset-4" href={`/${market.id}/cart`}>Review saved bag update</Link>
+    </section>
+  );
   if (cart.error)
     return (
       <div role="alert">

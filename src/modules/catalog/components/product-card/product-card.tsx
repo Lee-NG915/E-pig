@@ -10,7 +10,7 @@ import type { ProductListItem } from "@/core/contracts/commerce/catalog";
 import { withMarketPrefix } from "@/platform/config/market-path";
 
 import { useCartMarket } from "@/modules/cart/components/cart-market-context/cart-market-context";
-import { useCartActions } from "@/modules/cart/lib/cart-store";
+import { setCartOpen, useCartActions } from "@/modules/cart/lib/cart-store";
 import { formatMarketPrice } from "@/platform/config/format-market-price";
 import { Badge } from "@e-pig/happy-dog/components/badge";
 import { Button } from "@e-pig/happy-dog/components/button";
@@ -18,8 +18,8 @@ import { AddToComparison } from "../add-to-comparison/add-to-comparison";
 
 export function ProductCard({ product, linkToDefaultVariant = false }: { product: ProductListItem; linkToDefaultVariant?: boolean }) {
   const market = useCartMarket();
-  const { addItem, pending, error } = useCartActions(market);
-  const [failure, setFailure] = useState("");
+  const { addItem, pending, error, recovery } = useCartActions(market);
+  const recovering = recovery !== "idle";
   const [adding, setAdding] = useState(false);
   const [selectedVariantId, setSelectedVariantId] = useState<string>();
   const [activeImageIndex, setActiveImageIndex] = useState(0);
@@ -36,10 +36,10 @@ export function ProductCard({ product, linkToDefaultVariant = false }: { product
   const activeImage = gallery[activeImageIndex] ?? gallery[0];
   const busy = useRef(false);
   async function add() {
-    if (!product.defaultVariantId || pending || busy.current) return;
-    busy.current = true; setAdding(true); setFailure("");
+    if (!product.defaultVariantId || pending || recovering || busy.current) return;
+    busy.current = true; setAdding(true);
     try { await addItem({ productId: product.id, variantId: product.defaultVariantId, quantity: 1 }); }
-    catch (cause) { setFailure(cause instanceof Error ? cause.message : "Could not add item. Please try again."); }
+    catch { /* The cart store owns the current error and saved-update recovery. */ }
     finally { busy.current = false; setAdding(false); }
   }
   const productPath = withMarketPrefix(market.id, `/products/${product.slug}`);
@@ -93,7 +93,7 @@ export function ProductCard({ product, linkToDefaultVariant = false }: { product
           </>
         ) : null}
         {product.variantCount === 1 && previews.length < 2 && product.defaultVariantId ? <Button
-          size="icon" disabled={pending || adding}
+          size="icon" disabled={pending || adding || recovering}
           className="absolute bottom-3 right-3 rounded-full"
           onClick={() => void add()}
           aria-label={pending || adding ? `Adding ${product.name}` : `Add ${product.name} to bag`}
@@ -153,7 +153,8 @@ export function ProductCard({ product, linkToDefaultVariant = false }: { product
         </fieldset>
       ) : null}
       <AddToComparison marketId={market.id} item={{ productId: product.id, variantId: selectedPreview?.variantId ?? product.defaultVariantId }} productName={product.name} className="mt-3 min-h-11 -ml-3" />
-      {failure || error ? <p role="alert" className="mt-2 text-sm text-destructive">{failure || error}</p> : null}
+      {error ? <p role="alert" className="mt-2 text-sm text-destructive">{error}</p> : null}
+      {recovering ? <Button variant="outline" className="mt-2 h-auto min-h-11 w-full whitespace-normal" onClick={() => setCartOpen(market, true)}>Open bag to check saved update</Button> : null}
     </article>
   );
 }

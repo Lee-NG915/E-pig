@@ -72,6 +72,38 @@ describe("durable sandbox commerce (actual PostgreSQL SQL)", () => {
     const cart = await app.cart.addItem(created.id, { productId: "sofa", variantId: "small", quantity: 1 }, { idempotencyKey: key() });
     return { app, cart };
   }
+  it("looks up existing creation identity and committed receipts without creating or crossing carts/markets", async () => {
+    const app = service();
+    const creationKey = `create:${key()}`;
+    const mutationKey = key();
+    expect(await app.cart.findCartByCreationKey(creationKey)).toBeNull();
+    const created = await app.cart.createCart({ idempotencyKey: creationKey });
+    const other = await app.cart.createCart({ idempotencyKey: key() });
+    expect(await app.cart.hasMutation(created.id, mutationKey)).toBe(false);
+    const added = await app.cart.addItem(created.id, { productId: "sofa", variantId: "small", quantity: 1 }, { idempotencyKey: mutationKey });
+    expect(await service().cart.findCartByCreationKey(creationKey)).toEqual(added);
+    expect(await service().cart.hasMutation(created.id, mutationKey)).toBe(true);
+    expect(await app.cart.hasMutation(other.id, mutationKey)).toBe(false);
+    expect(await app.cart.findCartByCreationKey(`create:${key()}`)).toBeNull();
+    for (const market of [markets.sg, markets.us]) {
+      const scoped = createPostgresCommerce({ pool, catalog, payment, market, origin: "https://shop.example" });
+      expect(await scoped.cart.findCartByCreationKey(creationKey)).toBeNull();
+      expect(await scoped.cart.hasMutation(created.id, mutationKey)).toBe(false);
+      const own = await scoped.cart.createCart({ idempotencyKey: creationKey });
+      expect((await scoped.cart.findCartByCreationKey(creationKey))?.id).toBe(own.id);
+      expect(own.id).not.toBe(created.id);
+    }
+    expect(await app.cart.getCart(created.id)).toEqual(added);
+  });
+
+  it("does not report receipts for a rolled-back bundle", async () => {
+    const { app, cart } = await populated();
+    const mutationKey = key();
+    await expect(app.cart.addItems(cart.id, [{ productId: "sofa", variantId: "large", quantity: 1 }, { productId: "sofa", variantId: "missing", quantity: 1 }], { idempotencyKey: mutationKey })).rejects.toMatchObject({ kind: "validation" });
+    expect(await app.cart.hasMutation(cart.id, mutationKey)).toBe(false);
+    expect(await app.cart.getCart(cart.id)).toEqual(cart);
+  });
+
   it("persists creation/retries, separates variants, ignores client price and caps quantity", async () => {
     const app = service();
     const creationKey = key();

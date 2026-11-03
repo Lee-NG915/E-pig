@@ -1,0 +1,38 @@
+{
+  "date": "2026-11-03",
+  "branch": "codex/koala-advanced-shopping",
+  "base": "4c796e9e985fc676d5e9ce4802eaeaec0bbbd74b",
+  "task": "../tasks/C04-cart-recovery.md",
+  "quality": {
+    "runId": "cart-recovery-20261103",
+    "finalAttempt": 2,
+    "typecheck": "PASS",
+    "lint": "PASS",
+    "applicationTests": { "files": 64, "passed": 476, "failed": 0 },
+    "libraryTests": { "passed": 22, "failed": 0 },
+    "harnessTests": { "passed": 8, "failed": 0 },
+    "docSync": "PASS",
+    "doctor": "PASS",
+    "productionBuild": "PASS after sandbox port permission approval",
+    "modulesStorybookBuild": "PASS; non-blocking chunk-size warning"
+  },
+  "review": {
+    "independent": true,
+    "remainingP1P2": 0,
+    "regressionsFixed": [
+      "legacy request replay into a different bag",
+      "receipt-confirmed and explicitly reviewed cart overwritten by an older GET",
+      "expired or removed anonymous cookie reclaiming an old creation key",
+      "resolved bundle retry resurrected by a later shared result",
+      "stale retry key missing its cross-tab completion notification"
+    ]
+  },
+  "browser": {
+    "status": "NOT RUN for completed visual or real-service journey acceptance",
+    "partialSetup": "Isolated fixture page opened; 320px emulation and reload completed",
+    "blocker": "Automatic approval capacity failures/timeouts; later readout and screenshot did not return",
+    "originalUserCartChanged": false
+  },
+  "payment": "Not exercised; payment adapter and transactions unchanged",
+  "release": "Branch delivery only; no merge or manual deployment"
+}

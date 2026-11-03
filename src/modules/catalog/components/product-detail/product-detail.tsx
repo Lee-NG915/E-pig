@@ -7,7 +7,7 @@ import { Button } from "@e-pig/happy-dog/components/button";
 import type { ProductDetail as ProductDetailData } from "@/core/contracts/commerce/catalog";
 import { formatMarketPrice } from "@/platform/config/format-market-price";
 import { useCartMarket } from "@/modules/cart/components/cart-market-context/cart-market-context";
-import { useCartActions } from "@/modules/cart/lib/cart-store";
+import { setCartOpen, useCartActions } from "@/modules/cart/lib/cart-store";
 import { getVariantOptionGroups, resolveInitialVariant, resolveVariantOption } from "@/modules/catalog/lib/variant-selection";
 import { DeliveryEstimate } from "@/modules/checkout/components/delivery-estimate/delivery-estimate";
 import { BundleConfigurator } from "../bundle-configurator/bundle-configurator";
@@ -16,18 +16,18 @@ import { AddToComparison } from "../add-to-comparison/add-to-comparison";
 
 export function ProductDetail({ product, initialVariantId, bundleCompanion }: { product: ProductDetailData; initialVariantId?: string | string[]; bundleCompanion?: ProductDetailData }) {
   const market = useCartMarket();
-  const { addItem, pending, error } = useCartActions(market);
+  const { addItem, pending, error, recovery } = useCartActions(market);
   const [selectedId, setSelectedId] = useState(() => resolveInitialVariant(product.variants, initialVariantId).variant?.id);
   const [activeIndex, setActiveIndex] = useState(0);
   const [feedback, setFeedback] = useState("");
-  const [failure, setFailure] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [bundleLocked, setBundleLocked] = useState(false);
   const submittingRef = useRef(false);
   const selected = product.variants.find(variant => variant.id === selectedId);
   const invalidSelection = !selected && initialVariantId !== undefined;
   const optionGroups = getVariantOptionGroups(product.variants);
-  const busy = pending || submitting || bundleLocked;
+  const recovering = recovery !== "idle";
+  const busy = pending || submitting || bundleLocked || recovering;
   const available = selected?.availability === "in-stock" && selected.maxQuantity > 0;
   const sourceGallery = selected?.gallery?.length ? selected.gallery : product.gallery;
   const firstImage = { src: selected?.image ?? product.image, alt: `${product.name}${selected ? ` — ${selected.label}` : ""}` };
@@ -36,16 +36,16 @@ export function ProductDetail({ product, initialVariantId, bundleCompanion }: { 
   const activeImage = gallery[activeIndex] ?? gallery[0];
   const image = activeIndex === 0 && !selected?.gallery?.length ? firstImage : activeImage;
   function selectVariant(id: string) {
-    setSelectedId(id); setActiveIndex(0); setFeedback(""); setFailure("");
+    setSelectedId(id); setActiveIndex(0); setFeedback("");
     const url = new URL(window.location.href);
     url.searchParams.set("variant", id);
     window.history.replaceState(null, "", url);
   }
   async function add() {
-    if (!selected || !available || pending || bundleLocked || submittingRef.current) return;
-    submittingRef.current = true; setSubmitting(true); setFailure(""); setFeedback("");
+    if (!selected || !available || pending || bundleLocked || recovering || submittingRef.current) return;
+    submittingRef.current = true; setSubmitting(true); setFeedback("");
     try { await addItem({ productId: product.id, variantId: selected.id, quantity: 1 }); setFeedback(`${selected.label} added to your bag.`); }
-    catch (cause) { setFailure(cause instanceof Error ? cause.message : "Could not add this item. Please try again."); }
+    catch { /* The cart store owns the current error and saved-update recovery. */ }
     finally { submittingRef.current = false; setSubmitting(false); }
   }
   return (
@@ -86,7 +86,8 @@ export function ProductDetail({ product, initialVariantId, bundleCompanion }: { 
           {invalidSelection ? <p role="alert" className="mt-4 text-sm text-destructive">This option is no longer available. Choose an available option before adding to your bag.</p> : null}
           <Button className="mt-6 w-full sm:w-auto" size="lg" disabled={!available || busy} onClick={() => void add()}>{pending || submitting ? "Adding…" : bundleLocked ? "Resolve set addition below" : available ? "Add to bag" : "Unavailable for sandbox checkout"}</Button>
           {selected ? <div className="mt-3"><AddToComparison marketId={market.id} item={{ productId: product.id, variantId: selected.id }} productName={product.name} className="min-h-11 -ml-3" /></div> : null}
-          {failure || (error && !bundleLocked) ? <p role="alert" className="mt-3 text-sm text-destructive">{failure || error}</p> : null}
+          {error && !bundleLocked ? <p role="alert" className="mt-3 text-sm text-destructive">{error}</p> : null}
+          {recovering && !bundleLocked ? <Button variant="outline" className="mt-3" onClick={() => setCartOpen(market, true)}>Open bag to check saved update</Button> : null}
           {feedback ? <p role="status" className="mt-3 text-sm">{feedback}</p> : null}
           <p className="mt-6 text-sm leading-6 text-muted-foreground">Sandbox store. Test options and prices are for checkout testing. No real payment, stock reservation or delivery.</p>
           {selected?.dimensions ? <div className="mt-8 border-t pt-6"><h2 className="font-medium">Dimensions</h2><p className="mt-2 text-sm">{selected.dimensions.width} × {selected.dimensions.depth} × {selected.dimensions.height} {selected.dimensions.unit}</p><p className="mt-1 text-xs text-muted-foreground">Width × depth × height</p></div> : null}

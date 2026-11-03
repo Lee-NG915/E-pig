@@ -111,6 +111,16 @@ export function createPostgresCommerce({ pool, catalog, market, payment, origin,
       const { rows } = await pool.query("INSERT INTO commerce_carts(id, market, creation_key, data) VALUES ($1, $2, $3, $4) ON CONFLICT (market, creation_key) DO UPDATE SET creation_key = EXCLUDED.creation_key RETURNING data", [created.id, market.id, key, JSON.stringify(created)]);
       return rows[0].data as Cart;
     },
+    async findCartByCreationKey(idempotencyKey) {
+      const key = requestKey({ idempotencyKey });
+      const { rows } = await pool.query("SELECT data FROM commerce_carts WHERE market = $1 AND creation_key = $2", [market.id, key]);
+      return rows[0] ? rows[0].data as Cart : null;
+    },
+    async hasMutation(cartId, idempotencyKey) {
+      const key = requestKey({ idempotencyKey });
+      const { rows } = await pool.query("SELECT 1 FROM commerce_mutations AS mutation JOIN commerce_carts AS cart ON cart.id = mutation.cart_id WHERE mutation.cart_id = $1 AND mutation.request_key = $2 AND cart.market = $3", [cartId, key, market.id]);
+      return rows.length > 0;
+    },
     async getCart(id) {
       const current = await readCart(pool, id);
       // The locked cart is the immutable quoted snapshot. Unlocked reads always use current catalogue prices.

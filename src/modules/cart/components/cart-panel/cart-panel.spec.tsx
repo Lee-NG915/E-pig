@@ -1,19 +1,70 @@
 // @vitest-environment jsdom
 import { createElement } from "react";
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
-import { getStorefrontQueryClient, setCartOpen, useCartStore } from "../../lib/cart-store";
+import { getStorefrontQueryClient, recoverCart, refreshCart, setCartOpen, useCartStore } from "../../lib/cart-store";
 import { CartPanel } from "./cart-panel";
 import { cartFixture, marketFixture } from "./cart-panel.mock";
 vi.mock("next/image", () => ({
   default: ({ src, alt }: { src: string; alt: string }) => createElement("img", { src, alt }),
 }));
-beforeEach(() => {
-  getStorefrontQueryClient().clear();
+beforeEach(async () => {
   localStorage.clear();
   sessionStorage.clear();
   Object.defineProperty(navigator, "locks", { configurable: true, value: { request: vi.fn(async (_name: string, callback: () => unknown) => callback()) } });
+  vi.stubGlobal("fetch", vi.fn(async () => new Response(JSON.stringify({ cart: null, checkoutEnabled: true, mutationApplied: true }))));
+  await recoverCart(marketFixture); await refreshCart(marketFixture);
+  getStorefrontQueryClient().clear();
+});
+
+it("keeps saved-update recovery visible through a successful GET and retries the original key", async () => {
+  const key = "11111111-1111-4111-8111-111111111111";
+  localStorage.setItem("e-pig:pending-cart:v1:au", JSON.stringify({ idempotencyKey: key, expectedCartId: cartFixture.id, createdAt: Date.now(), input: { action: "update", lineId: cartFixture.lines[0].id, quantity: 2 } }));
+  let finishCheck!: () => void; let holdReceipt = true;
+  const posts: Record<string, unknown>[] = [];
+  const fetcher = vi.fn(async (url: string, init?: RequestInit) => {
+    if (url.includes("mutationKey=") && holdReceipt) return new Promise<Response>((_resolve, reject) => { finishCheck = () => { holdReceipt = false; reject(new TypeError("Connection unavailable")); }; });
+    if (init?.method === "POST") posts.push(JSON.parse(String(init.body)));
+    return new Response(JSON.stringify({ cart: cartFixture, checkoutEnabled: true, mutationApplied: false }));
+  });
+  vi.stubGlobal("fetch", fetcher);
+  function BagOpen() { return <output aria-label="Bag open">{String(useCartStore(marketFixture).open)}</output>; }
+  setCartOpen(marketFixture, true);
+  render(<><CartPanel market={marketFixture} compact /><BagOpen /></>);
+  expect(await screen.findByText("Checking your bag…")).toHaveProperty("role", "status");
+  await screen.findByRole("link", { name: "Alto Sofa" });
+  expect(screen.getByRole("button", { name: "Increase Alto Sofa quantity" })).toHaveProperty("disabled", true);
+  expect(screen.getByLabelText("Demo coupon").closest("fieldset")).toHaveProperty("disabled", true);
+  expect(screen.queryByRole("link", { name: "Continue to sandbox checkout" })).toBeNull();
+  expect(screen.getByRole("button", { name: "Continue to sandbox checkout" })).toHaveProperty("disabled", true);
+  expect(screen.getByText("Confirm your saved bag update before continuing to checkout.")).toBeTruthy();
+  await userEvent.setup().click(screen.getByRole("button", { name: "Continue browsing" }));
+  expect(screen.getByRole("status", { name: "Bag open" }).textContent).toBe("false");
+  await act(async () => { finishCheck(); });
+  expect(await screen.findByRole("button", { name: "Retry saved update" })).toBeTruthy();
+  expect(posts).toHaveLength(0);
+  await act(async () => { await refreshCart(marketFixture); });
+  expect(screen.getByText("Your original update is saved. You do not need to add the items again.")).toBeTruthy();
+  expect(screen.queryByRole("button", { name: "Use current bag" })).toBeNull();
+  await userEvent.setup().click(screen.getByRole("button", { name: "Retry saved update" }));
+  await waitFor(() => expect(screen.queryByRole("region", { name: "Saved bag update" })).toBeNull());
+  expect(posts).toEqual([{ action: "update", lineId: cartFixture.lines[0].id, quantity: 2, idempotencyKey: key, expectedCartId: cartFixture.id }]);
+  expect(screen.getByRole("link", { name: "Continue to sandbox checkout" })).toBeTruthy();
+});
+
+it("offers explicit current-bag review for an unreadable saved update without re-sending it", async () => {
+  localStorage.setItem("e-pig:pending-cart:v1:au", "not-json");
+  const fetcher = vi.fn(async () => new Response(JSON.stringify({ cart: cartFixture, checkoutEnabled: true })));
+  vi.stubGlobal("fetch", fetcher);
+  render(<CartPanel market={marketFixture} />);
+  const useCurrent = await screen.findByRole("button", { name: "Use current bag" });
+  expect(screen.getByRole("link", { name: "Continue browsing" }).getAttribute("href")).toBe("/au");
+  expect(screen.getByText(/keeps it as shown and does not re-send/)).toBeTruthy();
+  await userEvent.setup().click(useCurrent);
+  await waitFor(() => expect(screen.queryByRole("region", { name: "Saved bag update" })).toBeNull());
+  expect(localStorage.getItem("e-pig:pending-cart:v1:au")).toBeNull();
+  expect(fetcher.mock.calls.every(call => !((call as unknown[])[1] as RequestInit | undefined)?.body)).toBe(true);
 });
 afterEach(() => {
   cleanup();
@@ -138,6 +189,8 @@ it("reports unavailable backend and offers retry instead of a false empty bag", 
     "textContent",
     expect.stringContaining("Shopping service unavailable"),
   );
+  expect(screen.getByRole("button", { name: "Refresh bag" })).toBeTruthy();
+  expect(screen.queryByRole("button", { name: /Retry/ })).toBeNull();
   expect(screen.queryByText("Nothing in your bag yet")).toBeNull();
   expect(screen.getByRole("button", { name: "Refresh bag" })).toBeTruthy();
 });

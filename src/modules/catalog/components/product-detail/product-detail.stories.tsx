@@ -7,6 +7,7 @@ import {
 } from "@/modules/cart/components/cart-market-context/cart-market-context";
 
 import { ProductDetail } from "./product-detail";
+import { installCartRecoveryStory } from "@/modules/cart/components/cart-panel/cart-panel.mock";
 
 const market: CartMarket = { id: "au", currency: "AUD" };
 
@@ -55,6 +56,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {};
+export const SavedBagUpdate: Story = { beforeEach: () => installCartRecoveryStory("needs_retry") };
 
 export const NarrowMobile: Story = {
   parameters: {

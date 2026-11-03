@@ -30,6 +30,7 @@ export function createMockCartAdapter({
   /** idempotencyKey → cartId，createCart 重放时返回同一 cart */
   const createKeys = new Map<string, string>();
   const mutations = new Map<string, { signature: string; result: Promise<Cart> }>();
+  const appliedMutations = new Set<string>();
   const cartQueues = new Map<string, Promise<void>>();
 
   function money(amount: number): Money {
@@ -85,6 +86,7 @@ export function createMockCartAdapter({
       if (draft.lockedCheckoutId) throw new AppError("conflict", "Cart is locked for payment");
       const updated = await operation(draft);
       carts.set(cartId, cloneCart(updated));
+      appliedMutations.add(scopedKey);
       return cloneCart(updated);
     });
     const queueTail = result.then(
@@ -157,6 +159,16 @@ export function createMockCartAdapter({
       createKeys.set(key, cart.id);
       logger.info("cart.created", { cartId: cart.id, market: market.id });
       return cloneCart(cart);
+    },
+
+    async findCartByCreationKey(idempotencyKey) {
+      const existingId = createKeys.get(requireIdempotencyKey({ idempotencyKey }));
+      return existingId ? cloneCart(requireCart(existingId)) : null;
+    },
+
+    async hasMutation(cartId, idempotencyKey) {
+      const key = requireIdempotencyKey({ idempotencyKey });
+      return carts.has(cartId) && appliedMutations.has(`${cartId}:${key}`);
     },
 
     async getCart(cartId) {
