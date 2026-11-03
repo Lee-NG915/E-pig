@@ -185,4 +185,26 @@ describe("ProductCard", () => {
     expect(screen.queryByRole("button", { name: /Add .* to bag/ })).toBeNull();
   });
 
+  it("links comparison to the selected variant while filtered previews keep their explicit PDP default", async () => {
+    render(<CartMarketProvider market={market}><ProductCard product={previewProduct} linkToDefaultVariant /></CartMarketProvider>);
+    expect(screen.getAllByRole("link", { name: product.name })[0].getAttribute("href")).toBe("/au/products/alto-modular-sofa?variant=alto-default");
+    expect(screen.getByRole("link", { name: "Compare Alto Modular Sofa" }).getAttribute("href")).toBe("/au/compare?item=alto-modular-sofa%3Aalto-default");
+    await userEvent.setup().click(screen.getByRole("radio", { name: "Oat boucle" }));
+    expect(screen.getByRole("link", { name: "Compare Alto Modular Sofa" }).getAttribute("href")).toBe("/au/compare?item=alto-modular-sofa%3Aalto%252Foat%2520wide");
+    expect(screen.getByRole("link", { name: /Choose options/ }).getAttribute("href")).toBe("/au/products/alto-modular-sofa?variant=alto%2Foat%20wide");
+  });
+
+  it("starts comparison with the known default even when normal PDP links omit it", () => {
+    renderCard();
+    expect(screen.getByRole("link", { name: "Compare Alto Modular Sofa" }).getAttribute("href")).toBe("/au/compare?item=alto-modular-sofa%3Aalto-default");
+    expect(screen.getAllByRole("link", { name: product.name })[0].getAttribute("href")).toBe("/au/products/alto-modular-sofa");
+  });
+
+  it("keeps a filtered non-original default in both PDP and comparison links", () => {
+    const matched = previewProduct.variantPreviews![1];
+    render(<CartMarketProvider market={market}><ProductCard product={{ ...previewProduct, defaultVariantId: matched.variantId, price: matched.price, image: matched.image, colour: matched.colour, variantPreviews: [matched] }} linkToDefaultVariant /></CartMarketProvider>);
+    expect(screen.getAllByRole("link", { name: product.name })[0].getAttribute("href")).toBe("/au/products/alto-modular-sofa?variant=alto%2Foat%20wide");
+    expect(screen.getByRole("link", { name: "Compare Alto Modular Sofa" }).getAttribute("href")).toBe("/au/compare?item=alto-modular-sofa%3Aalto%252Foat%2520wide");
+  });
+
 });

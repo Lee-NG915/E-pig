@@ -1,0 +1,29 @@
+{
+  "date": "2026-11-03",
+  "environment": "AU local development, Chrome isolated context koala-advanced-compare, page 3",
+  "url": "http://localhost:3000/au/compare",
+  "viewportMethod": "DevTools emulate, verified innerWidth (not resize_page)",
+  "viewportResults": [
+    { "width": 320, "height": 740, "scrollWidth": 320, "columns": 1 },
+    { "width": 390, "height": 844, "scrollWidth": 390, "columns": 1 },
+    { "width": 1440, "height": 1000, "scrollWidth": 1440, "columns": 3, "columnWidth": 442.6640625 }
+  ],
+  "checks": {
+    "noIndex": "noindex, nofollow",
+    "legacyRepeatedItemLinks": "Three original item keys load three correct options; subsequent operation writes item/item2/item3",
+    "add": "Added Tamarama default beside selected Forest Walk 3 sections; 2600 and 3550 prices remained distinct",
+    "replace": "Changed first and middle variant independently; all other columns retained",
+    "remove": "Removing third unknown option retained the two valid options, cleared overflow/unknown messages and focused Add a product",
+    "maxThree": "Third column fills limit and disables addition; fourth legacy reference produces visible limit message",
+    "unknownExplicitVariant": "Error column offers replacement/removal, with no guessed price or PDP option link",
+    "focus": "Option selector focus survives response; removal returns to Add a product",
+    "noReloadWorkaround": true
+  },
+  "navigationRegressionSequence": [
+    { "action": "Legacy three-item URL", "variants": ["tamarama-modular-sofa-default", "tamarama-modular-sofa-forest-walk-3-sections", "bangalow-modular-sofa-default"] },
+    { "action": "Change first to Forest Walk 2 sections", "queryKeys": ["item", "item2", "item3"], "pricesAUD": [2600, 3550, 1900], "focus": "compare-variant-0", "urlImageOptionAndPdpLinksAgree": true },
+    { "action": "Keep last fixed and change first to Winter Cream 3 sections", "pricesAUD": [3550, 3550, 1900], "focus": "compare-variant-0", "urlImageOptionAndPdpLinksAgree": true },
+    { "action": "Change middle to Winter Cream 2 sections", "pricesAUD": [3550, 2600, 1900], "focus": "compare-variant-1", "urlImageOptionAndPdpLinksAgree": true }
+  ],
+  "boundaries": ["Desktop/mobile viewport emulation, not physical-device UAT", "No checkout submission or payment", "SG/US market links covered by component/helper tests; live browser process is AU", "Visual screenshots inspected inline; raw response bodies and cookies are not stored"]
+}

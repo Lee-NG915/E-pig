@@ -43,6 +43,8 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {};
 
+export const ExplicitDefaultAndComparison: Story = { args: { linkToDefaultVariant: true } };
+
 /** badge 徽标 + compareAt 划线价同时出现 */
 export const WithBadgeAndCompareAt: Story = {
   args: {

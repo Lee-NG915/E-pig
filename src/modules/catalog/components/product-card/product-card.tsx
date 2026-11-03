@@ -14,8 +14,9 @@ import { useCartActions } from "@/modules/cart/lib/cart-store";
 import { formatMarketPrice } from "@/platform/config/format-market-price";
 import { Badge } from "@e-pig/happy-dog/components/badge";
 import { Button } from "@e-pig/happy-dog/components/button";
+import { buildCompareHref } from "../../lib/compare-query";
 
-export function ProductCard({ product }: { product: ProductListItem }) {
+export function ProductCard({ product, linkToDefaultVariant = false }: { product: ProductListItem; linkToDefaultVariant?: boolean }) {
   const market = useCartMarket();
   const { addItem, pending, error } = useCartActions(market);
   const [failure, setFailure] = useState("");
@@ -42,9 +43,11 @@ export function ProductCard({ product }: { product: ProductListItem }) {
     finally { busy.current = false; setAdding(false); }
   }
   const productPath = withMarketPrefix(market.id, `/products/${product.slug}`);
-  const productHref = selectedPreview
-    ? `${productPath}?variant=${encodeURIComponent(selectedPreview.variantId)}`
+  const linkedVariantId = selectedPreview?.variantId ?? (linkToDefaultVariant ? product.defaultVariantId : undefined);
+  const productHref = linkedVariantId
+    ? `${productPath}?variant=${encodeURIComponent(linkedVariantId)}`
     : productPath;
+  const comparisonHref = buildCompareHref(market.id, [{ productId: product.id, variantId: selectedPreview?.variantId ?? product.defaultVariantId }]);
 
   return (
     <article className="group min-w-0">
@@ -150,6 +153,7 @@ export function ProductCard({ product }: { product: ProductListItem }) {
           </div>
         </fieldset>
       ) : null}
+      <Link href={comparisonHref} aria-label={`Compare ${product.name}`} className="mt-3 inline-flex min-h-11 items-center rounded-sm text-sm underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Compare</Link>
       {failure || error ? <p role="alert" className="mt-2 text-sm text-destructive">{failure || error}</p> : null}
     </article>
   );
