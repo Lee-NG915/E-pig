@@ -1,0 +1,190 @@
+{
+  "source": {
+    "url": "https://au.koala.com/products/tamarama-modular-sofa.js",
+    "capturedAt": "2026-11-03",
+    "mediaEvidence": [
+      "D1",
+      "T1",
+      "L3"
+    ],
+    "purpose": "Controlled demo display facts. Prices and availability are local sandbox data; source IDs are provenance only."
+  },
+  "variants": [
+    {
+      "id": "tamarama-modular-sofa-default",
+      "sku": "SANDBOX-tamarama-modular-sofa-DEFAULT",
+      "sourceVariantId": "45027371352200",
+      "label": "2 Sections / Regular / Winter Cream",
+      "options": [
+        {
+          "name": "Colour",
+          "value": "Winter Cream"
+        },
+        {
+          "name": "Size",
+          "value": "2 Sections"
+        },
+        {
+          "name": "Section width",
+          "value": "Regular"
+        }
+      ],
+      "priceByMarket": {
+        "au": 2600,
+        "sg": 2288,
+        "us": 1872
+      },
+      "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/TAM_WC_2S_R_01_PRODUCT.webp?v=1778828181",
+      "gallery": [
+        {
+          "src": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/TAM_WC_2S_R_01_PRODUCT.webp?v=1778828181",
+          "alt": "Tamarama Modular Sofa \u2014 2 Sections / Regular / Winter Cream"
+        },
+        {
+          "src": "https://au.koala.com/cdn/shop/files/TAM_WC_2S_S_01_LIFESTYLE.webp?v=1780387674",
+          "alt": "Tamarama Modular Sofa \u2014 2 Sections / Regular / Winter Cream \u2014 room setting"
+        },
+        {
+          "src": "https://au.koala.com/cdn/shop/files/TAM_WC_2S_S_02_LIFESTYLE.webp?v=1780387675",
+          "alt": "Tamarama Modular Sofa \u2014 2 Sections / Regular / Winter Cream \u2014 room setting"
+        }
+      ],
+      "dimensions": {
+        "width": 190,
+        "depth": 104,
+        "height": 93,
+        "unit": "cm"
+      }
+    },
+    {
+      "id": "tamarama-modular-sofa-forest-walk-2-sections",
+      "sku": "SANDBOX-tamarama-modular-sofa-FOREST-WALK-2-SECTIONS",
+      "sourceVariantId": "45027371286664",
+      "label": "2 Sections / Regular / Forest Walk",
+      "options": [
+        {
+          "name": "Colour",
+          "value": "Forest Walk"
+        },
+        {
+          "name": "Size",
+          "value": "2 Sections"
+        },
+        {
+          "name": "Section width",
+          "value": "Regular"
+        }
+      ],
+      "priceByMarket": {
+        "au": 2600,
+        "sg": 2288,
+        "us": 1872
+      },
+      "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/TAM_FW_2S_R_01_PRODUCT_b09ee6dc-1684-4022-a090-8a72294dd978.png?v=1778477102",
+      "gallery": [
+        {
+          "src": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/TAM_FW_2S_R_01_PRODUCT_b09ee6dc-1684-4022-a090-8a72294dd978.png?v=1778477102",
+          "alt": "Tamarama Modular Sofa \u2014 2 Sections / Regular / Forest Walk"
+        },
+        {
+          "src": "https://au.koala.com/cdn/shop/files/TAM_FW_2S_S_01_LIFESTYLE.webp?v=1780387811",
+          "alt": "Tamarama Modular Sofa \u2014 2 Sections / Regular / Forest Walk \u2014 room setting"
+        },
+        {
+          "src": "https://au.koala.com/cdn/shop/files/TAM_FW_2S_S_02_LIFESTYLE.webp?v=1780387810",
+          "alt": "Tamarama Modular Sofa \u2014 2 Sections / Regular / Forest Walk \u2014 room setting"
+        }
+      ],
+      "dimensions": {
+        "width": 190,
+        "depth": 104,
+        "height": 93,
+        "unit": "cm"
+      }
+    },
+    {
+      "id": "tamarama-modular-sofa-winter-cream-3-sections",
+      "sku": "SANDBOX-tamarama-modular-sofa-WINTER-CREAM-3-SECTIONS",
+      "sourceVariantId": "45027392028808",
+      "label": "3 Sections / Regular / Winter Cream",
+      "options": [
+        {
+          "name": "Colour",
+          "value": "Winter Cream"
+        },
+        {
+          "name": "Size",
+          "value": "3 Sections"
+        },
+        {
+          "name": "Section width",
+          "value": "Regular"
+        }
+      ],
+      "priceByMarket": {
+        "au": 3550,
+        "sg": 3124,
+        "us": 2556
+      },
+      "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/TAM_WC_3S_R_01_PRODUCT.webp?v=1778828182",
+      "gallery": [
+        {
+          "src": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/TAM_WC_3S_R_01_PRODUCT.webp?v=1778828182",
+          "alt": "Tamarama Modular Sofa \u2014 3 Sections / Regular / Winter Cream"
+        }
+      ],
+      "dimensions": {
+        "width": 267,
+        "depth": 104,
+        "height": 93,
+        "unit": "cm"
+      }
+    },
+    {
+      "id": "tamarama-modular-sofa-forest-walk-3-sections",
+      "sku": "SANDBOX-tamarama-modular-sofa-FOREST-WALK-3-SECTIONS",
+      "sourceVariantId": "45027391701128",
+      "label": "3 Sections / Regular / Forest Walk",
+      "options": [
+        {
+          "name": "Colour",
+          "value": "Forest Walk"
+        },
+        {
+          "name": "Size",
+          "value": "3 Sections"
+        },
+        {
+          "name": "Section width",
+          "value": "Regular"
+        }
+      ],
+      "priceByMarket": {
+        "au": 3550,
+        "sg": 3124,
+        "us": 2556
+      },
+      "image": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/TAM_FW_3S_R_01_PRODUCT_2ee33629-6c50-48f3-92aa-bb9fe006102a.png?v=1778477102",
+      "gallery": [
+        {
+          "src": "https://cdn.shopify.com/s/files/1/0643/6136/5640/files/TAM_FW_3S_R_01_PRODUCT_2ee33629-6c50-48f3-92aa-bb9fe006102a.png?v=1778477102",
+          "alt": "Tamarama Modular Sofa \u2014 3 Sections / Regular / Forest Walk"
+        },
+        {
+          "src": "https://au.koala.com/cdn/shop/files/TAM_FW_3S_S_01_LIFESTYLE.webp?v=1780983856",
+          "alt": "Tamarama Modular Sofa \u2014 3 Sections / Regular / Forest Walk \u2014 room setting"
+        },
+        {
+          "src": "https://au.koala.com/cdn/shop/files/TAM_FW_3S_S_02_LIFESTYLE.webp?v=1780983857",
+          "alt": "Tamarama Modular Sofa \u2014 3 Sections / Regular / Forest Walk \u2014 room setting"
+        }
+      ],
+      "dimensions": {
+        "width": 267,
+        "depth": 104,
+        "height": 93,
+        "unit": "cm"
+      }
+    }
+  ]
+}

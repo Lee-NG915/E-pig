@@ -11,6 +11,7 @@ import { AppError } from "@/core/errors/errors";
 import type { Market } from "@/platform/config/markets";
 
 import { mockProducts, type MockProductRecord } from "./catalog-data";
+import tamarama from "./fixtures/showcase/tamarama.json";
 
 /**
  * Mock CatalogAdapter：本地 typed 数据实现 CatalogPort。
@@ -49,6 +50,15 @@ export function createMockCatalogAdapter({ market }: { market: Market }): Catalo
   }
 
   function toVariants(record: MockProductRecord): ProductVariant[] {
+    if (record.id === "tamarama-modular-sofa") {
+      return tamarama.variants.map(variant => ({
+        id: variant.id, sku: variant.sku, label: variant.label,
+        options: variant.options, image: variant.image, gallery: variant.gallery,
+        dimensions: { ...variant.dimensions, unit: "cm" },
+        price: { amount: variant.priceByMarket[market.id], currency: market.currency },
+        availability: "in-stock", maxQuantity: 5,
+      }));
+    }
     const base = {
       price: { amount: record.priceByMarket[market.id], currency: market.currency },
       image: record.image,
@@ -65,16 +75,29 @@ export function createMockCatalogAdapter({ market }: { market: Market }): Catalo
 
   function toListItem(record: MockProductRecord): ProductListItem {
     const compareAt = record.compareAtByMarket?.[market.id];
+    const variants = toVariants(record);
+    const first = variants[0];
+    const colour = first.options?.find(option => option.name === "Colour")?.value ?? record.colour;
+    const colours = new Set<string>();
+    const variantPreviews = variants.flatMap(variant => {
+      const value = variant.options?.find(option => option.name === "Colour")?.value;
+      if (!value || colours.has(value)) return [];
+      colours.add(value);
+      return [{ variantId: variant.id, colour: value, image: variant.image,
+        gallery: variant.gallery ?? [{ src: variant.image, alt: `${record.name} — ${variant.label}` }], price: variant.price }];
+    });
     return {
       id: record.id,
       slug: record.slug,
       name: record.name,
       category: record.category,
-      colour: record.colour,
-      image: record.image,
-      variantCount: toVariants(record).length,
-      defaultVariantId: toVariants(record)[0].id,
-      price: { amount: record.priceByMarket[market.id], currency: market.currency },
+      colour,
+      image: first.image,
+      variantCount: variants.length,
+      defaultVariantId: first.id,
+      price: first.price,
+      gallery: first.gallery ?? toGallery(record),
+      ...(variantPreviews.length ? { variantPreviews } : {}),
       ...(compareAt !== undefined
         ? { compareAt: { amount: compareAt, currency: market.currency } }
         : {}),
@@ -128,7 +151,7 @@ export function createMockCatalogAdapter({ market }: { market: Market }): Catalo
         ...toListItem(record),
         description: record.description,
         materials: record.materials,
-        gallery: toGallery(record),
+        gallery: toVariants(record)[0].gallery ?? toGallery(record),
 
         availability: record.availability ?? "in-stock",
         colourOptions: [],

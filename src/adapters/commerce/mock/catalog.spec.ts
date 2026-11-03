@@ -163,6 +163,42 @@ describe("mock catalog adapter", () => {
 
 
 describe("sandbox variant coverage", () => {
+  it.each([
+    ["au", "AUD", 2600], ["sg", "SGD", 2288], ["us", "USD", 1872],
+  ] as const)("preserves the existing Tamarama identity and %s test price", async (id, currency, amount) => {
+    const catalog = createMockCatalogAdapter({ market: getMarket(id) });
+    const detail = await catalog.getProduct("tamarama-modular-sofa");
+    expect(detail.variants[0].id).toBe("tamarama-modular-sofa-default");
+    expect(detail.variants[0].price).toEqual({ amount, currency });
+    expect(detail.price).toEqual({ amount, currency });
+    const bangalow = await catalog.getProduct("bangalow-modular-sofa");
+    expect(bangalow.variants.map(v => v.id)).toEqual([
+      "bangalow-modular-sofa-default", "bangalow-modular-sofa-test-option", "bangalow-modular-sofa-unavailable-test",
+    ]);
+  });
+
+  it("links colour previews to the same source-backed local variants returned by detail", async () => {
+    const detail = await auCatalog.getProduct("tamarama-modular-sofa");
+    const listing = (await auCatalog.listProducts()).find(item => item.id === detail.id)!;
+    expect(listing.variantPreviews?.map(item => item.colour)).toEqual(["Winter Cream", "Forest Walk"]);
+    expect(detail.variants).toHaveLength(4);
+    const green = detail.variants.find(item => item.id === "tamarama-modular-sofa-forest-walk-3-sections")!;
+    expect(green.options).toEqual([
+      { name: "Colour", value: "Forest Walk" }, { name: "Size", value: "3 Sections" }, { name: "Section width", value: "Regular" },
+    ]);
+    expect(green.dimensions).toEqual({ width: 267, depth: 104, height: 93, unit: "cm" });
+    expect(green.price).toEqual({ amount: 3550, currency: "AUD" });
+    expect(green.image).toContain("TAM_FW_3S_R_01_PRODUCT");
+    expect(detail.image).toContain("TAM_WC_2S_R_01_PRODUCT");
+    for (const preview of listing.variantPreviews ?? []) {
+      const variant = detail.variants.find(item => item.id === preview.variantId)!;
+      expect(preview.image).toBe(variant.image);
+      expect(preview.price).toEqual(variant.price);
+      expect(preview.gallery).toEqual(variant.gallery);
+      expect(variant.options?.find(option => option.name === "Colour")?.value).toBe(preview.colour);
+    }
+  });
+
   it("maps every visible product to controlled, market-priced variants without invented reviews", async () => {
     for (const marketId of ["au", "sg", "us"] as const) {
       const catalog = createMockCatalogAdapter({ market: getMarket(marketId) });
@@ -173,7 +209,7 @@ describe("sandbox variant coverage", () => {
       for (const item of products) {
         const detail = await catalog.getProduct(item.id);
         expect(detail.variants.length).toBeGreaterThan(0);
-        expect(detail.variants[0].label).toBe(item.colour);
+        expect(detail.variants[0].options?.find(option => option.name === "Colour")?.value ?? detail.variants[0].label).toBe(item.colour);
         expect(item.defaultVariantId).toBe(detail.variants[0].id);
         expect(item.variantCount).toBe(detail.variants.length);
         expect(new Set(detail.variants.map(v => v.id)).size).toBe(detail.variants.length);

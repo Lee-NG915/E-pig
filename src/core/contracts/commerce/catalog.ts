@@ -24,12 +24,26 @@ export type ProductListItem = {
   image: string;
   variantCount?: number;
   defaultVariantId?: string;
+  gallery?: ProductGalleryImage[];
+  variantPreviews?: ProductVariantPreview[];
 };
 
 export type ProductGalleryImage = {
   src: string;
   alt: string;
 };
+
+/** A purchasable variant represented by a listing colour preview. */
+export type ProductVariantPreview = {
+  variantId: string;
+  colour: string;
+  image: string;
+  gallery: ProductGalleryImage[];
+  price: Money;
+};
+
+export type ProductVariantOption = { name: string; value: string };
+export type ProductDimensions = { width: number; depth: number; height: number; unit: "cm" };
 
 export type ProductColourOption = {
   id: string;
@@ -47,6 +61,9 @@ export type ProductVariant = {
   image: string;
   availability: ProductAvailability;
   maxQuantity: number;
+  options?: ProductVariantOption[];
+  dimensions?: ProductDimensions;
+  gallery?: ProductGalleryImage[];
 };
 
 export type ProductDetail = ProductListItem & {
