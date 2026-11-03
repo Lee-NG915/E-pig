@@ -78,6 +78,15 @@ export function setCartOpen(
   updateUi(market, { open });
 }
 
+/** Read-only overlay coordination; subscribing must not fetch or mutate a cart. */
+export function useCartDrawerOpen(market: CartMarketIdentity) {
+  return useSyncExternalStore(
+    listener => { listeners.add(listener); return () => { listeners.delete(listener); }; },
+    () => state(market).open,
+    () => false,
+  );
+}
+
 export class StorefrontHttpError extends Error {
   constructor(
     message: string,

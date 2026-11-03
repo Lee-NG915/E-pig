@@ -2,11 +2,13 @@
 
 更新日期：2026-11-03
 
+本文件保留原 C 批验收；最新 C02 浏览购物流程见文末 follow-up 和独立交付记录。
+
 ## 自动检查
 
 | 检查 | 结果 | 说明 |
 | --- | --- | --- |
-| TypeScript → ESLint → 应用全量 Vitest | PASS | remediation attempt 1，59 个当前应用 spec，最多 2 workers；没有跳过测试 |
+| TypeScript → ESLint → 应用全量 Vitest | PASS | remediation attempt 1，最新 64 个应用 spec / 405 tests，最多 2 workers；没有跳过测试 |
 | happy-dog | PASS | 7 files / 22 tests |
 | Harness | PASS | post-edit 2/2、stop-review 3/3、boundary 3/3 |
 | docs:check、agent-doctor、companions、quality:diff | PASS | 新组件 companion 齐全，依赖方向通过 |
@@ -31,7 +33,7 @@ node scripts/quality/remediation-loop.mjs --run-id koala-c-20261103 --attempt 1 
 | 能力 | 已观察行为 | 结果 |
 | --- | --- | --- |
 | 筛选 | 非法上下限明确报错；提交 Forest Walk + 3000–4000 + in-stock 得到三座规格 $3,550；清除保留排序并恢复 29 件 | PASS |
-| 比较 | 三列；旧链接兼容；连续改变前列与中列，URL、规格、图片、价格与 PDP 链接一致；选择后焦点保留 | PASS |
+| 比较（旧实现历史验证） | 三列；旧链接兼容；连续改变前列与中列，URL、规格、图片、价格与 PDP 链接一致；选择后焦点保留 | PASS |
 | 配送 | 2000 → 明示 2–4 个工作日；9999 → 无示例、不推断覆盖；Checkout 输入共用规则 | PASS |
 | 评价 | 四条明显示例；3 星得到 1 条、展开正文；1 星空态带重置入口 | PASS |
 | 套装 | 单次成功 addItems POST，两条正确 product/variant，各 qty 1；小计 $2,350 | PASS |
@@ -55,3 +57,7 @@ node scripts/quality/remediation-loop.mjs --run-id koala-c-20261103 --attempt 1 
 - Review focus: 同规格筛选、URL 状态、价格与幂等/锁车、原子回滚、示例数据边界、真实 store 恢复与无障碍。
 - Findings: 已修复比较页重复 URL 参数造成的旧规格展示；已修复未发送的跨入口请求误锁；成功提示与实际成功规格绑定。半分舍入增加明确回归。独立复核未发现剩余阻塞项。
 - Residual risks: SQL/catalog 为真实本地集成，PaymentPort 边界为 mock；本地测试和浏览器金额读回不等于 Stripe 托管支付、远程部署或业务验收。
+
+## C02 browsing comparison follow-up (2026-11-03)
+
+当前 C02 验收以 [购物旅程交付](tasks/C02-browse-comparison.md)与 [comparison-journey.json](evidence/comparison-journey.json) 为准：64 文件 / 405 应用测试、22 基础组件测试、其余质量组成项、生产/Storybook 构建及 SG smoke 均通过。此前本文件的 URL 比较行为为历史验收，已被 browser shortlist 和 selected-only 表格替代。独立评审发现的后台旧价格和移除焦点两项 P2 均经回归修复、复核通过。

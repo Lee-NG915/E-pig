@@ -1,5 +1,7 @@
 # C02 — 商品比较
 
+当前交付已由 [浏览购物流程重做](C02-browse-comparison.md) 取代；本文保留首轮 C02 的历史实现与验证。
+
 更新日期：2026-11-03
 
 - Milestone: koala-advanced-shopping

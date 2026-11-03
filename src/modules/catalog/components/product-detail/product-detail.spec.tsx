@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ProductDetail as ProductDetailData } from "@/core/contracts/commerce/catalog";
 import { CartMarketProvider } from "@/modules/cart/components/cart-market-context/cart-market-context";
 import { ProductDetail } from "./product-detail";
+import * as comparison from "../../lib/compare-store";
 const actions = vi.hoisted(() => ({ addItem: vi.fn(), addItems: vi.fn(), pending: false, error: null as string | null }));
 vi.mock("@/modules/cart/lib/cart-store", async (importOriginal) => ({ ...await importOriginal<typeof import("@/modules/cart/lib/cart-store")>(), useCartActions: () => actions }));
 vi.mock("next/image", () => ({ default: ({ alt, src }: { alt: string; src: string }) => <span role="img" aria-label={alt || "Product image"} data-src={src} /> }));
@@ -18,7 +19,7 @@ const product: ProductDetailData = {
   ],
 };
 function show(item = product, initialVariantId?: string | string[], companion?: ProductDetailData) { render(<CartMarketProvider market={{ id: "au", currency: "AUD" }}><ProductDetail product={item} initialVariantId={initialVariantId} bundleCompanion={companion} /></CartMarketProvider>); }
-beforeEach(() => { window.history.replaceState({}, "", "/au/products/chair"); actions.pending = false; actions.error = null; actions.addItem.mockReset().mockResolvedValue(undefined); actions.addItems.mockReset().mockResolvedValue(undefined); });
+beforeEach(() => { localStorage.clear(); comparison.resetCompareStoreForTests(); vi.restoreAllMocks(); window.history.replaceState({}, "", "/au/products/chair"); actions.pending = false; actions.error = null; actions.addItem.mockReset().mockResolvedValue(undefined); actions.addItems.mockReset().mockResolvedValue(undefined); });
 afterEach(cleanup);
 describe("ProductDetail", () => {
   it("does not invent customer ratings, gallery controls or a dead wishlist", () => {
@@ -33,7 +34,11 @@ describe("ProductDetail", () => {
   it("compares the selected variant and freezes both purchase paths while a set addition is uncertain", async () => {
     actions.addItems.mockRejectedValueOnce(new TypeError("Connection lost"));
     show(product, "test", { ...product, id: "footrest", name: "Footrest" }); const user = userEvent.setup();
-    expect(screen.getByRole("link", { name: "Compare this option" }).getAttribute("href")).toBe("/au/compare?item=chair%3Atest");
+    const compare = vi.spyOn(comparison, "addCompareItem");
+    await user.click(screen.getByRole("button", { name: "Add Chair to comparison" }));
+    expect(compare).toHaveBeenCalledWith("au", { productId: "chair", variantId: "test" });
+    expect(window.location.pathname).toBe("/au/products/chair");
+    expect(screen.getByRole("button", { name: "Chair is in comparison" }).getAttribute("aria-pressed")).toBe("true");
     await user.click(screen.getByRole("button", { name: "Add both items to bag" }));
     expect(await screen.findByText("Connection lost")).toBeTruthy();
     expect(screen.getByRole("radio", { name: "Moss" }).matches(":disabled")).toBe(true);

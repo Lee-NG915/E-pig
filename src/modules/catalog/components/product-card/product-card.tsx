@@ -14,7 +14,7 @@ import { useCartActions } from "@/modules/cart/lib/cart-store";
 import { formatMarketPrice } from "@/platform/config/format-market-price";
 import { Badge } from "@e-pig/happy-dog/components/badge";
 import { Button } from "@e-pig/happy-dog/components/button";
-import { buildCompareHref } from "../../lib/compare-query";
+import { AddToComparison } from "../add-to-comparison/add-to-comparison";
 
 export function ProductCard({ product, linkToDefaultVariant = false }: { product: ProductListItem; linkToDefaultVariant?: boolean }) {
   const market = useCartMarket();
@@ -47,7 +47,6 @@ export function ProductCard({ product, linkToDefaultVariant = false }: { product
   const productHref = linkedVariantId
     ? `${productPath}?variant=${encodeURIComponent(linkedVariantId)}`
     : productPath;
-  const comparisonHref = buildCompareHref(market.id, [{ productId: product.id, variantId: selectedPreview?.variantId ?? product.defaultVariantId }]);
 
   return (
     <article className="group min-w-0">
@@ -153,7 +152,7 @@ export function ProductCard({ product, linkToDefaultVariant = false }: { product
           </div>
         </fieldset>
       ) : null}
-      <Link href={comparisonHref} aria-label={`Compare ${product.name}`} className="mt-3 inline-flex min-h-11 items-center rounded-sm text-sm underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Compare</Link>
+      <AddToComparison marketId={market.id} item={{ productId: product.id, variantId: selectedPreview?.variantId ?? product.defaultVariantId }} productName={product.name} className="mt-3 min-h-11 -ml-3" />
       {failure || error ? <p role="alert" className="mt-2 text-sm text-destructive">{failure || error}</p> : null}
     </article>
   );

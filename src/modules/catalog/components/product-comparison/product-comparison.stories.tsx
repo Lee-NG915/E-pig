@@ -1,28 +1,23 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { AppRouterContext } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { ProductComparison } from "./product-comparison";
-import { comparisonProduct as product, secondComparisonProduct as second } from "./product-comparison.mock";
+import { comparisonProduct as product, secondComparisonProduct as second, thirdComparisonProduct as third, installComparisonStoryData } from "./product-comparison.mock";
 
-const first = { item: { productId: product.id, variantId: product.variants[0].id }, product, variant: product.variants[0], usedDefault: false };
+const firstItem = { productId: product.id, variantId: product.variants[0].id };
+const secondItem = { productId: second.id, variantId: second.variants[0].id };
 const meta = {
   title: "Modules/catalog/ProductComparison",
   component: ProductComparison,
-  args: { marketId: "au", products: [product, second], entries: [first], issues: [] },
-  decorators: [(Story) => <AppRouterContext.Provider value={{ back() {}, forward() {}, refresh() {}, push() {}, replace() {}, prefetch() {} }}><Story /></AppRouterContext.Provider>],
+  args: { marketId: "au" },
+  beforeEach: () => installComparisonStoryData([firstItem, secondItem]),
 } satisfies Meta<typeof ProductComparison>;
 export default meta;
 type Story = StoryObj<typeof meta>;
-export const OneOption: Story = {};
-export const Empty: Story = { args: { entries: [] } };
-export const UnavailableOption: Story = { args: { entries: [{ item: { productId: product.id, variantId: "unknown" }, product, usedDefault: false, error: "This option is unavailable in the catalog. Select another option." }] } };
-export const ThreeOptions: Story = { args: { entries: [first,
-  { item: { productId: product.id, variantId: product.variants[1].id }, product, variant: product.variants[1], usedDefault: false },
-  { item: { productId: second.id, variantId: second.variants[0].id }, product: second, variant: second.variants[0], usedDefault: true },
-] } };
-
-export const LongProductMenu: Story = {
-  args: {
-    entries: [],
-    products: Array.from({ length: 40 }, (_, index) => ({ ...product, id: `sample-${index}`, name: `Sample ${index + 1} — Modular sofa with a long configuration name` })),
-  },
-};
+export const TwoProducts: Story = {};
+export const OneProduct: Story = { beforeEach: () => installComparisonStoryData([firstItem]) };
+export const Empty: Story = { beforeEach: () => installComparisonStoryData([]) };
+export const ThreeProducts: Story = { beforeEach: () => installComparisonStoryData([firstItem, secondItem, { productId: third.id, variantId: third.variants[0].id }]) };
+export const OutOfStock: Story = { beforeEach: () => installComparisonStoryData([{ productId: product.id, variantId: product.variants[1].id }, secondItem]) };
+export const UnavailableProduct: Story = { beforeEach: () => installComparisonStoryData([firstItem, { productId: "removed", variantId: "old" }]) };
+export const UnknownOption: Story = { beforeEach: () => installComparisonStoryData([{ productId: product.id, variantId: "unknown" }]) };
+export const Loading: Story = { beforeEach: () => installComparisonStoryData([firstItem, secondItem], "loading") };
+export const DetailsError: Story = { beforeEach: () => installComparisonStoryData([firstItem], "error") };

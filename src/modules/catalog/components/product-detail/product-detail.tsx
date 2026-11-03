@@ -2,7 +2,6 @@
 
 import { useRef, useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@e-pig/happy-dog/components/button";
 import type { ProductDetail as ProductDetailData } from "@/core/contracts/commerce/catalog";
@@ -10,10 +9,10 @@ import { formatMarketPrice } from "@/platform/config/format-market-price";
 import { useCartMarket } from "@/modules/cart/components/cart-market-context/cart-market-context";
 import { useCartActions } from "@/modules/cart/lib/cart-store";
 import { getVariantOptionGroups, resolveInitialVariant, resolveVariantOption } from "@/modules/catalog/lib/variant-selection";
-import { buildCompareHref } from "@/modules/catalog/lib/compare-query";
 import { DeliveryEstimate } from "@/modules/checkout/components/delivery-estimate/delivery-estimate";
 import { BundleConfigurator } from "../bundle-configurator/bundle-configurator";
 import { ProductReviews } from "../product-reviews/product-reviews";
+import { AddToComparison } from "../add-to-comparison/add-to-comparison";
 
 export function ProductDetail({ product, initialVariantId, bundleCompanion }: { product: ProductDetailData; initialVariantId?: string | string[]; bundleCompanion?: ProductDetailData }) {
   const market = useCartMarket();
@@ -86,7 +85,7 @@ export function ProductDetail({ product, initialVariantId, bundleCompanion }: { 
           </fieldset>}
           {invalidSelection ? <p role="alert" className="mt-4 text-sm text-destructive">This option is no longer available. Choose an available option before adding to your bag.</p> : null}
           <Button className="mt-6 w-full sm:w-auto" size="lg" disabled={!available || busy} onClick={() => void add()}>{pending || submitting ? "Adding…" : bundleLocked ? "Resolve set addition below" : available ? "Add to bag" : "Unavailable for sandbox checkout"}</Button>
-          {selected ? <Link className="ml-0 mt-4 block w-fit text-sm underline underline-offset-4" href={buildCompareHref(market.id, [{ productId: product.id, variantId: selected.id }])}>Compare this option</Link> : null}
+          {selected ? <div className="mt-3"><AddToComparison marketId={market.id} item={{ productId: product.id, variantId: selected.id }} productName={product.name} className="min-h-11 -ml-3" /></div> : null}
           {failure || (error && !bundleLocked) ? <p role="alert" className="mt-3 text-sm text-destructive">{failure || error}</p> : null}
           {feedback ? <p role="status" className="mt-3 text-sm">{feedback}</p> : null}
           <p className="mt-6 text-sm leading-6 text-muted-foreground">Sandbox store. Test options and prices are for checkout testing. No real payment, stock reservation or delivery.</p>

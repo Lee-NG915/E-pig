@@ -1,18 +1,19 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
+import { act, cleanup, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterAll, afterEach, beforeAll, beforeEach, expect, it, vi } from "vitest";
-import { buildCompareHref } from "../../lib/compare-query";
+import type { ComparisonData } from "../../lib/compare-data";
+import { parseCompareSearchParams } from "../../lib/compare-query";
+import { addCompareItem, resetCompareStoreForTests } from "../../lib/compare-store";
+import { comparisonDetailsQueryKey } from "../../hooks/use-comparison-details";
+import { getStorefrontQueryClient } from "@/modules/cart/lib/cart-store";
 import { comparisonProduct as product, secondComparisonProduct as second } from "./product-comparison.mock";
 import { ProductComparison } from "./product-comparison";
 
-const push = vi.hoisted(() => vi.fn());
-vi.mock("next/navigation", () => ({ useRouter: () => ({ push }) }));
 vi.mock("next/image", () => ({
   // eslint-disable-next-line @next/next/no-img-element
   default: ({ alt, src }: { alt: string; src: string }) => <img alt={alt} src={src} />,
 }));
-// jsdom has no layout scrolling or pointer capture; the real Select remains under test.
 const browserMethods = ["scrollIntoView", "hasPointerCapture"] as const;
 const descriptors = browserMethods.map(name => Object.getOwnPropertyDescriptor(HTMLElement.prototype, name));
 beforeAll(() => {
@@ -24,131 +25,184 @@ afterAll(() => browserMethods.forEach((name, index) => {
   if (descriptor) Object.defineProperty(HTMLElement.prototype, name, descriptor);
   else Reflect.deleteProperty(HTMLElement.prototype, name);
 }));
-afterEach(cleanup);
-async function choose(user: ReturnType<typeof userEvent.setup>, trigger: HTMLElement, option: string) {
-  await user.click(trigger);
+const fetcher = vi.fn();
+const firstItem = { productId: product.id, variantId: product.variants[0].id };
+const secondItem = { productId: second.id, variantId: second.variants[0].id };
+function responseFor(url: string): Response {
+  const query = parseCompareSearchParams(Object.fromEntries(new URL(url, "http://localhost").searchParams));
+  const entries: ComparisonData["entries"] = query.items.map(item => {
+    const selectedProduct = [product, second].find(candidate => candidate.id === item.productId);
+    const variant = selectedProduct?.variants.find(candidate => candidate.id === item.variantId);
+    return { item, product: selectedProduct, variant, usedDefault: false, ...(!selectedProduct ? { error: "This product is unavailable in the catalog." } : !variant ? { error: "This option is unavailable in the catalog." } : {}) };
+  });
+  return new Response(JSON.stringify({ entries, issues: [] }));
+}
+beforeEach(() => {
+  localStorage.clear(); resetCompareStoreForTests(); getStorefrontQueryClient().clear();
+  fetcher.mockReset().mockImplementation((url: string) => Promise.resolve(responseFor(url)));
+  vi.stubGlobal("fetch", fetcher);
+});
+afterEach(() => { cleanup(); getStorefrontQueryClient().clear(); vi.unstubAllGlobals(); });
+async function choose(option: string) {
+  const user = userEvent.setup();
+  await user.click(screen.getByRole("combobox", { name: "Option for Alto Sofa" }));
   await user.click(await screen.findByRole("option", { name: option }));
   await waitFor(() => expect(screen.queryByRole("listbox")).toBeNull());
 }
-beforeEach(() => push.mockClear());
-const entry = { item: { productId: product.id, variantId: product.variants[0].id }, product, variant: product.variants[0], usedDefault: false };
 
-it("opens the shared listbox with the keyboard and returns focus on Escape without changing the comparison", async () => {
-  render(<ProductComparison marketId="au" products={[product, second]} entries={[entry]} issues={[]} />);
-  const user = userEvent.setup();
-  const trigger = screen.getByRole("combobox", { name: "Add a product" });
-  trigger.focus();
-  await user.keyboard("{Enter}");
-  expect(await screen.findByRole("listbox")).toBeTruthy();
-  expect(screen.getByRole("option", { name: "Alto Sofa" })).toBeTruthy();
+it("shows an empty comparison with a market browse link and makes no catalog request", async () => {
+  render(<ProductComparison marketId="sg" />);
+  expect(await screen.findByRole("heading", { name: "Your comparison is empty" })).toBeTruthy();
+  expect(screen.getByRole("link", { name: "Browse products" }).getAttribute("href")).toBe("/sg");
+  expect(screen.queryByRole("combobox")).toBeNull();
+  expect(fetcher).not.toHaveBeenCalled();
+});
+
+it("compares only selected products in aligned property rows without a catalog picker", async () => {
+  addCompareItem("au", firstItem); addCompareItem("au", secondItem);
+  render(<ProductComparison marketId="au" />);
+  await screen.findByRole("columnheader", { name: /Alto Sofa/ });
+  const table = screen.getByRole("table", { name: "Selected products and their specifications" });
+  const priceRow = within(table).getByRole("row", { name: /Price/ });
+  expect(within(priceRow).getAllByRole("cell").map(cell => cell.textContent)).toEqual(["$2,600", "$2,600"]);
+  expect(within(table).getByRole("rowheader", { name: "Width" })).toBeTruthy();
+  expect(screen.getByText("210 cm")).toBeTruthy();
+  expect(screen.getByText("Fabric, Timber")).toBeTruthy();
+  expect(screen.getAllByText("Not provided").length).toBeGreaterThanOrEqual(4);
+  expect(screen.queryByRole("combobox", { name: "Add a product" })).toBeNull();
+  expect(screen.queryByRole("button", { name: "Add to comparison" })).toBeNull();
+  expect(screen.getAllByRole("combobox")).toHaveLength(2);
+  expect(screen.getByRole("link", { name: "View Alto Sofa details" }).getAttribute("href")).toBe("/au/products/alto-sofa?variant=green%3Awide");
+  expect(fetcher.mock.calls.every(([url]) => String(url).startsWith("/api/au/compare?"))).toBe(true);
+});
+
+it("encourages continued browsing with one selected product", async () => {
+  addCompareItem("us", firstItem);
+  render(<ProductComparison marketId="us" />);
+  expect(await screen.findByText("Add another product while you browse to compare them side by side.")).toBeTruthy();
+  expect(screen.getByRole("link", { name: "Browse products" }).getAttribute("href")).toBe("/us");
+});
+
+it("updates the stored option and price while preserving the other product and keyboard focus", async () => {
+  addCompareItem("au", firstItem); addCompareItem("au", secondItem);
+  render(<ProductComparison marketId="au" />);
+  await screen.findByRole("combobox", { name: "Option for Alto Sofa" });
+  await choose("Cream / Small — Unavailable");
+  expect(await screen.findByText("$2,200")).toBeTruthy();
+  expect(screen.getByRole("cell", { name: "Unavailable for sandbox checkout" })).toBeTruthy();
+  expect(screen.getByRole("columnheader", { name: /Harbour Bed/ })).toBeTruthy();
+  expect(screen.getByRole("link", { name: "View Alto Sofa details" }).getAttribute("href")).toBe("/au/products/alto-sofa?variant=cream%20%2F%20small");
+  const lastUrl = fetcher.mock.calls.at(-1)?.[0] as string;
+  expect(parseCompareSearchParams(Object.fromEntries(new URL(lastUrl, "http://localhost").searchParams)).items).toEqual([{ productId: "alto", variantId: "cream / small" }, secondItem]);
+  await waitFor(() => expect(document.activeElement).toBe(screen.getByRole("combobox", { name: "Option for Alto Sofa" })));
+});
+
+it("removes the last selected product and returns focus to browsing", async () => {
+  addCompareItem("au", firstItem);
+  render(<ProductComparison marketId="au" />);
+  await userEvent.setup().click(await screen.findByRole("button", { name: "Remove Alto Sofa" }));
+  expect(await screen.findByRole("heading", { name: "Your comparison is empty" })).toBeTruthy();
+  expect(screen.queryByRole("table")).toBeNull();
+  await waitFor(() => expect(document.activeElement).toBe(screen.getByRole("link", { name: "Browse products" })));
+});
+
+it("keeps an unavailable product removable without a replacement picker or guessed price", async () => {
+  addCompareItem("au", { productId: "removed", variantId: "old" });
+  render(<ProductComparison marketId="au" />);
+  expect(await screen.findByText("This product is unavailable in the catalog.")).toBeTruthy();
+  expect(screen.queryByRole("combobox")).toBeNull();
+  expect(screen.queryByRole("link", { name: /View .* details/ })).toBeNull();
+  expect(screen.queryByText("removed")).toBeNull();
+  await userEvent.setup().click(screen.getByRole("button", { name: "Remove selected product 1" }));
+  expect(await screen.findByRole("heading", { name: "Your comparison is empty" })).toBeTruthy();
+});
+
+it("retries a details failure rather than presenting an empty selection", async () => {
+  addCompareItem("au", firstItem); fetcher.mockRejectedValueOnce(new TypeError("Network unavailable"));
+  render(<ProductComparison marketId="au" />);
+  expect(await screen.findByRole("alert")).toBeTruthy();
+  expect(screen.queryByRole("heading", { name: "Your comparison is empty" })).toBeNull();
+  await userEvent.setup().click(screen.getByRole("button", { name: "Retry loading products" }));
+  expect(await screen.findByText("$2,600")).toBeTruthy();
+});
+
+it("opens only this product's options by keyboard and restores focus on Escape", async () => {
+  addCompareItem("au", firstItem);
+  render(<ProductComparison marketId="au" />);
+  const trigger = await screen.findByRole("combobox", { name: "Option for Alto Sofa" });
+  trigger.focus(); const user = userEvent.setup(); await user.keyboard("{Enter}");
+  expect(await screen.findByRole("option", { name: "Green / Wide" })).toBeTruthy();
+  expect(screen.queryByRole("option", { name: "Harbour Bed" })).toBeNull();
   await user.keyboard("{Escape}");
-  expect(screen.queryByRole("listbox")).toBeNull();
   expect(document.activeElement).toBe(trigger);
-  expect(push).not.toHaveBeenCalled();
+  expect(fetcher).toHaveBeenCalledTimes(1);
 });
 
-it("shows exact option facts and a matching market PDP link, without guessing missing fields", () => {
-  render(<ProductComparison marketId="au" products={[product, second]} entries={[entry, { item: { productId: second.id, variantId: second.variants[0].id }, product: second, variant: second.variants[0], usedDefault: true }]} issues={[]} />);
-  const card = screen.getByRole("article", { name: "Option 1: Alto Sofa" });
-  expect(within(card).getByText("$2,600")).toBeTruthy();
-  expect(within(card).getByText("210 × 90 × 80 cm (W × D × H)")).toBeTruthy();
-  expect(within(card).getByText("Fabric, Timber")).toBeTruthy();
-  expect(within(card).getByRole("link", { name: "View this option" }).getAttribute("href")).toBe("/au/products/alto-sofa?variant=green%3Awide");
-  expect(screen.getAllByText("Not provided")).toHaveLength(3);
-  expect(screen.getByText("Default option selected")).toBeTruthy();
+it("provides a keyboard-reachable scroll region with labelled columns and rows", async () => {
+  addCompareItem("au", firstItem); addCompareItem("au", secondItem);
+  render(<ProductComparison marketId="au" />);
+  const area = await screen.findByRole("region", { name: "Product comparison table" });
+  expect(area.getAttribute("tabindex")).toBe("0");
+  expect(screen.getByText("Scroll across to compare products. Product names and feature labels stay visible.")).toBeTruthy();
+  expect(within(area).getByRole("table", { name: "Selected products and their specifications" })).toBeTruthy();
 });
 
-it("changes a variant through keyboard input while retaining the other comparison column", async () => {
-  const other = { item: { productId: second.id, variantId: second.variants[0].id }, product: second, variant: second.variants[0], usedDefault: false };
-  render(<ProductComparison marketId="sg" products={[product, second]} entries={[entry, other]} issues={[]} />);
-  const select = screen.getByRole("combobox", { name: "Option for comparison 1" });
-  select.focus();
-  const user = userEvent.setup();
-  await user.keyboard("{Enter}");
-  await screen.findByRole("listbox");
-  await user.keyboard("{End}{Enter}");
-  expect(push).toHaveBeenCalledWith(buildCompareHref("sg", [{ productId: "alto", variantId: "cream / small" }, other.item]), { scroll: false });
+it("does not display the previous option's price while the replacement details are loading", async () => {
+  addCompareItem("au", firstItem);
+  render(<ProductComparison marketId="au" />);
+  await screen.findByText("$2,600");
+  let finish!: () => void;
+  fetcher.mockImplementationOnce((url: string) => new Promise<Response>(resolve => { finish = () => resolve(responseFor(url)); }));
+  await choose("Cream / Small — Unavailable");
+  expect(screen.getByRole("status").textContent).toContain("Loading selected products");
+  expect(screen.queryByText("$2,600")).toBeNull();
+  expect(screen.getByRole("button", { name: "Remove selected product 1" })).toBeTruthy();
+  finish();
+  expect(await screen.findByText("$2,200")).toBeTruthy();
 });
 
-it("adds a product from the empty state with a keyboard submit", async () => {
-  render(<ProductComparison marketId="us" products={[{ ...second, defaultVariantId: "bed-default" }]} entries={[]} issues={[]} />);
-  const user = userEvent.setup();
-  expect(screen.getByRole("link", { name: "Browse sofas" }).getAttribute("href")).toBe("/us/collections/sofas");
-  await choose(user, screen.getByRole("combobox", { name: "Add a product" }), "Harbour Bed");
-  await user.tab();
-  expect(screen.getByRole("button", { name: "Add to comparison" })).toBe(document.activeElement);
-  await user.keyboard("{Enter}");
-  expect(push).toHaveBeenCalledWith("/us/compare?item=bed%3Abed-default", { scroll: false });
+it("treats a zero quantity limit as unavailable even when the availability flag says in stock", async () => {
+  addCompareItem("au", firstItem);
+  fetcher.mockResolvedValueOnce(new Response(JSON.stringify({ entries: [{ item: firstItem, product, variant: { ...product.variants[0], maxQuantity: 0 }, usedDefault: false }], issues: [] })));
+  render(<ProductComparison marketId="au" />);
+  expect(await screen.findByRole("cell", { name: "Unavailable for sandbox checkout" })).toBeTruthy();
+  expect(screen.queryByRole("cell", { name: "Available for sandbox checkout" })).toBeNull();
+  expect(screen.getByText(/no real stock reservation or delivery/)).toBeTruthy();
 });
 
-it("adds another real variant of the same product and explains an accidental duplicate", async () => {
-  render(<ProductComparison marketId="au" products={[product]} entries={[entry]} issues={[]} />);
-  const user = userEvent.setup();
-  await choose(user, screen.getByRole("combobox", { name: "Add a product" }), "Alto Sofa");
-  await user.click(screen.getByRole("button", { name: "Add to comparison" }));
-  expect(screen.getByRole("alert").textContent).toContain("already in your comparison");
-  expect(push).not.toHaveBeenCalled();
-  await choose(user, screen.getByRole("combobox", { name: "Option to add" }), "Cream / Small — Out of stock");
-  await user.click(screen.getByRole("button", { name: "Add to comparison" }));
-  expect(push).toHaveBeenCalledWith("/au/compare?item=alto%3Agreen%253Awide&item2=alto%3Acream%2520%252F%2520small", { scroll: false });
+it("hides prior prices and availability after a same-selection background refresh fails", async () => {
+  addCompareItem("au", firstItem);
+  render(<ProductComparison marketId="au" />);
+  expect(await screen.findByText("$2,600")).toBeTruthy();
+  let failRefresh!: () => void;
+  fetcher.mockImplementationOnce(() => new Promise<Response>((_resolve, reject) => { failRefresh = () => reject(new TypeError("Refresh unavailable")); }));
+  let refresh!: Promise<void>;
+  await act(async () => { refresh = getStorefrontQueryClient().invalidateQueries({ queryKey: comparisonDetailsQueryKey("au", [firstItem]) }); });
+  await waitFor(() => expect(screen.getByRole("status").textContent).toContain("Updating product details"));
+  expect(screen.queryByText("$2,600")).toBeNull();
+  expect(screen.queryByRole("cell", { name: "Available for sandbox checkout" })).toBeNull();
+  await act(async () => { failRefresh(); await refresh; });
+  expect(await screen.findByRole("alert")).toBeTruthy();
+  expect(screen.queryByText("$2,600")).toBeNull();
+  expect(screen.queryByRole("cell", { name: "Available for sandbox checkout" })).toBeNull();
+  expect(screen.getByRole("columnheader", { name: /Alto Sofa/ })).toBeTruthy();
+  expect(screen.getByRole("button", { name: "Remove Alto Sofa" })).toBeTruthy();
+  expect(screen.getAllByRole("cell", { name: "Not available" }).length).toBeGreaterThan(1);
+  await userEvent.setup().click(screen.getByRole("button", { name: "Retry loading products" }));
+  expect(await screen.findByText("$2,600")).toBeTruthy();
 });
 
-it("replaces a product with its own default and removes only the requested column", async () => {
-  render(<ProductComparison marketId="au" products={[product, { ...second, defaultVariantId: "bed-default" }]} entries={[entry]} issues={[]} />);
-  const user = userEvent.setup();
-  await choose(user, screen.getByRole("combobox", { name: "Product for comparison 1" }), "Harbour Bed");
-  expect(push).toHaveBeenLastCalledWith("/au/compare?item=bed%3Abed-default", { scroll: false });
-  await user.click(screen.getByRole("button", { name: "Remove comparison 1" }));
-  expect(push).toHaveBeenLastCalledWith("/au/compare", { scroll: false });
-});
-
-it("shows sold-out facts and makes a missing explicit option repairable without substituting a price", async () => {
-  const soldOut = { ...entry, item: { productId: product.id, variantId: product.variants[1].id }, variant: product.variants[1] };
-  render(<ProductComparison marketId="au" products={[product]} entries={[soldOut, { item: { productId: "alto", variantId: "unknown" }, product, usedDefault: false, error: "This option is unavailable in the catalog. Select another option." }]} issues={["An invalid comparison item was not loaded. Choose a product below."]} />);
-  expect(screen.getByText("Out of stock", { selector: "dd" })).toBeTruthy();
-  expect(screen.getByText("$2,200")).toBeTruthy();
-  const missing = screen.getByRole("article", { name: "Option 2: Alto Sofa" });
-  expect(within(missing).queryByText("$2,600")).toBeNull();
-  expect(within(missing).queryByRole("link", { name: "View this option" })).toBeNull();
-  expect(within(missing).getByRole("alert")).toBeTruthy();
-  await choose(userEvent.setup(), within(missing).getByRole("combobox", { name: "Option for comparison 2" }), "Green / Wide");
-  expect(push).toHaveBeenCalledWith("/au/compare?item=alto%3Acream%2520%252F%2520small&item2=alto%3Agreen%253Awide", { scroll: false });
-});
-
-it("limits addition at three options while keeping removal available", () => {
-  render(<ProductComparison marketId="au" products={[product, second]} entries={[entry,
-    { ...entry, item: { productId: product.id, variantId: product.variants[1].id }, variant: product.variants[1] },
-    { item: { productId: "bed", variantId: "bed-default" }, product: second, variant: second.variants[0], usedDefault: false },
-  ]} issues={[]} />);
-  expect(screen.getByRole("status").textContent).toContain("3 of 3");
-  expect(screen.getByRole("button", { name: "Add to comparison" })).toHaveProperty("disabled", true);
-  expect(screen.getByRole("combobox", { name: "Add a product" })).toHaveProperty("disabled", true);
-  expect(screen.getByRole("button", { name: "Remove comparison 3" })).toHaveProperty("disabled", false);
-});
-
-it("keeps an unknown product visible until a real product is selected", async () => {
-  render(<ProductComparison marketId="au" products={[{ ...product, defaultVariantId: "green:wide" }]} entries={[{
-    item: { productId: "removed", variantId: "old" }, usedDefault: false, error: "This product is unavailable in the catalog. Choose another product.",
-  }]} issues={[]} />);
-  const trigger = screen.getByRole("combobox", { name: "Product for comparison 1" });
-  expect(trigger.textContent).toContain("Unavailable product");
-  expect(screen.queryByRole("link", { name: "View this option" })).toBeNull();
-  await choose(userEvent.setup(), trigger, "Alto Sofa");
-  expect(push).toHaveBeenCalledWith("/au/compare?item=alto%3Agreen%253Awide", { scroll: false });
-});
-
-it("disables an empty option menu while keeping product replacement available", () => {
-  render(<ProductComparison marketId="au" products={[product, second]} entries={[{
-    item: { productId: product.id, variantId: "removed" }, product: { ...product, variants: [] }, usedDefault: false, error: "This option is unavailable in the catalog. Select another option.",
-  }]} issues={[]} />);
-  expect(screen.getByRole("combobox", { name: "Option for comparison 1" })).toHaveProperty("disabled", true);
-  expect(screen.getByRole("combobox", { name: "Product for comparison 1" })).toHaveProperty("disabled", false);
-  expect(screen.queryByRole("link", { name: "View this option" })).toBeNull();
-});
-
-it("retains keyboard focus on the option selector when the URL response updates that column", async () => {
-  const { rerender } = render(<ProductComparison marketId="au" products={[product]} entries={[entry]} issues={[]} />);
-  await choose(userEvent.setup(), screen.getByRole("combobox", { name: "Option for comparison 1" }), "Cream / Small — Out of stock");
-  rerender(<ProductComparison marketId="au" products={[product]} entries={[{ ...entry, item: { productId: product.id, variantId: product.variants[1].id }, variant: product.variants[1] }]} issues={[]} />);
-  await waitFor(() => expect(screen.getByRole("combobox", { name: "Option for comparison 1" })).toBe(document.activeElement));
+it("focuses browsing immediately after a two-to-one removal and does not steal focus on the late response", async () => {
+  addCompareItem("au", firstItem); addCompareItem("au", secondItem);
+  render(<ProductComparison marketId="au" />);
+  await screen.findByRole("button", { name: "Remove Alto Sofa" });
+  let finish!: () => void;
+  fetcher.mockImplementationOnce((url: string) => new Promise<Response>(resolve => { finish = () => resolve(responseFor(url)); }));
+  await userEvent.setup().click(screen.getByRole("button", { name: "Remove Alto Sofa" }));
+  expect(screen.getByRole("status").textContent).toContain("Loading selected products");
+  expect(document.activeElement).toBe(screen.getByRole("link", { name: "Browse products" }));
+  const area = screen.getByRole("region", { name: "Product comparison table" });
+  area.focus(); finish();
+  await screen.findByRole("columnheader", { name: /Harbour Bed/ });
+  expect(document.activeElement).toBe(area);
 });

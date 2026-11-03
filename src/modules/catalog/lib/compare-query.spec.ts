@@ -1,8 +1,13 @@
 import { describe, expect, it } from "vitest";
 
-import { buildCompareHref, parseCompareQuery, parseCompareSearchParams } from "./compare-query";
+import { buildCompareHref, buildComparisonApiHref, parseCompareQuery, parseCompareSearchParams } from "./compare-query";
 
 describe("comparison URL", () => {
+  it("serializes selected detail requests with the same bounded identifier escaping", () => {
+    expect(buildComparisonApiHref("sg", [{ productId: "sofa:one", variantId: "green / wide" }, { productId: "bed" }])).toBe("/api/sg/compare?item=sofa%253Aone%3Agreen%2520%252F%2520wide&item2=bed");
+    expect(buildComparisonApiHref("us", [])).toBe("/api/us/compare");
+    expect(new URL(buildComparisonApiHref("au", [{ productId: "a" }, { productId: "b" }, { productId: "c" }, { productId: "d" }]), "https://example.test").searchParams.size).toBe(3);
+  });
   it("round trips explicit product and variant IDs without changing markets or interpreting separators", () => {
     const href = buildCompareHref("sg", [{ productId: "sofa:one", variantId: "green / wide" }]);
     expect(href).toBe("/sg/compare?item=sofa%253Aone%3Agreen%2520%252F%2520wide");

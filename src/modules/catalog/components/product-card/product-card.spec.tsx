@@ -13,6 +13,7 @@ import {
 import { formatMarketPrice } from "@/platform/config/format-market-price";
 
 import { ProductCard } from "./product-card";
+import * as comparison from "../../lib/compare-store";
 
 vi.mock("next/image", () => ({
   // Observe the image boundary's actual src; Next's loading pipeline is outside this component test.
@@ -46,7 +47,7 @@ const previewProduct: ProductListItem = {
 
 const actions = vi.hoisted(() => ({ addItem: vi.fn(), pending: false, error: null as string | null }));
 vi.mock("@/modules/cart/lib/cart-store", async (importOriginal) => ({ ...await importOriginal<typeof import("@/modules/cart/lib/cart-store")>(), useCartActions: () => actions }));
-beforeEach(() => { actions.addItem.mockReset().mockResolvedValue(undefined); actions.pending = false; actions.error = null; });
+beforeEach(() => { localStorage.clear(); comparison.resetCompareStoreForTests(); vi.restoreAllMocks(); actions.addItem.mockReset().mockResolvedValue(undefined); actions.pending = false; actions.error = null; });
 
 afterEach(cleanup);
 
@@ -59,6 +60,11 @@ function renderCard(item: ProductListItem = product) {
 }
 
 describe("ProductCard", () => {
+  it("offers an in-place comparison action instead of navigating away from browsing", () => {
+    renderCard();
+    expect(screen.getByRole("button", { name: "Add Alto Modular Sofa to comparison" })).toBeTruthy();
+    expect(screen.queryByRole("link", { name: /Compare Alto/ })).toBeNull();
+  });
   it("呈现名称、类目、颜色与按 market 格式化的现价", () => {
     renderCard();
 
@@ -112,11 +118,11 @@ describe("ProductCard", () => {
   it("routes multiple or unknown variants to product options instead of guessing", () => {
     renderCard({ ...product, variantCount: 2 });
     expect(screen.getByRole("link", { name: /Choose options/ }).getAttribute("href")).toBe(`/au/products/${product.slug}`);
-    expect(screen.queryByRole("button", { name: /Add/ })).toBeNull();
+    expect(screen.queryByRole("button", { name: /Add .* to bag/ })).toBeNull();
   });
   it("shows a quick-add rejection accessibly", async () => {
     actions.addItem.mockRejectedValue(new Error("Unavailable")); renderCard();
-    await userEvent.setup().click(screen.getByRole("button", { name: /Add Alto/ }));
+    await userEvent.setup().click(screen.getByRole("button", { name: "Add Alto Modular Sofa to bag" }));
     expect(await screen.findByRole("alert")).toBeTruthy();
   });
 
@@ -185,26 +191,34 @@ describe("ProductCard", () => {
     expect(screen.queryByRole("button", { name: /Add .* to bag/ })).toBeNull();
   });
 
-  it("links comparison to the selected variant while filtered previews keep their explicit PDP default", async () => {
+  it("adds the selected colour in place while preserving the PDP link", async () => {
+    const add = vi.spyOn(comparison, "addCompareItem");
     render(<CartMarketProvider market={market}><ProductCard product={previewProduct} linkToDefaultVariant /></CartMarketProvider>);
-    expect(screen.getAllByRole("link", { name: product.name })[0].getAttribute("href")).toBe("/au/products/alto-modular-sofa?variant=alto-default");
-    expect(screen.getByRole("link", { name: "Compare Alto Modular Sofa" }).getAttribute("href")).toBe("/au/compare?item=alto-modular-sofa%3Aalto-default");
-    await userEvent.setup().click(screen.getByRole("radio", { name: "Oat boucle" }));
-    expect(screen.getByRole("link", { name: "Compare Alto Modular Sofa" }).getAttribute("href")).toBe("/au/compare?item=alto-modular-sofa%3Aalto%252Foat%2520wide");
+    const user = userEvent.setup();
+    await user.click(screen.getByRole("button", { name: "Add Alto Modular Sofa to comparison" }));
+    expect(add).toHaveBeenLastCalledWith("au", { productId: product.id, variantId: "alto-default" });
+    expect(screen.getByRole("button", { name: "Alto Modular Sofa is in comparison" }).getAttribute("aria-pressed")).toBe("true");
+    await user.click(screen.getByRole("radio", { name: "Oat boucle" }));
+    await user.click(screen.getByRole("button", { name: "Update Alto Modular Sofa in comparison" }));
+    expect(add).toHaveBeenLastCalledWith("au", { productId: product.id, variantId: "alto/oat wide" });
     expect(screen.getByRole("link", { name: /Choose options/ }).getAttribute("href")).toBe("/au/products/alto-modular-sofa?variant=alto%2Foat%20wide");
+    expect(actions.addItem).not.toHaveBeenCalled();
   });
 
-  it("starts comparison with the known default even when normal PDP links omit it", () => {
+  it("adds the explicit default even when normal PDP links omit it", async () => {
+    const add = vi.spyOn(comparison, "addCompareItem");
     renderCard();
-    expect(screen.getByRole("link", { name: "Compare Alto Modular Sofa" }).getAttribute("href")).toBe("/au/compare?item=alto-modular-sofa%3Aalto-default");
+    await userEvent.setup().click(screen.getByRole("button", { name: "Add Alto Modular Sofa to comparison" }));
+    expect(add).toHaveBeenCalledWith("au", { productId: product.id, variantId: "alto-default" });
     expect(screen.getAllByRole("link", { name: product.name })[0].getAttribute("href")).toBe("/au/products/alto-modular-sofa");
   });
 
-  it("keeps a filtered non-original default in both PDP and comparison links", () => {
+  it("keeps a filtered non-original default in the PDP link and collected selection", async () => {
+    const add = vi.spyOn(comparison, "addCompareItem");
     const matched = previewProduct.variantPreviews![1];
     render(<CartMarketProvider market={market}><ProductCard product={{ ...previewProduct, defaultVariantId: matched.variantId, price: matched.price, image: matched.image, colour: matched.colour, variantPreviews: [matched] }} linkToDefaultVariant /></CartMarketProvider>);
+    await userEvent.setup().click(screen.getByRole("button", { name: "Add Alto Modular Sofa to comparison" }));
+    expect(add).toHaveBeenCalledWith("au", { productId: product.id, variantId: matched.variantId });
     expect(screen.getAllByRole("link", { name: product.name })[0].getAttribute("href")).toBe("/au/products/alto-modular-sofa?variant=alto%2Foat%20wide");
-    expect(screen.getByRole("link", { name: "Compare Alto Modular Sofa" }).getAttribute("href")).toBe("/au/compare?item=alto-modular-sofa%3Aalto%252Foat%2520wide");
   });
-
 });

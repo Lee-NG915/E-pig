@@ -7,7 +7,7 @@
 | Task | Owning domain / files | 验证 | 状态 |
 | --- | --- | --- | --- |
 | C01 | catalog query、mock adapter、PLP filter component/route | 同 variant AND、URL、清除/排序/空态 | done |
-| C02 | catalog compare helper/component/page、卡片入口 | 3-slot、非法引用、真实 variant/未知事实 | done |
+| C02 | catalog selection store/API、浮动清单、卡片/PDP入口与比较表 | 原地加入、跨页恢复、3件不同商品、错误/焦点、仅所选详情 | done（购物旅程重做，见 tasks/C02-browse-comparison.md） |
 | C03 | checkout delivery estimate helper/component、PDP/Checkout 挂载 | test postcodes / unknown / market | done |
 | C04 | cart/postgres/coupon totals、checkout/order展示 | money/reprice/lock/retry/paid snapshots | done |
 | C05 | catalog demo review fixture/component | label/filter/sort/empty | done |

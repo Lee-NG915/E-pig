@@ -1,0 +1,123 @@
+{
+  "date": "2026-11-03",
+  "scope": "C02 browsing comparison follow-up",
+  "localBaseUrl": "http://localhost:3000",
+  "quality": {
+    "applicationFiles": 64,
+    "applicationTests": 405,
+    "libraryFiles": 7,
+    "libraryTests": 22,
+    "harnessTests": 8,
+    "typecheck": "PASS",
+    "lint": "PASS",
+    "docs": "PASS",
+    "doctor": "PASS",
+    "companions": "PASS",
+    "productionBuild": "PASS",
+    "storybookBuild": "PASS",
+    "sgRuntimeSmoke": "PASS",
+    "defaultVerifyCommand": "NOT RUN; constituents completed with pinned pnpm and Vitest maxWorkers=2"
+  },
+  "browser": {
+    "inPlaceAdd": {
+      "urlBefore": "/au/collections/sofas",
+      "urlAfter": "/au/collections/sofas",
+      "scrollBefore": 1125,
+      "scrollAfter": 1125,
+      "focus": "Getaway Sofa is in comparison",
+      "message": "Getaway Sofa added to comparison.",
+      "autoOpenedDialogs": 0
+    },
+    "persistence": "PLP to comparison to reload to PDP retained selection; only productId/variantId stored",
+    "updateAtCapacity": "Tamarama default replaced by forest-walk-2-sections; count remained 3; URL and scroll unchanged by comparison action",
+    "capacity": "Fourth distinct product rejected; stored 3 references unchanged and recovery message shown",
+    "removal": "Removed Bangalow; remaining Getaway and Tamarama; focus moved to Remove Getaway Sofa from comparison",
+    "drawer320": {
+      "left": 0,
+      "right": 320,
+      "width": 320,
+      "initialFocus": "title",
+      "escapeFocus": "Open comparison list, 3 products"
+    },
+    "pdpMobile320": {
+      "viewport": 320,
+      "pageWidth": 320,
+      "dockWidth": 48,
+      "dockBottom": 684,
+      "purchaseBarTop": 715,
+      "overlap": false,
+      "visualViewportScale": 1
+    },
+    "pdpMobile390": {
+      "viewport": 390,
+      "pageWidth": 390,
+      "dockBottom": 748,
+      "purchaseBarTop": 779,
+      "overlap": false
+    },
+    "comparisonTable": [
+      {
+        "viewport": 320,
+        "pageWidth": 320,
+        "regionWidth": 286,
+        "tableWidth": 472,
+        "columns": [
+          88,
+          192,
+          192
+        ],
+        "selectPopup": {
+          "left": 127,
+          "right": 287,
+          "height": 288
+        }
+      },
+      {
+        "viewport": 390,
+        "pageWidth": 390,
+        "regionWidth": 356,
+        "tableWidth": 472,
+        "columns": [
+          88,
+          192,
+          192
+        ],
+        "selectPopup": {
+          "left": 197,
+          "right": 357,
+          "height": 288
+        }
+      },
+      {
+        "viewport": 1440,
+        "pageWidth": 1440,
+        "regionWidth": 1374,
+        "tableWidth": 1374,
+        "columns": [
+          160,
+          607,
+          607
+        ],
+        "imageHeight": 176,
+        "optionRow": [
+          765.5,
+          850.5
+        ],
+        "priceRow": [
+          850.5,
+          911.5
+        ]
+      }
+    ],
+    "evidenceMode": "Direct browser inspection, keyboard/click tools and DOM measurements; screenshots viewed inline, not saved"
+  },
+  "review": {
+    "fixed": [
+      "same-key refetch failure retained old prices/availability",
+      "remove focus incorrectly awaited new detail fetch"
+    ],
+    "independentRegressionTests": 13,
+    "remainingBlockingOrMediumFindings": 0
+  },
+  "publication": "Local implementation; commit/push record maintained separately. No merge or manual deployment."
+}

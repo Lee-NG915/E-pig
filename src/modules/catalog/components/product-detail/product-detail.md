@@ -20,7 +20,7 @@ Renders the selected controlled catalog variant with its price, image, availabil
 | Structured options | Colour / Size / Section width groups preserve other dimensions; nonexistent combinations are disabled |
 | Selected media | Variant-specific gallery, price and width/depth/height change together; changing options resets the gallery |
 | Mobile | Fixed purchase bar shares the selected variant, add function and duplicate-request guard with the primary CTA |
-| Compare | Uses the same selected local product/variant in a market-scoped comparison URL |
+| Compare | Adds the selected product/variant to the market comparison list in place; updates an existing product’s option without navigating or mutating the bag |
 | Demo delivery | Test postcode estimates clearly marked as samples, no fee or fulfillment change |
 | Demo reviews | Explicit sample data only, rating filters/sort/details; absent data has an honest empty state |
 | Two-piece set | Optional curated companion; atomic addItems, parent selection and single-item actions lock until uncertain bundle requests are resolved |

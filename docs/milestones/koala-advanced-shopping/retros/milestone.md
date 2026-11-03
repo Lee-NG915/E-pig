@@ -14,3 +14,7 @@ Test AI 提前覆盖金额、回滚、锁车、未知重试、缺失信息与市
 无需扩大为新框架/全局状态或调整 Hard Rules。当前原始研究文档与 AGENTS/DESIGN/PRODUCT/README 的既有未提交内容保持原状，本里程碑记录新增能力与证据，不夹带这些文件。
 
 本轮质量门首轮通过；沿既有资源证据限制 Vitest 为两个 worker。后续真实业务接入需要替换示例策略与来源，并另外执行支付/远程发布验收。
+
+## C02 用户评审后的修正
+
+[ISSUE-004](issues/ISSUE-004-comparison-shopping-journey.md) 说明首轮只验证列选择/URL导航，没有验证浏览收集商品的真实任务。当前已替换为 market-scoped browser shortlist 和 selected-only 比较表；无账号同步或额外状态依赖。验收从用户任务开始，再检查控件、异步失败与焦点，而不是用孤立控件通过代替购物流程正确。独立评审补出的旧价格和延迟焦点问题均有回归。

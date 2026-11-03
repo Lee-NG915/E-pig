@@ -51,11 +51,18 @@ export function parseCompareQuery(value?: string | string[]): CompareQuery {
   return { items, issues: [...new Set(issues)] };
 }
 
-export function buildCompareHref(marketId: string, items: CompareItem[]): string {
+function buildCompareParams(items: CompareItem[]): string {
   const query = new URLSearchParams();
   for (const [index, item] of items.slice(0, MAX_COMPARE_ITEMS).entries()) {
     query.set(index === 0 ? "item" : `item${index + 1}`, `${encodeURIComponent(item.productId)}${item.variantId === undefined ? "" : `:${encodeURIComponent(item.variantId)}`}`);
   }
-  const path = withMarketPrefix(marketId, "/compare");
-  return query.size ? `${path}?${query.toString()}` : path;
+  return query.size ? `?${query.toString()}` : "";
+}
+
+export function buildCompareHref(marketId: string, items: CompareItem[]): string {
+  return `${withMarketPrefix(marketId, "/compare")}${buildCompareParams(items)}`;
+}
+
+export function buildComparisonApiHref(marketId: string, items: CompareItem[]): string {
+  return `/api/${encodeURIComponent(marketId)}/compare${buildCompareParams(items)}`;
 }

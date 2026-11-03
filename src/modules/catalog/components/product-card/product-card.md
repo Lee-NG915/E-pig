@@ -20,7 +20,7 @@ When the catalog supplies at least two colour previews, customers can select a r
 | 多张有效图片 | 上一张/下一张按钮及图片位置说明；切图不导航、不加购 |
 | 单张或重复图片 | 不显示无效图集控件 |
 | 未提供所选规格原价 | 不沿用另一规格的划线价 |
-| Compare | 当前市场的比较 URL 始终保留选中色板或明确 defaultVariantId；缺默认规格时由比较页明示默认 |
+| Compare | 通过 AddToComparison 原地加入当前色板/defaultVariantId；按钮、全局浮层反馈和数量同步，不离开浏览页 |
 | 筛选后的默认预览 | `linkToDefaultVariant` 为 true 时，未点色板的 PDP 链接也保留当前匹配的 defaultVariantId |
 
 Colour previews use catalog images, not invented colour values. They do not add ratings, discounts, inventory or delivery promises.
