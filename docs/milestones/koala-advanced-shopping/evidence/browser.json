@@ -1,0 +1,64 @@
+{
+  "date": "2026-11-03",
+  "environment": "Local AU Next dev, isolated anonymous browser context, real Postgres cart API",
+  "filters": {
+    "invalidBounds": "4000 > 3000: visible error; no partial results",
+    "formSubmission": "sort=price-desc&colour=Forest+Walk&minPrice=3000&maxPrice=4000&inStock=true",
+    "matchedVariant": "tamarama-modular-sofa-forest-walk-3-sections",
+    "price": 3550,
+    "clear": "29 products; sort=price-desc retained; 0 checked colours; filter panel collapsed",
+    "mobile": {
+      "viewport": 390,
+      "scrollWidth": 390
+    }
+  },
+  "delivery": {
+    "2000": "Demo estimate: 2–4 business days.",
+    "9999": "No demo estimate; no coverage claim",
+    "checkout2000": "Same controlled estimate; shipping and tax remain 0"
+  },
+  "reviews": {
+    "source": "4 explicitly labelled demo examples; not customer reviews",
+    "threeStars": "1 matching example; native details opens body",
+    "oneStar": "0 matching examples; Reset rating filter visible",
+    "mobile": {
+      "viewport": 390,
+      "scrollWidth": 390
+    }
+  },
+  "bundleAndCoupon": {
+    "request": "One successful addItems POST before coupon actions",
+    "lines": [
+      {
+        "productId": "bangalow-modular-sofa",
+        "variantId": "bangalow-modular-sofa-default",
+        "quantity": 1
+      },
+      {
+        "productId": "bangalow-modular-sofa-ottoman",
+        "variantId": "bangalow-modular-sofa-ottoman-default",
+        "quantity": 1
+      }
+    ],
+    "subtotal": 2350,
+    "coupon": "DEMO10",
+    "discount": 235,
+    "total": 2115,
+    "invalidCode": "Explicit error; existing DEMO10 and total 2115 preserved",
+    "removeReapply": "Remove restores subtotal 2350, reapply restores total 2115",
+    "checkout": "Two correct lines, discount 235, total 2115; no payment submitted",
+    "mobile": {
+      "viewport": 390,
+      "scrollWidth": 390
+    },
+    "desktopCheckout": {
+      "viewport": 1440,
+      "scrollWidth": 1440,
+      "formWidth": 644.84375,
+      "summaryWidth": 419.15625
+    }
+  },
+  "screenshots": "Inspected inline. No filesystem screenshot artifact claimed.",
+  "payment": "Not submitted; PaymentPort integration evidence is local PGlite with a mocked payment boundary.",
+  "cleanup": "Removed demo code and both test items; bag empty verified"
+}

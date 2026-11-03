@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
+import type { ProductDetail as ProductDetailData } from "@/core/contracts/commerce/catalog";
 import {
   getStorefrontQueryClient,
   setCartOpen,
@@ -31,6 +32,46 @@ beforeEach(() => {
 afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
+});
+it("keeps the original single-item retry available when an unsent bundle conflicts with it", async () => {
+  const posts: { action: string; idempotencyKey: string; items?: unknown; productId?: string; variantId?: string; quantity?: number }[] = [];
+  let state: CartResponse = { cart: null, checkoutEnabled: true };
+  vi.stubGlobal("fetch", vi.fn(async (_url: string, init?: RequestInit) => {
+    if (init?.method === "POST") {
+      const body = JSON.parse(String(init.body)); posts.push(body);
+      if (posts.length === 1) throw new TypeError("Single response lost");
+      state = { checkoutEnabled: true, cart: { ...cartFixture, revision: posts.length } };
+    }
+    return new Response(JSON.stringify(state));
+  }));
+  const sofa: ProductDetailData = {
+    id: "alto", slug: "alto", name: "Alto Sofa", category: "Sofas", colour: "Cream", image: "/sofa.jpg",
+    price: { amount: 10, currency: "AUD" }, description: "Demo", materials: [], gallery: [], colourOptions: [], availability: "in-stock",
+    variants: [{ id: "alto-small", sku: "SOFA", label: "Compact / sandbox", image: "/sofa.jpg", price: { amount: 10, currency: "AUD" }, availability: "in-stock", maxQuantity: 5 }],
+  };
+  const companion: ProductDetailData = { ...sofa, id: "ottoman", slug: "ottoman", name: "Ottoman", variants: [{ ...sofa.variants[0], id: "ottoman-default" }] };
+  render(<CartMarketProvider market={marketFixture}><ProductDetail product={sofa} bundleCompanion={companion} /></CartMarketProvider>);
+  const user = userEvent.setup();
+  const single = screen.getByRole("button", { name: "Add selected option to bag" });
+  await user.click(single);
+  expect(await screen.findByText("Single response lost")).toBeTruthy();
+  const saved = localStorage.getItem("e-pig:pending-cart:v1:au");
+  await user.click(screen.getByRole("button", { name: "Add both items to bag" }));
+  expect(await screen.findByText(/previous bag update is unconfirmed/)).toBeTruthy();
+  await waitFor(() => expect(single).toHaveProperty("disabled", false));
+  expect(screen.getByLabelText("Companion option")).toHaveProperty("disabled", false);
+  expect(screen.queryByRole("button", { name: "Retry set addition" })).toBeNull();
+  expect(posts).toHaveLength(1);
+  expect(localStorage.getItem("e-pig:pending-cart:v1:au")).toBe(saved);
+  await user.click(single);
+  await waitFor(() => expect(posts).toHaveLength(2));
+  expect(posts[1]).toEqual(posts[0]);
+  await waitFor(() => expect(localStorage.getItem("e-pig:pending-cart:v1:au")).toBeNull());
+  await user.click(screen.getByRole("button", { name: "Add both items to bag" }));
+  expect(await screen.findByText("Both selected items were added to your bag.")).toBeTruthy();
+  expect(posts).toHaveLength(3);
+  expect(posts[2]).toMatchObject({ action: "addItems", items: [{ productId: "alto", variantId: "alto-small", quantity: 1 }, { productId: "ottoman", variantId: "ottoman-default", quantity: 1 }] });
+  expect(posts[2].idempotencyKey).not.toBe(posts[0].idempotencyKey);
 });
 it("shares the server bag across separate product and header islands and updates/removes a variant", async () => {
   let state: CartResponse = { cart: null, checkoutEnabled: true };

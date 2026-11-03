@@ -99,10 +99,16 @@ async function ProductDetailSection({
       })
     : null;
 
+  let bundleCompanion;
+  if (product.bundleCompanionId) {
+    try { bundleCompanion = await catalog.getProduct(product.bundleCompanionId); }
+    catch (error) { if (!isAppError(error) || error.kind !== "not_found") throw error; }
+  }
+
   return (
     <CartMarketProvider market={{ id: market.id, currency: market.currency }}>
       {jsonLd ? <script {...jsonLdScriptProps(jsonLd)} /> : null}
-      <ProductDetail key={`${product.id}:${JSON.stringify(variant)}`} product={product} initialVariantId={variant} />
+      <ProductDetail key={`${product.id}:${JSON.stringify(variant)}`} product={product} initialVariantId={variant} bundleCompanion={bundleCompanion} />
     </CartMarketProvider>
   );
 }

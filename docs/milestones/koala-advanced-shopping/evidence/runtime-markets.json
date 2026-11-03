@@ -1,0 +1,31 @@
+{
+  "date": "2026-11-03",
+  "buildMarket": "au",
+  "mode": "same production standalone",
+  "results": [
+    {
+      "market": "sg",
+      "checks": {
+        "currency": true,
+        "currentPrice": true,
+        "bundle": true,
+        "deliveryUnsupported": true,
+        "comparison": true,
+        "filters": true,
+        "checkoutDisabled": true
+      }
+    },
+    {
+      "market": "us",
+      "checks": {
+        "currency": true,
+        "currentPrice": true,
+        "bundle": true,
+        "deliveryUnsupported": true,
+        "comparison": true,
+        "filters": true,
+        "checkoutDisabled": true
+      }
+    }
+  ]
+}

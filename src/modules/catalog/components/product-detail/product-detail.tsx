@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@e-pig/happy-dog/components/button";
 import type { ProductDetail as ProductDetailData } from "@/core/contracts/commerce/catalog";
@@ -9,8 +10,12 @@ import { formatMarketPrice } from "@/platform/config/format-market-price";
 import { useCartMarket } from "@/modules/cart/components/cart-market-context/cart-market-context";
 import { useCartActions } from "@/modules/cart/lib/cart-store";
 import { getVariantOptionGroups, resolveInitialVariant, resolveVariantOption } from "@/modules/catalog/lib/variant-selection";
+import { buildCompareHref } from "@/modules/catalog/lib/compare-query";
+import { DeliveryEstimate } from "@/modules/checkout/components/delivery-estimate/delivery-estimate";
+import { BundleConfigurator } from "../bundle-configurator/bundle-configurator";
+import { ProductReviews } from "../product-reviews/product-reviews";
 
-export function ProductDetail({ product, initialVariantId }: { product: ProductDetailData; initialVariantId?: string | string[] }) {
+export function ProductDetail({ product, initialVariantId, bundleCompanion }: { product: ProductDetailData; initialVariantId?: string | string[]; bundleCompanion?: ProductDetailData }) {
   const market = useCartMarket();
   const { addItem, pending, error } = useCartActions(market);
   const [selectedId, setSelectedId] = useState(() => resolveInitialVariant(product.variants, initialVariantId).variant?.id);
@@ -18,11 +23,12 @@ export function ProductDetail({ product, initialVariantId }: { product: ProductD
   const [feedback, setFeedback] = useState("");
   const [failure, setFailure] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [bundleLocked, setBundleLocked] = useState(false);
   const submittingRef = useRef(false);
   const selected = product.variants.find(variant => variant.id === selectedId);
   const invalidSelection = !selected && initialVariantId !== undefined;
   const optionGroups = getVariantOptionGroups(product.variants);
-  const busy = pending || submitting;
+  const busy = pending || submitting || bundleLocked;
   const available = selected?.availability === "in-stock" && selected.maxQuantity > 0;
   const sourceGallery = selected?.gallery?.length ? selected.gallery : product.gallery;
   const firstImage = { src: selected?.image ?? product.image, alt: `${product.name}${selected ? ` — ${selected.label}` : ""}` };
@@ -37,7 +43,7 @@ export function ProductDetail({ product, initialVariantId }: { product: ProductD
     window.history.replaceState(null, "", url);
   }
   async function add() {
-    if (!selected || !available || pending || submittingRef.current) return;
+    if (!selected || !available || pending || bundleLocked || submittingRef.current) return;
     submittingRef.current = true; setSubmitting(true); setFailure(""); setFeedback("");
     try { await addItem({ productId: product.id, variantId: selected.id, quantity: 1 }); setFeedback(`${selected.label} added to your bag.`); }
     catch (cause) { setFailure(cause instanceof Error ? cause.message : "Could not add this item. Please try again."); }
@@ -79,17 +85,23 @@ export function ProductDetail({ product, initialVariantId }: { product: ProductD
             </label>)}</div>
           </fieldset>}
           {invalidSelection ? <p role="alert" className="mt-4 text-sm text-destructive">This option is no longer available. Choose an available option before adding to your bag.</p> : null}
-          <Button className="mt-6 w-full sm:w-auto" size="lg" disabled={!available || pending || submitting} onClick={() => void add()}>{pending || submitting ? "Adding…" : available ? "Add to bag" : "Unavailable for sandbox checkout"}</Button>
-          {failure || error ? <p role="alert" className="mt-3 text-sm text-destructive">{failure || error}</p> : null}
+          <Button className="mt-6 w-full sm:w-auto" size="lg" disabled={!available || busy} onClick={() => void add()}>{pending || submitting ? "Adding…" : bundleLocked ? "Resolve set addition below" : available ? "Add to bag" : "Unavailable for sandbox checkout"}</Button>
+          {selected ? <Link className="ml-0 mt-4 block w-fit text-sm underline underline-offset-4" href={buildCompareHref(market.id, [{ productId: product.id, variantId: selected.id }])}>Compare this option</Link> : null}
+          {failure || (error && !bundleLocked) ? <p role="alert" className="mt-3 text-sm text-destructive">{failure || error}</p> : null}
           {feedback ? <p role="status" className="mt-3 text-sm">{feedback}</p> : null}
           <p className="mt-6 text-sm leading-6 text-muted-foreground">Sandbox store. Test options and prices are for checkout testing. No real payment, stock reservation or delivery.</p>
           {selected?.dimensions ? <div className="mt-8 border-t pt-6"><h2 className="font-medium">Dimensions</h2><p className="mt-2 text-sm">{selected.dimensions.width} × {selected.dimensions.depth} × {selected.dimensions.height} {selected.dimensions.unit}</p><p className="mt-1 text-xs text-muted-foreground">Width × depth × height</p></div> : null}
           {product.materials.length ? <div className="mt-8 border-t pt-6"><h2 className="font-medium">Materials in the catalog</h2><p className="mt-2 text-sm text-muted-foreground">{product.materials.join(", ")}</p></div> : null}
+          <div className="mt-6"><DeliveryEstimate marketId={market.id} /></div>
         </div>
+      </div>
+      <div className="mx-auto max-w-6xl px-4 sm:px-6">
+        {bundleCompanion ? <BundleConfigurator product={product} selectedVariantId={selectedId} companion={bundleCompanion} onSelectionLockChange={setBundleLocked} /> : null}
+        <ProductReviews reviews={product.demoReviews} />
       </div>
       <div className="fixed inset-x-0 bottom-0 z-30 flex items-center gap-4 border-t bg-background px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] lg:hidden" aria-label="Selected option">
         <div className="min-w-0 flex-1"><p className="truncate text-xs text-muted-foreground">{selected?.label ?? "Choose an option"}</p><p className="font-medium">{formatMarketPrice(selected?.price ?? product.price, market.id)}</p></div>
-        <Button aria-label="Add selected option to bag" disabled={!available || busy} onClick={() => void add()}>{busy ? "Adding…" : available ? "Add to bag" : "Unavailable"}</Button>
+        <Button aria-label="Add selected option to bag" disabled={!available || busy} onClick={() => void add()}>{pending || submitting ? "Adding…" : bundleLocked ? "Resolve set below" : available ? "Add to bag" : "Unavailable"}</Button>
       </div>
     </section>
   );

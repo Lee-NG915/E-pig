@@ -1,0 +1,116 @@
+{
+  "date": "2026-11-03",
+  "final": {
+    "status": "success",
+    "summary": "All quality checks passed on attempt 1 (typecheck → lint → test)",
+    "escalate": false,
+    "attempt": 1,
+    "max_attempts": 3,
+    "checks_run": [
+      "typecheck",
+      "lint",
+      "test"
+    ],
+    "changed_files": [
+      "AGENTS.md",
+      "DESIGN.md",
+      "PRODUCT.md",
+      "README.md",
+      "docs/codex/research/README.md",
+      "src/adapters/commerce/mock/cart.spec.ts",
+      "src/adapters/commerce/mock/cart.ts",
+      "src/adapters/commerce/mock/catalog.spec.ts",
+      "src/adapters/commerce/mock/catalog.ts",
+      "src/adapters/commerce/mock/fixtures/showcase/README.md",
+      "src/adapters/commerce/postgres/commerce.spec.ts",
+      "src/adapters/commerce/postgres/commerce.ts",
+      "src/app/[market]/collections/[slug]/page.tsx",
+      "src/app/[market]/products/[slug]/page.tsx",
+      "src/core/contracts/commerce/cart.ts",
+      "src/core/contracts/commerce/catalog.ts",
+      "src/core/contracts/commerce/checkout.ts",
+      "src/core/contracts/commerce/order.ts",
+      "src/modules/cart/components/cart-flow.spec.tsx",
+      "src/modules/cart/components/cart-panel/cart-panel.md",
+      "src/modules/cart/components/cart-panel/cart-panel.spec.tsx",
+      "src/modules/cart/components/cart-panel/cart-panel.stories.tsx",
+      "src/modules/cart/components/cart-panel/cart-panel.tsx",
+      "src/modules/cart/lib/cart-store.spec.ts",
+      "src/modules/cart/lib/cart-store.ts",
+      "src/modules/catalog/components/product-card/product-card.md",
+      "src/modules/catalog/components/product-card/product-card.spec.tsx",
+      "src/modules/catalog/components/product-card/product-card.stories.tsx",
+      "src/modules/catalog/components/product-card/product-card.tsx",
+      "src/modules/catalog/components/product-detail/product-detail.md",
+      "src/modules/catalog/components/product-detail/product-detail.spec.tsx",
+      "src/modules/catalog/components/product-detail/product-detail.stories.tsx",
+      "src/modules/catalog/components/product-detail/product-detail.tsx",
+      "src/modules/catalog/components/product-list/plp-sort-nav.tsx",
+      "src/modules/catalog/components/product-list/product-list-grid.tsx",
+      "src/modules/catalog/components/product-list/product-list.md",
+      "src/modules/catalog/components/product-list/product-list.spec.tsx",
+      "src/modules/catalog/components/product-list/product-list.stories.tsx",
+      "src/modules/catalog/components/product-list/product-list.tsx",
+      "src/modules/catalog/lib/plp-query.spec.ts",
+      "src/modules/catalog/lib/plp-query.ts",
+      "src/modules/checkout/components/checkout-form/checkout-form.md",
+      "src/modules/checkout/components/checkout-form/checkout-form.spec.tsx",
+      "src/modules/checkout/components/checkout-form/checkout-form.stories.tsx",
+      "src/modules/checkout/components/checkout-form/checkout-form.tsx",
+      "src/modules/checkout/components/checkout-status/checkout-status.md",
+      "src/modules/checkout/components/checkout-status/checkout-status.spec.tsx",
+      "src/modules/checkout/components/checkout-status/checkout-status.stories.tsx",
+      "src/modules/checkout/components/checkout-status/checkout-status.tsx",
+      "src/modules/order/components/order-history/order-history.md",
+      "src/modules/order/components/order-history/order-history.spec.tsx",
+      "src/modules/order/components/order-history/order-history.stories.tsx",
+      "src/modules/order/components/order-history/order-history.tsx",
+      "src/platform/http/storefront-api.spec.ts",
+      "src/platform/http/storefront-api.ts",
+      "src/platform/registry.ts"
+    ],
+    "current_diff_hash": "c8c425c78f205db4f49dcd5873a820deb147609d874a741bd195b7ba45b07aae  -",
+    "next_actions": [
+      "Quality gate green — proceed with the workflow"
+    ],
+    "artifacts": [
+      "/Users/lidonghai/a4x/E-pig/logs/remediation-koala-c-20261103.json"
+    ],
+    "duration_seconds": 55,
+    "generated_at": "2026-11-03T06:42:29.977Z"
+  },
+  "applicationTests": {
+    "status": "PASS",
+    "files": 59,
+    "failedFiles": 0,
+    "maxWorkers": 2
+  },
+  "happyDog": {
+    "files": 7,
+    "tests": 22
+  },
+  "harness": 8,
+  "auxiliary": [
+    "docs:check",
+    "agent-doctor",
+    "companions"
+  ],
+  "defaultVerify": "NOT RUN this batch; all constituents run individually. Application tests limited to 2 workers per prior env-policy resource evidence.",
+  "productionBuild": {
+    "status": "PASS",
+    "staticPages": 17
+  },
+  "storybookModules": {
+    "status": "PASS",
+    "warning": "existing large-chunk advisory"
+  },
+  "runtimeMarkets": {
+    "status": "PASS",
+    "standardSGSmoke": true,
+    "extendedChecksPerMarket": 7,
+    "markets": [
+      "sg",
+      "us"
+    ]
+  }
+}

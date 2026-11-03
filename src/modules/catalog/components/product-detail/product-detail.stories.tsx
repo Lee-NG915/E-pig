@@ -81,3 +81,23 @@ const configured: ProductDetailData = {
 
 export const SelectedConfiguration: Story = { args: { product: configured, initialVariantId: "green-3" } };
 export const InvalidDeepLink: Story = { args: { product: configured, initialVariantId: "removed-variant" } };
+
+export const DemoReviewsAndDelivery: Story = {
+  args: {
+    product: { ...configured, demoReviews: [
+      { id: "sample-a", kind: "demo", authorLabel: "Example reviewer A", rating: 5, title: "Exploring a layout", body: "Sample content for trying the review controls, not a customer experience.", publishedAt: "2026-10-20" },
+      { id: "sample-b", kind: "demo", authorLabel: "Example reviewer B", rating: 3, title: "Checking dimensions", body: "An illustrative review. No purchase or product performance is verified.", publishedAt: "2026-10-22" },
+    ] },
+  },
+};
+
+export const TwoPieceSet: Story = {
+  args: {
+    product: configured,
+    bundleCompanion: {
+      ...product, id: "demo-ottoman", slug: "demo-ottoman", name: "Demo ottoman",
+      description: "Controlled companion data for the two-piece set demonstration.",
+      variants: [{ ...product.variants[0], id: "ottoman-cream", label: "Cream", price: { amount: 300, currency: "AUD" } }],
+    },
+  },
+};
