@@ -60,7 +60,7 @@ function ComparisonDockContent({ marketId, abovePurchaseBar }: { marketId: Marke
   const browseHref = `/${marketId}`;
 
   return <Sheet open={open} onOpenChange={changeOpen}>
-    <div data-comparison-dock className={`fixed right-4 z-40 flex max-w-[calc(100vw-2rem)] flex-col items-end gap-3 sm:right-6 ${abovePurchaseBar ? "bottom-[calc(6rem+env(safe-area-inset-bottom))] lg:bottom-6" : "bottom-[max(1rem,env(safe-area-inset-bottom))] sm:bottom-6"}`}>
+    <div data-comparison-dock className={`fixed right-4 z-40 flex max-w-[calc(100vw-2rem)] flex-col items-end gap-3 sm:right-6 ${abovePurchaseBar ? "bottom-[calc(6rem+env(safe-area-inset-bottom))] lg:bottom-[max(5rem,env(safe-area-inset-bottom))]" : "bottom-[max(5rem,env(safe-area-inset-bottom))]"}`}>
       {feedback && !open ? <div className="w-80 max-w-full rounded-xl border bg-background p-4 shadow-lg"
         onMouseEnter={() => setPauseFeedback(true)} onMouseLeave={() => setPauseFeedback(false)}
         onFocusCapture={() => setPauseFeedback(true)} onBlurCapture={event => { if (!event.currentTarget.contains(event.relatedTarget)) setPauseFeedback(false); }}>

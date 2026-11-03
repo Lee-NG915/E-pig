@@ -22,3 +22,5 @@ Catalog-owned, market-layout-mounted comparison list. Selection persists across 
 | Mobile PDP | Compact 48px icon/count above the existing fixed purchase bar and safe area; drawer footer respects safe area |
 
 The drawer displays no persisted price or stock snapshots. The detailed comparison reads fresh market data through the same selected-reference endpoint. No whole-catalog endpoint, product picker, new design token, or generic toast dependency is introduced.
+
+线上部署为托管标识保留底部 80px 空间；移动 PDP 继续避让购买条。验证以真实浏览器点击命中比较入口为准，不能只验证按钮存在。
