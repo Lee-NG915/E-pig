@@ -367,3 +367,5 @@ AI Test Record：六场景验证发布竞争/回滚连续高水位、未提交fe
 本章最终源交接：锁定DTC `edc8443831ad23c4ab6675f9dc1c998221cbd39b`（含已确认计划、环境记录与限定开发分支的非部署CI触发），不是先前中间文档提交d060。源目录与原2dc内容基线无差异，source-lock由显式sync产生；最后元数据更新后check、freshness、17项隔离契约测试及typecheck/lint重新通过，未重复冒称一次新的630全量运行。第一章普通verify的630全量证据对应相同应用/测试代码，最终源元数据另有专项验证。
 
 第一章推送回读（2026-11-06）：E-pig dc80e637b847907700f33b0f9195329951a6c5d8、DTC edc8443831ad23c4ab6675f9dc1c998221cbd39b均已远端回读一致；DTC草稿PR#4仅作审查入口，不合并/部署。远端CI与本地验收分开记录，未查到run时不能称为远端通过。无关README和DTC学习/政策工作区改动继续保留。
+
+远端CI结果（2026-11-06）：[E-pig run42073073664](https://github.com/Lee-NG915/E-pig/actions/runs/42073073664) 对提交 `0ab69905dd3b42a5ee637d5c9e139710d2df7c1d` 实际完成success；after-sales-postgres与quality均success，后者包含生产构建和standalone运行时市场smoke；deploy按非main条件skipped。此证据针对该代码候选，后续本次记录提交仅改文档。DTC当前开发分支截至回读仍无run，不能用E-pig结果代替DTC CI。两仓均未合并、未部署。
