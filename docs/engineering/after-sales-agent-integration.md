@@ -1,6 +1,6 @@
 ---
 status: proposal
-last-modified: 2026-11-05
+last-modified: 2026-11-06
 register: engineering
 ---
 
@@ -267,3 +267,31 @@ Claude先运行typecheck→lint→相关测试及契约check，返回证据；Co
 Codex实际独立复跑typecheck、lint、request-store **11/11**（包含文件PGlite关闭重开、回滚后连续序号、幂等/市场主体隔离和分页）、契约check、docs:check、diff-check均退出0。Claude返工前全量为74文件/612测试，返工后聚焦11通过，不把新增1测试倒算成613全量已运行。完整verify既有agent-doctor阻塞未修复；本阶段不接HTTP/registry，不执行真实数据库迁移、不证明外部Postgres多连接并发。阶段3/4已本地提交8438254；无关README仍保留，未推送。
 
 AI Test Record：持久发布基础与SQL约束，新增11项就近测试；上述Codex实际命令通过，完整仓库门禁仍受既有环境失败限制。AI Review Record：独立Codex审查事务/快照/幂等/边界及抽象规模，溢出缺陷已修复并复验；无本阶段剩余阻断项。后续需设计完整Postgres adapter、可信订单版本映射、附件私密存储及建单/回执原子事务，再切换registry并开展真实多连接故障验证；不将本阶段称为完整售后持久化完成。
+
+### 阶段5b：完整持久adapter（2026-11-05，计划，当前Codex设计/验收）
+
+基线bdfc9fb；Claude auto实现及必要测试，Codex Review/验证/最终验收。固定源2dc3723不变，不改vendor。目标是完成可注入隔离数据库的AfterSalesPort，不接registry/env，不执行真实迁移/写入/支付，不提交推送。保留无关README。复用现有pool/transaction/request-store/fingerprints/cursor/typed errors，无新依赖、审批系统、任务框架或通用存储抽象。
+
+文件落点：新增003 SQL及postgres/after-sales.ts（过长时只按order mapping与业务adapter拆两个明确职责文件）及就近spec。允许最小扩展request-store使publish可在调用者现有事务中执行（一个专用函数接CommerceQuery，既有store.publish仍用transaction，禁止嵌套事务或假pool）。允许CartLine增加可选sku和commerce postgres reprice填充真实variant.sku，补原commerce回归；新订单保留sku，旧订单不补造。
+
+数据与订单：只读commerce_orders，使用行列id/market/cart_id校验当前主体；禁止外部查询替换已付款订单快照。service order映射整数分金额、现有paid状态、时间和版本，版本由服务端对规范排序后的完整存储订单快照SHA256派生（含所有业务变化，不用客户端字段）。order.items的sku必须来自快照，缺sku/无效金额或currency/不一致total失败为安全UPSTREAM_UNAVAILABLE，不能回查当前catalog伪装历史。当前sandbox税/运费为0且total=subtotal-discount，验证该不变量；无subtotal时可从已付款lines合计，仍核对总数。recipient只输出脱敏姓名、国家、地区及部分掩码邮编；无完整地址/邮箱/电话。没有真实物流表，getServiceOrderShipment验证订单存在/授权后返回NOT_FOUND，不生成假物流。旧订单缺必要快照字段的限制必须测试并报告。
+
+新增表仅附件、工单和工单幂等键记录：附件存id/market/order/cart归属、私有bytea与metadata/expiry，最大5MiB、JPEG/PNG/WebP magic+MIME匹配，非空；文件名清洗code point<=255。不公开URL，不落日志内容。不做无根据加密/对象存储SDK框架。上传绑定真实本人订单，每诉求最多3附件而非每订单上限。附件到期读410，越主体/订单/市场404；service凭证和允许市场单独验证。引用附件缺失=空数组、排序与指纹复用既有函数。查看诉求时按可信now计算当前附件expiry状态，过期不改发布序号。
+
+工单表以market/request_id唯一，并关联after_sales_requests；不可变reply/audit/receipt保持在JSONB，关系字段id/market/request/order用于约束与归属。幂等键表以market/actor/key唯一，保存fingerprint与ticket_id，指向同一业务工单。不要另建审批或事件表。createTicket在单事务按固定锁顺序：市场counter行锁（和发布一致）→request FOR UPDATE→真实commerce订单FOR SHARE（或FOR UPDATE）。先检查已有幂等键：同指纹返回工单当前表示，异指纹409，不用旧订单版本阻止已经成功的重放。新键对已建单诉求按既有mock行为复用/冲突；只有同完整指纹可关联原工单，不能创建第二张或修改回复。新建须验证当前order_version、当前pending及业务/附件有效；E-pig只保存DTC审批审计值，不验证DTC审批。工单、reply、receipt、键记录和request.ticket_created/ticketId/progress/data更新同事务，发布sequence不增加。失败不得部分落库。
+
+findTicketByIdempotencyKey只看当前市场+稳定actor，已提交返回ticket，不可见返回currently_unavailable；单事务未提交对外不可见，不伪造IN_FLIGHT，也不能把404当永久不存在。真正多连接进行中行为留外部PG验证，HTTP现有202分支保留。有授权的consumer只能读本人ticket，service只能读允许市场。所有方法验证principal，不能依赖HTTP层已经做了身份校验。输入长度按Unicode code point、非空白、key/ID与状态遵从现有contract和mock。
+
+测试：真实SQL PGlite，复用现有隔离lease池，先执行001/002/003，合成commerce订单含sku。覆盖全部12领域方法：真实订单归属/版本/金额/脱敏，缺sku失败、无物流404；附件magic/type/大小/expiry/多次上传/跨主体订单；创建诉求附件和幂等重放/冲突/连续feed；建单后重放返回当前状态与consumer脱敏；stale版本拒绝、不同key同request避免重复、回复不可变、键恢复当前不可见。注入SQL事务失败（测试pool边界）验证工单插入后request更新前失败全部回滚，再原键恢复仅一工单；重建adapter及文件PGlite关闭重开仍能读工单/回执与feed。测试不冒充真实PG多连接并发。最小新订单sku回归有用，不改既有金额逻辑。
+
+Claude运行typecheck→lint→聚焦/全量tests，contract check/17隔离tests，docs check/diff check；verify既有环境问题单列，禁止修改doctor绕过门禁。返回文件/命令/失败/未测范围供Codex验收，方案或契约缺口立即报告；实现报告不等于最终验收。
+
+阶段5b最终验收（2026-11-06，当前Codex）：**阶段范围通过，完整verify因既有本机技能环境失败未全绿。** Claude以auto完成12方法持久AfterSalesPort、003三表迁移、真实订单映射/快照版本、附件bytea、建单/回执/诉求同事务；最小扩展request-store以复用调用者事务及新订单SKU快照。未接registry/env/HTTP，不执行外部迁移或真实写入。
+
+独立Codex Review发现新key同指纹复用已有ticket时遗漏key关联，导致成功后按key仍404且key可被另一诉求复用；Claude同事务补存关联，补查询/不同指纹/跨诉求冲突/adapter重建及文件数据库重开回归。原审查者只读复查关闭，无新增抽象。首轮Claude629全量是修复前记录；返工后16项adapter和150项关联回归通过。
+
+Codex返工后独立完整`pnpm verify`：docs、契约17/17、固定源13操作/49fixtures/51files、typecheck、lint、**75文件/630测试**、happy-dog22、harness8全部通过，最终agent-doctor仍因20个既有DTC skill缺SKILL.md退出1；diff-check通过，vendor/source-lock无改动。未把该环境失败隐藏或视为完整verify成功。AI Test Record：覆盖12方法、归属、附件、订单快照失败关闭、回滚、幂等与文件持久恢复；AI Review Record：关注事务锁序、版本、DTO隔离、恢复和抽象规模，已报告缺陷修复复验，无本阶段剩余阻断。
+
+限制：旧订单缺SKU或快照金额不一致返回安全UPSTREAM_UNAVAILABLE，不回查当前catalog伪造历史；当前订单只有paid且无真实物流，授权订单的shipment返回NOT_FOUND。收件人脱敏由既有wire白名单完成；内部adapter持有的订单信息不得直返浏览器。PG单事务未提交不可见按键查询返回currently_unavailable，不伪造IN_FLIGHT且不得换键重建。PGlite单连接/lease测试不证明真实PG多连接锁竞争；未测真实迁移/数据库故障、生产存储、运行时adapter切换、DTC Connector、跨仓旅程、build与部署。
+
+下一阶段：先验证隔离真实Postgres多连接事务与故障场景，再设计显式after-sales adapter选择/迁移运行指南及HTTP接入；缺条件时保持mock默认，不在真实订单上试验。已存在README无关改动保留，提交不等于推送或部署。

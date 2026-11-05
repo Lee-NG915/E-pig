@@ -11,7 +11,11 @@ import {
 } from "@/core/contracts/after-sales";
 import type { MarketId } from "@/platform/config/markets";
 
-import { transaction, type CommercePool } from "@/adapters/commerce/postgres/pool";
+import {
+  transaction,
+  type CommercePool,
+  type CommerceQuery,
+} from "@/adapters/commerce/postgres/pool";
 
 const positionPattern = /^(0|[1-9][0-9]*)$/;
 const MAX_FEED_LIMIT = 200;
@@ -89,79 +93,89 @@ function storedRequest(data: unknown, sequence: unknown): AfterSalesRequest {
 }
 
 /**
+ * Publish inside a caller-owned transaction. The caller must not hold locks
+ * that conflict with the counter-first lock order; this function never opens a
+ * nested transaction.
+ */
+export async function publishAfterSalesRequestInTransaction(
+  db: CommerceQuery,
+  { request, cartId, creationKey, fingerprint }: PublishAfterSalesRequestInput,
+): Promise<CreateRequestResult> {
+  const market = request.market;
+  // Initialize the per-market counter without racing another first publisher.
+  await db.query(
+    `INSERT INTO after_sales_request_counters (market, sequence)
+     VALUES ($1, 0)
+     ON CONFLICT (market) DO NOTHING`,
+    [market],
+  );
+  // Lock before looking up the creation key so one market publishes serially.
+  const counter = await db.query(
+    `SELECT sequence::text AS sequence
+     FROM after_sales_request_counters
+     WHERE market = $1
+     FOR UPDATE`,
+    [market],
+  );
+  const counterRow = counter.rows[0];
+  if (!counterRow) return internalFailure();
+  const allocated = toBigInt(counterRow.sequence);
+
+  const existing = await db.query(
+    `SELECT fingerprint, sequence::text AS sequence, data
+     FROM after_sales_requests
+     WHERE market = $1 AND cart_id = $2 AND creation_key = $3`,
+    [market, cartId, creationKey],
+  );
+  if (existing.rows[0]) {
+    if (existing.rows[0].fingerprint !== fingerprint) {
+      throw createAfterSalesError({
+        code: "IDEMPOTENCY_CONFLICT",
+        requestId: errorRequestId(),
+        details: { operation: "createAfterSalesRequest" },
+      });
+    }
+    return {
+      request: storedRequest(existing.rows[0].data, existing.rows[0].sequence),
+      replayed: true,
+    };
+  }
+
+  const sequence = allocated + BigInt(1);
+  await db.query(
+    `UPDATE after_sales_request_counters
+     SET sequence = $2::bigint
+     WHERE market = $1`,
+    [market, sequence.toString()],
+  );
+  const stored: AfterSalesRequest = { ...request, sequence: sequence.toString() };
+  await db.query(
+    `INSERT INTO after_sales_requests
+       (id, market, cart_id, order_id, creation_key, fingerprint, sequence, data)
+     VALUES ($1, $2, $3, $4, $5, $6, $7::bigint, $8::jsonb)`,
+    [
+      stored.id,
+      market,
+      cartId,
+      stored.orderId,
+      creationKey,
+      fingerprint,
+      sequence.toString(),
+      JSON.stringify(stored),
+    ],
+  );
+  return { request: stored, replayed: false };
+}
+
+/**
  * Minimal durable request publication store. Ownership, business validation and
  * attachment checks stay in the adapter/HTTP layers; this module only serializes
  * per-market publication, idempotency lookup and feed reads in PostgreSQL.
  */
 export function createAfterSalesRequestStore(pool: CommercePool): AfterSalesRequestStore {
   return {
-    async publish({ request, cartId, creationKey, fingerprint }) {
-      const market = request.market;
-      return transaction(pool, async (db) => {
-        // Initialize the per-market counter without racing another first publisher.
-        await db.query(
-          `INSERT INTO after_sales_request_counters (market, sequence)
-           VALUES ($1, 0)
-           ON CONFLICT (market) DO NOTHING`,
-          [market],
-        );
-        // Lock before looking up the creation key so one market publishes serially.
-        const counter = await db.query(
-          `SELECT sequence::text AS sequence
-           FROM after_sales_request_counters
-           WHERE market = $1
-           FOR UPDATE`,
-          [market],
-        );
-        const counterRow = counter.rows[0];
-        if (!counterRow) return internalFailure();
-        const allocated = toBigInt(counterRow.sequence);
-
-        const existing = await db.query(
-          `SELECT fingerprint, sequence::text AS sequence, data
-           FROM after_sales_requests
-           WHERE market = $1 AND cart_id = $2 AND creation_key = $3`,
-          [market, cartId, creationKey],
-        );
-        if (existing.rows[0]) {
-          if (existing.rows[0].fingerprint !== fingerprint) {
-            throw createAfterSalesError({
-              code: "IDEMPOTENCY_CONFLICT",
-              requestId: errorRequestId(),
-              details: { operation: "createAfterSalesRequest" },
-            });
-          }
-          return {
-            request: storedRequest(existing.rows[0].data, existing.rows[0].sequence),
-            replayed: true,
-          };
-        }
-
-        const sequence = allocated + BigInt(1);
-        await db.query(
-          `UPDATE after_sales_request_counters
-           SET sequence = $2::bigint
-           WHERE market = $1`,
-          [market, sequence.toString()],
-        );
-        const stored: AfterSalesRequest = { ...request, sequence: sequence.toString() };
-        await db.query(
-          `INSERT INTO after_sales_requests
-             (id, market, cart_id, order_id, creation_key, fingerprint, sequence, data)
-           VALUES ($1, $2, $3, $4, $5, $6, $7::bigint, $8::jsonb)`,
-          [
-            stored.id,
-            market,
-            cartId,
-            stored.orderId,
-            creationKey,
-            fingerprint,
-            sequence.toString(),
-            JSON.stringify(stored),
-          ],
-        );
-        return { request: stored, replayed: false };
-      });
+    publish(input) {
+      return transaction(pool, (db) => publishAfterSalesRequestInTransaction(db, input));
     },
 
     async findByCreationKey({ market, cartId, creationKey }) {
