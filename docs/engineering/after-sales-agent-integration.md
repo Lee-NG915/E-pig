@@ -8,6 +8,12 @@ register: engineering
 
 对接仓库：`Lee-NG915/dtc-support-agent`（FastAPI + LangGraph 售后中台，下称"中台"）。产品行为以该仓库 `docs/architecture/modules/after-sales/product-blueprint.md` 为准，跨仓协作语义以 `epig-contract.md` 为准；HTTP 路径、字段、状态码、请求头和错误结构只以 `contracts/epig-after-sales/v1/openapi.json` 为正本。本文只描述 E-pig 内部落点，不复制线路定义。
 
+## 当前交付状态（2026-11-06）
+
+阶段1～5b已完成各自范围验收；阶段3/4、5a、5b分别以 `8438254`、`bdfc9fb`、`d16285909faf104539a253802542b3fefc77aaaa` 推送至 `after-sales/agent-integration`，远端分支SHA已回读一致。下文阶段执行记录中的“未提交/未推送”保留为当时事实，以本节为当前交付状态。
+
+消费者5个及service8个Route Handler已实现，当前运行时仍使用mock；完整持久AfterSalesPort与003以内迁移仅在隔离PGlite验证，尚未切换registry或执行真实数据库迁移。最后Codex独立验证为630项测试通过；完整verify仍受既有DTC-skills/agent-doctor环境失败阻塞。契约源仍为DTC `2dc3723`，vendor/source-lock未变化。下一步是隔离真实Postgres多连接验证，再做显式adapter切换与跨仓联调；页面、DTC Connector、完整旅程、部署未完成。
+
 ## 背景
 
 E-pig 已有商品、购物车、订单和订单详情页，但没有售后能力。计划边界是：E-pig 承担消费者入口与售后业务数据，中台承担客服工作台、政策检索、审批与工单流转。两边通过 HTTP API 协作，**不共享数据库、不另建独立售后平台**。
