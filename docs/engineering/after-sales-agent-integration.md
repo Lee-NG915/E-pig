@@ -115,10 +115,52 @@ contracts/epig-after-sales/v1/                  原样 vendor 的契约包与 so
 - 本阶段未实现 AfterSalesPort、adapter、Route Handler、页面、数据库事务或真实联调，未执行部署或真实外部写入。
 
 - [x] vendor OpenAPI 与共享 fixtures，建立不可变 `source-lock.json`、digest/freshness 检查和 `pnpm verify` 门禁（完整 verify 的既有 DTC-skills 环境阻塞见上）
-- [ ] contracts：AfterSalesPort、诉求 / 工单 DTO、消费者与 service 序列化边界、错误映射
-- [ ] mock adapter + fixtures（与 catalog 商品对齐的合成订单诉求）
+- [x] contracts：AfterSalesPort、诉求 / 工单 DTO、消费者与 service 序列化边界、错误映射
+- [x] mock adapter + fixtures（与 catalog 商品对齐的合成订单诉求）
 - [ ] 消费者 Route Handlers：附件上传/读取、诉求创建/读取、本人工单读取
 - [ ] service Route Handlers：订单/物流、附件内容、追加式诉求 feed/detail、工单创建/按 ID/按幂等键查询
 - [ ] 持久事务：连续发布高水位、原子幂等与 `(market, request_id)` 唯一约束、不可变回复和回执
 - [ ] 订单详情页售后入口、真实进度与唯一最终回复组件
 - [ ] 按产品蓝图 `AS-ACC-*` 完成中台 EpigConnector 联调与故障演练，结果回写 DTC Issue #2 和 E-pig Issue #2
+
+### 阶段 2：AfterSalesPort、序列化边界与 mock adapter（2026-11-05，阶段范围已验收）
+
+目标：建立唯一内部售后端口及 DTO，以显式白名单序列化器消费 vendored OpenAPI，并提供可用于本地和后续 Route Handler 集成测试的有行为 mock。内部类型和 Zod 都不是新的线路 Schema 正本，禁止修改 vendor 或另写一套线路定义。
+
+内部契约设计：
+
+1. 在 `src/core/contracts/after-sales/` 定义 `AfterSalesPort`、camelCase 内部 DTO 和 typed error。端口覆盖诉求创建/读取、消费者工单读取、附件上传与授权内容读取、service 订单/物流、feed/detail、工单创建/按 ID/按幂等键查询；消费者与 service 两条附件线路共用一个显式 principal 的内容读取方法，不复制领域逻辑。
+2. 创建诉求与创建工单返回业务对象及 `replayed` 标记，供后续 Route Handler 选择 200/201 和 replay header。按幂等键查询返回明确的 ticket / in-flight / 当前不可见联合结果；“当前不可见”不得被解释为永久不存在。HTTP 版本头、Cookie/Bearer、状态码和请求体重校验不在 port 内实现。
+3. 内部订单金额使用整数最小货币单位；request 只使用线路所需的 `pending / ticket_created`，不复制 DTC 草稿、审批、执行或对账状态。ticket 保存实际收到的审批/版本审计值，但 E-pig 不独立验证 DTC 审批。私密附件内容、稳定 `cartId` 和订单归属只留在内部，不进入公开 metadata。
+4. 规范化指纹固定覆盖 OpenAPI 指定字段：消费者附件缺失等同空数组、指纹前排序；工单包含 request/action/reply/draft/approval/policy/order-version。键按市场、已认证主体和操作隔离。游标采用市场绑定、可校验的 base64url 稳定位置，拒绝损坏、跨市场或越过当前高水位的位置。
+5. 在 adapter 层提供独立 consumer/service 纯序列化函数，显式列出字段，不直接返回领域对象。消费者 request/ticket/receipt、错误、收件人与 service 订单必须剔除审批/版本审计、完整地址、原始凭据、附件字节和存储字段；service 输出保留契约要求的审计值。纯错误映射保留稳定 code、安全 message、request ID、retryable、recovery action 和允许details，未知错误失败关闭为安全内部错误。
+6. mock 使用与现有 catalog 可解析商品/变体对齐的合成订单，不写真实客户数据或完整地址。实现私密字节读取、类型/大小/数量/归属校验、同键当前表示重放、不同指纹冲突、单诉求单工单、当前订单版本守卫、连续发布序号和可重放 feed。输出克隆，日志只含内部关联 ID，不含描述、回复、附件字节或秘密。
+7. 按现有 typed registry 装配 mock，本地与 CI 可直接使用；生产 mock 必须有明确告警且不得被描述为真实售后能力。本阶段不新增 adapter 选择框架或服务秘密配置，等真实 adapter / Route Handler 阶段再扩展。
+
+开发计划：
+
+- 先写核心指纹、游标、序列化与错误映射测试，再实现核心类型和纯函数。
+- 再实现 mock 的串行/并发行为及 registry 装配，复用现有 AppError、Market、Logger 和测试风格，不新增通用工作流或依赖。
+- 以共享 fixtures 对照序列化结果和错误语义；mock 自己生成的数据可以与 fixtures 不同，但字段形状和安全白名单必须一致。
+- 保持阶段 1 的 vendor、source lock 和契约检查不变；发现契约缺口停止相关实现并交回 Claude，不得单边改契约。
+
+测试计划：
+
+- 核心纯函数：缺失/空/重排附件指纹一致，业务字段变化冲突；损坏/跨市场/未来游标失败；合法游标稳定；各错误码、恢复动作、敏感 cause/堆栈消毒。
+- 序列化：与适用共享正反 fixtures 对照；向领域对象故意注入审批字段、完整地址、存储 URL、附件字节和诊断对象，消费者与安全 DTO 不得泄漏；service 金额、审计值和时间形状正确。
+- mock：AU/US/SG 合成订单与 catalog 对齐；JPEG/PNG/WebP magic、5 MiB、3 文件、伪造类型、跨主体/订单/市场读取；空白描述、失效/未知附件。
+- 幂等与状态：同键同指纹串行/并发只创建一个对象；工单创建后重放诉求返回当前 `ticket_created`；同键不同指纹、不同键同诉求不同指纹、订单版本冲突均不产生部分写入；回复不可变。
+- feed：失败不消耗序号，并发成功序号连续，状态更新不新增项，历史项保留 `ticket_created`，多页、重复页、空页、非空末页游标与 `has_more` 正确。
+- 查询恢复：进行中返回 in-flight，成功后按原键返回原工单，当前不可见有显式结果；不得把它当作换键重建许可。
+- 实际运行相关 Vitest、`pnpm typecheck`、`pnpm lint`、契约 Node 测试与 check、`pnpm verify`、`git diff --check`。完整 verify 的既有 DTC-skills 环境失败必须单独报告，不能写成全绿。
+
+非目标：不实现 Route Handler、Cookie/Bearer middleware、Postgres 事务、页面、真实私密存储、真实联调或真实外部写入。mock 的并发测试不等于数据库原子事务验收；本阶段完成也不代表 `AS-ACC-001～015` 已通过。
+
+执行状态（2026-11-05）：**Codex 实施及首轮返工完成，Claude 阶段范围验收通过；完整 `pnpm verify` 仍有既有本地环境阻塞。**
+
+- `AfterSalesPort` 以 12 个领域方法覆盖 13 个 HTTP operation，消费者/service 附件内容读取共用领域方法。内部 DTO、typed error、规范化指纹、稳定游标、consumer/service 白名单序列化、mock adapter 和 typed registry 已落地。
+- 首轮验收发现订单级附件上限和终态工单可重开两项问题，Codex 已最小返工：上传不再按订单计数，诉求仍最多引用三个附件；工单只允许 `open→processing`、`open→closed`、`processing→closed`，`closed` 为终态。关闭后同键重放返回当前 closed 视图，非法迁移不产生写入。
+- Claude 独立复跑聚焦测试 7 个文件、62 个测试通过；契约 Node 测试 17/17、13 个操作、49 个 fixtures 和 51 个 vendor 文件检查通过。Codex 全量 Vitest 71 个文件、538 个测试通过，typecheck、lint、happy-dog 22 个测试、8 个 harness evals 和 `git diff --check` 通过。
+- 全部 `expected_valid` 的共享 ErrorResponse fixtures 已参数化执行，保留 code、request ID、retryable、recovery action 和白名单 details；敏感字段、绝对本机路径和硬编码秘密扫描未发现本阶段新增问题。
+- 完整 `pnpm verify` 已实际运行但仍在最后的既有 `agent-doctor` 因本机缺少 `../DTC-skills`、20 个 DTC skill 软链找不到 `SKILL.md` 而退出 1，不宣称完整仓库门禁全绿。
+- 本阶段未实现 Route Handler、真实 Cookie/Bearer、Postgres 原子事务、页面、真实私密存储或真实联调；mock 通过不等于数据库事务或 `AS-ACC-001～015` 验收。本阶段改动尚未提交或推送。

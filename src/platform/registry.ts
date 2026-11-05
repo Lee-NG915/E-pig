@@ -1,10 +1,12 @@
 import "server-only";
 
+import { createMockAfterSalesAdapter } from "@/adapters/after-sales/mock/after-sales";
 import { createMockCartAdapter } from "@/adapters/commerce/mock/cart";
 import { createMockCatalogAdapter } from "@/adapters/commerce/mock/catalog";
 import { createPostgresCommerce } from "@/adapters/commerce/postgres/commerce";
 import { createCommercePool } from "@/adapters/commerce/postgres/pool";
 import { createStripePaymentAdapter } from "@/adapters/payment/stripe/payment";
+import type { AfterSalesPort } from "@/core/contracts/after-sales";
 import type { PaymentPort } from "@/core/contracts/capabilities/payment";
 import type { CatalogPort } from "@/core/contracts/commerce/catalog";
 import type { CartPort } from "@/core/contracts/commerce/cart";
@@ -24,6 +26,7 @@ import { createLogger } from "./logging/logger";
 export type Capabilities = {
   catalog: CatalogPort;
   cart: CartPort;
+  afterSales: AfterSalesPort;
   market: Market;
 };
 
@@ -58,8 +61,18 @@ export function getCapabilities(): Capabilities {
   const cart = env.COMMERCE_ADAPTER === "mock"
     ? createMockCartAdapter({ catalog, market, logger: createLogger({ module: "cart" }) })
     : { createCart: unavailable, getCart: unavailable, findCartByCreationKey: unavailable, hasMutation: unavailable, addItem: unavailable, addItems: unavailable, updateItem: unavailable, removeItem: unavailable, applyCoupon: unavailable };
+  const afterSales = createMockAfterSalesAdapter({
+    catalog,
+    market,
+    logger: createLogger({ module: "after-sales" }),
+  });
+  if (env.NODE_ENV === "production") {
+    logger.warn("capabilities.after_sales_mock_in_production", {
+      hint: "正在生产环境使用 mock after-sales adapter；仅用于沙箱演示，不提供真实售后能力",
+    });
+  }
 
-  capabilitiesCache = { catalog, cart, market };
+  capabilitiesCache = { catalog, cart, afterSales, market };
   logger.info("capabilities.initialized", {
     market: market.id,
     currency: market.currency,
