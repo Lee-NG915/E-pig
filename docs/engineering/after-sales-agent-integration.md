@@ -434,3 +434,11 @@ Codex独立复跑修复后`pnpm test:after-sales:pg` exit0：PostgreSQL16.15，*
 常规独立verify的75文件643项及其他门禁见上节，最后变更仅专用runner就绪/回归；该变更由上述40项与typecheck/lint另行覆盖，不冒称新的643全量运行。源check/freshness和17项契约负例由Codex再次通过；允许源d3cab389429ab27a2f0d5483fb6388afc9e05bed、51文件内容和sums digest不变。线上13操作/49fixtures未变。
 
 未证明：消费者浏览器组件、DTC持久审批/Worker及跨仓全故事、Cloudflare TCP、生产部署/真实客户试用与效率收益。下一窗口按上述消费者页面设计实施，DTC-2b独立推进。README无关工作区变更不纳入提交。
+
+
+5d推送回读：提交`5d6cb6e12cf6fd3161f7a65dbdba52f048067976`已推送，远端SHA、source-lock、实施文档、registry与runner逐字节回读一致。[CI42080423047](https://github.com/Lee-NG915/E-pig/actions/runs/42080423047)的quality实际success，包含生产build与standalone市场smoke；deploy skipped。PG job实际39通过1失败：HTTP测试以全表计数期望1/1，其他spec合法记录使CI顺序下为2/2。此为测试隔离缺口，不删除该失败或写成全部CI通过。
+
+已返工HTTP断言为本次market/request/ticket作用域精确1，同时经真实HTTP创建另一组合法控制业务证明全库至少2笔仍正确；全表数仅观测，不作为唯一性证据。没有加truncate或改业务唯一约束。Claude typecheck/lint、643普通测试及40专用项通过，Codex正独立复跑；待通过后修复提交重触发CI，最终结果另记。此前durable_rows=1,1属于当时全表观察，不能外推每次全库仅一条；本次精确幂等依据改为scoped_rows。
+
+
+CI隔离修复的独立复跑（2026-11-06，Codex）：`pnpm test:after-sales:pg` exit0，9文件40项；scoped_rows=requests:1,tickets:1,ticket_keys:1，control_rows=requests:1,tickets:1，table_rows=2,2，同端口重启读回正确，group_exited=true、clean=true。日志在本机临时`/tmp/epig-stage5d/codex-ci-isolation-fixed-pg.log`。根已Review两文件diff，确认是精确作用域唯一性而非放宽断言，待修复提交CI回读后闭环。

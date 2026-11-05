@@ -367,18 +367,131 @@ describe("real Next.js HTTP after-sales journey with isolated PostgreSQL", () =>
       ticket_id: ticketId,
     });
 
-    const { rows } = await rawPool.query<{ requests: number; tickets: number }>(
-      `SELECT (SELECT count(*)::int FROM after_sales_requests) AS requests,
-              (SELECT count(*)::int FROM after_sales_tickets) AS tickets`,
+    // Create independent legitimate business through the same real routes. The
+    // dedicated database is shared with the other specs, so the uniqueness
+    // assertion below must hold while this control request/ticket also exists.
+    const controlRequestKey = `key_${crypto.randomUUID()}`;
+    const controlCreate = await jsonRequest(`/api/${MARKET}/after-sales/requests`, {
+      method: "POST",
+      headers: consumerHeaders(controlRequestKey),
+      body: JSON.stringify({
+        order_id: seed.orderId,
+        type: "damaged",
+        description: "Independent control request that must not change scoped counts.",
+      }),
+    });
+    expectStatus(controlCreate, 201);
+    const controlRequestId = controlCreate.body.request_id;
+    expect(typeof controlRequestId).toBe("string");
+
+    const controlOrder = await jsonRequest(`/api/${MARKET}/after-sales/service/orders/${seed.orderId}`, {
+      headers: serviceHeaders(),
+    });
+    expectStatus(controlOrder, 200);
+    const controlTicket = await jsonRequest(`/api/${MARKET}/after-sales/service/tickets`, {
+      method: "POST",
+      headers: serviceHeaders(`ticket_${crypto.randomUUID()}`),
+      body: JSON.stringify({
+        request_id: controlRequestId,
+        action: "refund",
+        reply: "Independent control final reply.",
+        draft_version: "draft_http_control",
+        approval_id: "approval_http_control",
+        policy_version: "policy_http_control",
+        order_version: controlOrder.body.order_version,
+      }),
+    });
+    expectStatus(controlTicket, 201);
+    const controlTicketId = controlTicket.body.ticket_id;
+    expect(typeof controlTicketId).toBe("string");
+
+    const { rows } = await rawPool.query<{
+      scoped_requests: number;
+      scoped_tickets: number;
+      scoped_ticket_ids: number;
+      scoped_ticket_keys: number;
+      control_requests: number;
+      control_tickets: number;
+      table_requests: number;
+      table_tickets: number;
+      request_market: string | null;
+      request_order_id: string | null;
+      request_cart_id: string | null;
+      request_status: string | null;
+      request_ticket_id: string | null;
+      ticket_market: string | null;
+      ticket_request_id: string | null;
+      ticket_order_id: string | null;
+      ticket_reply: string | null;
+    }>(
+      `SELECT
+         (SELECT count(*)::int FROM after_sales_requests
+           WHERE market = $1 AND id = $2) AS scoped_requests,
+         (SELECT count(*)::int FROM after_sales_tickets
+           WHERE market = $1 AND request_id = $2) AS scoped_tickets,
+         (SELECT count(*)::int FROM after_sales_tickets
+           WHERE market = $1 AND id = $3 AND request_id = $2) AS scoped_ticket_ids,
+         (SELECT count(*)::int FROM after_sales_ticket_keys
+           WHERE market = $1 AND ticket_id = $3) AS scoped_ticket_keys,
+         (SELECT count(*)::int FROM after_sales_requests
+           WHERE market = $1 AND id = $4) AS control_requests,
+         (SELECT count(*)::int FROM after_sales_tickets
+           WHERE market = $1 AND id = $5 AND request_id = $4) AS control_tickets,
+         (SELECT count(*)::int FROM after_sales_requests) AS table_requests,
+         (SELECT count(*)::int FROM after_sales_tickets) AS table_tickets,
+         (SELECT market FROM after_sales_requests
+           WHERE market = $1 AND id = $2) AS request_market,
+         (SELECT order_id FROM after_sales_requests
+           WHERE market = $1 AND id = $2) AS request_order_id,
+         (SELECT cart_id FROM after_sales_requests
+           WHERE market = $1 AND id = $2) AS request_cart_id,
+         (SELECT data->>'status' FROM after_sales_requests
+           WHERE market = $1 AND id = $2) AS request_status,
+         (SELECT data->>'ticketId' FROM after_sales_requests
+           WHERE market = $1 AND id = $2) AS request_ticket_id,
+         (SELECT market FROM after_sales_tickets
+           WHERE market = $1 AND id = $3) AS ticket_market,
+         (SELECT request_id FROM after_sales_tickets
+           WHERE market = $1 AND id = $3) AS ticket_request_id,
+         (SELECT order_id FROM after_sales_tickets
+           WHERE market = $1 AND id = $3) AS ticket_order_id,
+         (SELECT data->>'reply' FROM after_sales_tickets
+           WHERE market = $1 AND id = $3) AS ticket_reply`,
+      [MARKET, requestId, ticketId, controlRequestId, controlTicketId],
     );
-    expect(rows[0]).toEqual({ requests: 1, tickets: 1 });
+    expect(rows[0]).toMatchObject({
+      scoped_requests: 1,
+      scoped_tickets: 1,
+      scoped_ticket_ids: 1,
+      scoped_ticket_keys: 1,
+      control_requests: 1,
+      control_tickets: 1,
+      request_market: MARKET,
+      request_order_id: seed.orderId,
+      request_cart_id: seed.cartId,
+      request_status: "ticket_created",
+      request_ticket_id: ticketId,
+      ticket_market: MARKET,
+      ticket_request_id: requestId,
+      ticket_order_id: seed.orderId,
+      ticket_reply: ticketBody.reply,
+    });
+    // Table totals are observational only: they include the control business
+    // above and rows left by the other specs sharing this dedicated database.
+    // They are never the uniqueness proof.
+    expect(rows[0]?.table_requests).toBeGreaterThanOrEqual(2);
+    expect(rows[0]?.table_tickets).toBeGreaterThanOrEqual(2);
     expect(server.output()).not.toContain(process.env.PGPASSWORD ?? "never-matches");
     expect(server.output()).not.toContain(cookieSecret);
     expect(server.output()).not.toContain(serviceToken);
     console.info(
       `[after-sales-http-spec] restart_readback=ok request_id=${String(requestId)} `
-        + `ticket_id=${String(ticketId)} sockets=${socket.remoteAddress}:${socket.remotePort},`
-        + `${restartedSocket.remoteAddress}:${restartedSocket.remotePort} durable_rows=1,1`,
+        + `ticket_id=${String(ticketId)} scoped_rows=requests:1,tickets:1,ticket_keys:1 `
+        + `control_rows=requests:1,tickets:1 `
+        + `table_rows=${rows[0]?.table_requests},${rows[0]?.table_tickets}`
+        + "(observational; include other specs and control business) "
+        + `sockets=${socket.remoteAddress}:${socket.remotePort},`
+        + `${restartedSocket.remoteAddress}:${restartedSocket.remotePort}`,
     );
   });
 });

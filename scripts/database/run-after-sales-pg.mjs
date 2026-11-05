@@ -311,8 +311,14 @@ async function main() {
   if (testExitCode === 0) {
     // A green Vitest run with no durable rows would mean the dedicated spec did
     // not actually execute; treat that as failure instead of skip-as-pass.
+    // These are whole-table totals shared by every spec in this dedicated
+    // database. They are observational liveness evidence only, never a
+    // per-request uniqueness assertion.
     const counts = await durableRowCounts(identity.containerName);
-    log(`durable_rows requests=${counts.requests} tickets=${counts.tickets}`);
+    log(
+      `durable_rows requests=${counts.requests} tickets=${counts.tickets} `
+        + "(observational table totals across all specs; not per-request uniqueness)",
+    );
     if (counts.requests < 1 || counts.tickets < 1) {
       throw new Error("Dedicated spec exited 0 without durable after-sales rows; not accepting as passed");
     }
