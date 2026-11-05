@@ -41,6 +41,9 @@ importers:
       next:
         specifier: 16.2.10
         version: 16.2.10(@babel/core@7.29.7)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+      pg:
+        specifier: ^8.23.1
+        version: 8.23.1
       react:
         specifier: 19.2.7
         version: 19.2.7
@@ -108,9 +111,6 @@ importers:
       jsdom:
         specifier: ^29.1.1
         version: 29.1.1(@noble/hashes@1.8.0)
-      pg:
-        specifier: ^8.23.1
-        version: 8.23.1
       tailwindcss:
         specifier: 4.3.3
         version: 4.3.3

@@ -1,5 +1,9 @@
 import { spawn } from "node:child_process";
-import { setTimeout as delay } from "node:timers/promises";
+
+import {
+  signalProcessGroup,
+  waitForProcessGroupExit,
+} from "./after-sales-process-group.mjs";
 
 /**
  * Dedicated process-group lifecycle for the isolated PostgreSQL runner. The
@@ -31,38 +35,12 @@ export function runInProcessGroup({
     let timeoutTimer;
     let killTimer;
 
-    const killGroup = (killSignal) => {
-      if (!pgid) return;
-      try {
-        process.kill(-pgid, killSignal);
-      } catch {
-        // ESRCH: the group already exited; nothing else is owned here.
-      }
-    };
-
-    const groupAlive = () => {
-      if (!pgid) return false;
-      try {
-        process.kill(-pgid, 0);
-        return true;
-      } catch (error) {
-        return error.code === "EPERM";
-      }
-    };
+    const killGroup = (killSignal) => signalProcessGroup(pgid, killSignal);
 
     const waitForGroupExit = async () => {
-      const deadline = Date.now() + groupExitTimeoutMs;
-      while (groupAlive() && Date.now() < deadline) {
-        await delay(25);
-      }
-      if (groupAlive()) {
-        killGroup("SIGKILL");
-        const killDeadline = Date.now() + 1_000;
-        while (groupAlive() && Date.now() < killDeadline) {
-          await delay(25);
-        }
-      }
-      return !groupAlive();
+      if (await waitForProcessGroupExit(pgid, groupExitTimeoutMs)) return true;
+      killGroup("SIGKILL");
+      return waitForProcessGroupExit(pgid, 1_000);
     };
 
     const finalize = async (code, exitSignal) => {

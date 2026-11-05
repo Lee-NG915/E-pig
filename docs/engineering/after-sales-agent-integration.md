@@ -369,3 +369,68 @@ AI Test Record：六场景验证发布竞争/回滚连续高水位、未提交fe
 第一章推送回读（2026-11-06）：E-pig dc80e637b847907700f33b0f9195329951a6c5d8、DTC edc8443831ad23c4ab6675f9dc1c998221cbd39b均已远端回读一致；DTC草稿PR#4仅作审查入口，不合并/部署。远端CI与本地验收分开记录，未查到run时不能称为远端通过。无关README和DTC学习/政策工作区改动继续保留。
 
 远端CI结果（2026-11-06）：[E-pig run42073073664](https://github.com/Lee-NG915/E-pig/actions/runs/42073073664) 对提交 `0ab69905dd3b42a5ee637d5c9e139710d2df7c1d` 实际完成success；after-sales-postgres与quality均success，后者包含生产构建和standalone运行时市场smoke；deploy按非main条件skipped。此证据针对该代码候选，后续本次记录提交仅改文档。DTC当前开发分支截至回读仍无run，不能用E-pig结果代替DTC CI。两仓均未合并、未部署。
+
+## 第二章 / 阶段5d：显式迁移与持久运行时接入（2026-11-06，计划）
+
+目标：让已验证持久adapter能够被真实应用选择，并通过隔离PG上的HTTP验证。Codex方案/Review/验收，Claude auto实现与必要测试。基线0ef1a73，当前source-lock锁源edc8443；不改vendor/wire/fixtures，不合并部署、不用真实商城库或支付。
+
+设计与剃刀选择：保留AFTER_SALES_ADAPTER=mock默认，显式postgres时必须COMMERCE_ADAPTER=postgres且DATABASE_URL可用，缺条件返回安全不可用，绝不自动fallback到mock。runtimeEnv只在现有env入口读取，新字段均server-only。typed registry惰性创建/缓存售后能力与数据库pool，公共catalog读取不连接数据库或因售后缺配置崩溃；通过getter或明确getAfterSales函数实现，不逐方法手写通用代理。
+
+数据库连接复用现有CommercePool/transaction和createCommercePool入口，新增显式DATABASE_DRIVER=neon/tcp（缺省neon保持既有部署）。tcp使用已引入pg，提升pg为runtime dependency；Neon路径保留，不能全局悄悄换驱动。没有driver插件系统，只有两个明确分支；pool要有连接上限/超时、安全idle error处理，不打印URL/凭据，不设置rejectUnauthorized:false。commerce和after-sales在同一进程复用缓存pool，避免每请求创建新连接；订单主数据仍属于同一配置数据库。tcp用于Node本地/隔离环境，Cloudflare原路径继续Neon，未实测平台不能宣称支持。
+
+迁移：沿用scripts/database/migrate.mjs，保留旧默认只001的兼容；新增显式--scope all（001/002/003）与可复跑package命令。固定文件allowlist，禁止任意路径/SQL入口和request-time DDL。缺URL或非法scope/driver安全失败；逐文件事务与中断后重跑边界说明清楚，不承诺三文件跨事务原子。测试只向新建专用容器传临时连接配置，不加载.env.local；不执行已有线上库迁移、删除或回填。
+
+代码落点：src/platform/config/env.ts与schema测试、registry与装配测试、现有pool及测试、migrate.mjs及最小可测试helper/测试、package/锁文件、API composition仅必要调整。.env.example可补占位server-only变量，不读取真实.env。源码/测试由Claude改，操作指南和验收记录由Codex维护；AGENTS命令锚点可最小同步通过docs:check。
+
+测试计划：
+
+1. registry/schema：默认mock，显式pg选择，未知配置拒绝，缺URL/commerce不匹配失败关闭；catalog不接DB；共享pool/adapter稳定复用，Neon默认兼容。pure factory依赖可在测试边界mock，不用mock宣称SQL集成。
+2. 迁移：隔离PG空库、只001旧库升级、重复执行及中断后重跑，三张售后表/键约束存在，不创建数据或删除旧订单。错误不泄漏连接串。
+3. Route Handler+PG：真实签名Cookie、Bearer、版本/no-store、申请/附件/读回/feed/订单版本/审批审计字段/建单201与重放200/消费者脱敏/按原键恢复；重复和冲突不增业务结果，跨主体/市场/无凭证被拒绝。可以复用5c的专用容器，不用现有DATABASE_URL。
+4. 真实HTTP冒烟：在临时、只复制受控源码/必要配置且没有.env的Next测试副本启动Node dev server（可用webpack避免符号链接root约束），使用现有依赖；不改/重命名真实.env。seed仅合成订单，fetch跨真实回环socket完成核心申请→service建单→consumer读回，重启应用后仍可读同结果。端口随机，server进程组有界停止，复制目录/容器finally清理。若临时副本或Next约束需额外实现先最小化，不用自建HTTP路由器冒充Next。
+5. 扩展专用PG命令/配置，使CI同样执行新增测试；普通verify不启动Docker。测试侧记录Route Handler、真实HTTP、迁移与重启分别结果。所有loop/wait有超时，不读取/输出.env或已有服务token。默认生产mock告警保持，旧SKU缺失/无物流失败关闭保持。
+
+Claude完成后运行typecheck→lint→相关/全量verify、专用PG命令、生产build（或CI实际结果），返回真实证据与失败。Codex独立Review/复跑后验收提交推送并同步Issue。回退仅切回显式mock/停止新处理，不能删除已存在的持久工单或声称撤销外部效果。
+
+
+### 第二章 / 5d Review与独立核验进展（2026-11-06）
+
+当前为未提交候选，未最终验收。Claude auto实现显式AFTER_SALES_ADAPTER、DATABASE_DRIVER、共享惰性pool和固定scope迁移；新增RouteHandler/真实Next HTTP/PG迁移与重启验证。`pnpm database:migrate`保留只001默认，`pnpm database:migrate:all`显式运行001～003；配置来自受控环境，不自动加载真实.env。默认mock保持；Node隔离环境可显式tcp，Neon默认不替换，Cloudflare/tcp没有运行验收。
+
+使用顺序：先在专用新库显式迁移，再配置COMMERCE_ADAPTER=postgres与AFTER_SALES_ADAPTER=postgres、对应DATABASE_DRIVER和受控DATABASE_URL；缺条件售后安全503，不能当成mock成功。专用验收仍用`pnpm test:after-sales:pg`自动创建/删除合成容器，不向命令传已有数据库URL。撤回可切回mock或停新处理，不能删除已保存业务结果或声称撤回外部效果。
+
+Review已修复Next detached进程组清理：leader提前退出仍等待整个组，TERM后有界KILL，ready失败/signal/exit兜底；不能确认清理时stop抛错且报告不记成功。独立审查者本机纯生命周期6项通过；Claude最后专项9文件38项通过。Codex独立普通verify exit0，75文件643项、契约17、happy-dog22、harness8与doctor通过，原始日志在本机临时`/tmp/epig-stage5d/codex-final-verify.log`。
+
+Codex随后独立PG复跑发现就绪竞态：pg_isready通过，但目标合成数据库尚未存在，SHOW server_version报不存在；本次测试未进入PG用例，runner仍完整清理容器/匿名卷，clean=true。失败记录为`/tmp/epig-stage5d/codex-final-pg.log`。已下发最小返工，要求最终TCP目标数据库SQL就绪才继续并补回归，不能以再次跑通掩盖竞态。待修复后重新独立复跑，未通过前不提交。
+
+源交接已由Claude显式sync候选更新为DTC `d3cab389429ab27a2f0d5483fb6388afc9e05bed`，对应DTC-2a身份/Connector已验收推送。51契约文件tree/逐字节不变、sums digest仍b27f002fc639f0e5fee730651fdbf18c515a51a04de41324e6cfdf930f626752；17项契约负例/check/freshness与typecheck/lint通过。该新源同时承载产品内部prepared未派遣失效终止语义，未更改线上OpenAPI。源锁仍为本地候选，推送后另记。
+
+源码阅读：先看`src/platform/registry.ts`的getAfterSales/getCommercePool，再看`src/adapters/commerce/postgres/pool.ts`两个明确驱动分支，最后看migrate.mjs固定scope与HTTP测试。连接池是复用有限数据库连接，事务仍要在同一client执行，不能把共用pool当成跨调用自动事务。小实验用registry.spec.ts核验缺配置不访问数据库、PG专用命令核验真正持久性；mock与真实SQL的证据边界分别保留。
+
+
+## 后续消费者页面窗口：订单内申请与结果（实施前设计）
+
+本窗口在5d验收后开始。订单页已有OrderHistory和真实消费者归属接口，复用happy-dog按钮/表单样式与当前市场格式，不增UI框架；新增`src/modules/order/components/after-sales-panel/`业务组件，app/page只组装。组件的md行为规范由Codex维护，Claude实现tsx/spec/stories及最小客户端请求/恢复helper，不在modules导入adapter或服务registry。只调用现有5个消费者售后操作，绝不发送service Bearer或内部审批字段。
+
+在OrderHistory已成功返回本人订单后才挂载面板，订单读取失败/无权限不挂载也不泄漏已缓存结果。沿用真实Cookie、same-origin凭据、contract major1和private no-store。显示已知诉求编号/更新时间/消费者pending或ticket_created状态；ticket_created后GET真实工单，呈现唯一最终回复和状态，不显示DTC待审批/对账等内部状态或添加聊天输入。
+
+v1没有按订单枚举诉求接口。首期同浏览器续看只保存服务已确认的request_id索引，键绑定market、服务返回的cartId和orderId；索引不是授权，读取仍须服务端校验。索引只含ID/时间，不存回复、描述、地址或凭据。清浏览器存储/换设备的恢复不冒称支持；无索引文案为“此浏览器没有保存的申请记录”，不能声称服务器没有诉求。已知多条记录都能选择查看；默认最新，不能将一诉求唯一工单误写为一订单永远只一个诉求。
+
+新申请提供damaged/wrong_item/return/other、非空描述（5000 Unicode码点）、最多3张JPEG/PNG/WebP、每张5MiB。上传逐个真实POST并保存返回attachment_id，失败明确到文件，不悄悄压缩/截断；客户端检查是体验提示，服务端仍验证真实内容。只读预览经授权下载字节并用受控blob URL，切换/卸载撤销，不加载远端任意URL。已有request状态从服务重新读取，缓存只能标陈旧，不能渲染绿色假成功。
+
+幂等恢复：首次发送申请前固定随机key及规范化body，锁定相关表单；用按market/cart/order隔离的sessionStorage保存本标签页待定key/body/attachment_ids及创建时间，明确这只用于合成/内部演示环境，同origin脚本可读，禁止凭据存储。成功回包后，先将服务request_id可靠写入同一market/cart/order索引并确认成功，再删除待定key/body。索引写失败或提交间崩溃时保留原key/body锁定重放，不能先删pending导致两份恢复依据同时丢失；持久索引只留服务request_id/时间。刷新/超时/429/5xx后只能恢复原key原body；用户未解决未知结果前不能编辑参数或重新上传替换再用同key。无法保存恢复上下文时发送前明确阻止，不能写后丢key。已明确未写入的400/413/415等允许修正并新建上下文；409不同指纹不能换key绕过，显示恢复/人工说明。取消编辑只在尚未发送时允许；网络中断不是外部撤销。
+
+八类状态落实到面板：loading读回、empty浏览器未保存、forbidden清敏感内容和query缓存并停止自动重试，不显示其他身份pending、error说明读/写及可重试性、stale标最后读成功、conflict保留锁定原上下文、retrying保持原key、success只在真实读回。可见label、字数/文件错误关联、role=status/alert、键盘焦点与小屏换行；消费者文案沿用英文和市场金额/日期，不硬编码AU。
+
+验收：组件测试覆盖本订单挂载、market/cart/order缓存分区、索引损坏/存储不可用、上传拒绝、Unicode上限、禁重复提交、超时刷新原key/body重放、401/403不显示缓存、409不换key、pending与唯一最终回复；stories至少八类状态。实际浏览器/隔离Next+PG验证上传→提交→刷新→服务侧建单→读回同一工单回复，以及键盘/窄屏行为；不把jsdom代替浏览器。与DTC工作台联调留跨仓窗口，不声称部署或真实消费者试用。
+
+
+### 5d最终本地验收（2026-11-06，Codex）
+
+结论：本章本地范围通过，提交推送后核对远端CI构建，未部署。就绪竞态最小修复为最终TCP目标库SELECT1与5秒单次/60秒整体超时，原取消语义保留；两个回归覆盖目标库未创建和探针挂起。独立Review确认无新增阻断，未引入驱动插件/通用工作流。
+
+Codex独立复跑修复后`pnpm test:after-sales:pg` exit0：PostgreSQL16.15，**9文件40项通过**，真实Next loopback提交→service建单→consumer读回→同端口重启后读回一致，durable_rows=1,1，stop_released_port=true、server_stopped=true、copy_removed=true；runner group_exited=true，container_removed=true、removed_volumes=1、remaining_volumes=0、clean=true。日志为本机临时`/tmp/epig-stage5d/codex-readiness-fixed-pg.log`；此前失败历史保留。
+
+常规独立verify的75文件643项及其他门禁见上节，最后变更仅专用runner就绪/回归；该变更由上述40项与typecheck/lint另行覆盖，不冒称新的643全量运行。源check/freshness和17项契约负例由Codex再次通过；允许源d3cab389429ab27a2f0d5483fb6388afc9e05bed、51文件内容和sums digest不变。线上13操作/49fixtures未变。
+
+未证明：消费者浏览器组件、DTC持久审批/Worker及跨仓全故事、Cloudflare TCP、生产部署/真实客户试用与效率收益。下一窗口按上述消费者页面设计实施，DTC-2b独立推进。README无关工作区变更不纳入提交。

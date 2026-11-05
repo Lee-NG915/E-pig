@@ -43,7 +43,9 @@ pnpm lint           # eslint .（flat config，含 no-restricted-imports 边界�
 pnpm typecheck      # tsc --noEmit
 pnpm test           # vitest run（纯逻辑 node；组件测试文件显式 jsdom）
 pnpm test:watch     # vitest watch 模式
-pnpm test:after-sales:pg # 专用 Docker 隔离 PG16 多连接测试（非 verify 默认；缺 Docker 明确失败）
+pnpm test:after-sales:pg # 专用 Docker 隔离 PG16 多连接/迁移/Route Handler/真实 HTTP 测试（非 verify 默认；缺 Docker 明确失败）
+pnpm database:migrate   # 默认只执行 001 commerce 迁移（保持旧行为）
+pnpm database:migrate:all # 显式执行 001/002/003，可重复运行（需 DATABASE_URL 与 DATABASE_DRIVER）
 pnpm test:harness-evals # post-edit/stop-hook/边界规则 harness 回归（进 CI）
 pnpm quality:diff   # bash scripts/quality/diff-check.sh（git diff 定向质量检查；含 companions warn）
 pnpm quality:companions # 组件文件夹 companion 检查（.spec/.stories/.md；默认 warn）

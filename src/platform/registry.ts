@@ -1,10 +1,12 @@
 import "server-only";
 
 import { createMockAfterSalesAdapter } from "@/adapters/after-sales/mock/after-sales";
+import { createPostgresAfterSalesAdapter } from "@/adapters/after-sales/postgres/after-sales";
+import { createUnavailableAfterSalesAdapter } from "@/adapters/after-sales/unavailable";
 import { createMockCartAdapter } from "@/adapters/commerce/mock/cart";
 import { createMockCatalogAdapter } from "@/adapters/commerce/mock/catalog";
 import { createPostgresCommerce } from "@/adapters/commerce/postgres/commerce";
-import { createCommercePool } from "@/adapters/commerce/postgres/pool";
+import { createCommercePool, type CommercePool } from "@/adapters/commerce/postgres/pool";
 import { createStripePaymentAdapter } from "@/adapters/payment/stripe/payment";
 import type { AfterSalesPort } from "@/core/contracts/after-sales";
 import type { PaymentPort } from "@/core/contracts/capabilities/payment";
@@ -38,6 +40,8 @@ const logger = createLogger({ module: "registry" });
 
 let capabilitiesCache: Capabilities | null = null;
 let integrationsCache: Integrations | null = null;
+let afterSalesCache: AfterSalesPort | null = null;
+let commercePoolCache: CommercePool | null = null;
 
 export function getCapabilities(): Capabilities {
   if (capabilitiesCache) return capabilitiesCache;
@@ -61,24 +65,74 @@ export function getCapabilities(): Capabilities {
   const cart = env.COMMERCE_ADAPTER === "mock"
     ? createMockCartAdapter({ catalog, market, logger: createLogger({ module: "cart" }) })
     : { createCart: unavailable, getCart: unavailable, findCartByCreationKey: unavailable, hasMutation: unavailable, addItem: unavailable, addItems: unavailable, updateItem: unavailable, removeItem: unavailable, applyCoupon: unavailable };
-  const afterSales = createMockAfterSalesAdapter({
+
+  // afterSales is resolved lazily: importing the registry or rendering public
+  // catalog pages must not require a database or after-sales configuration.
+  capabilitiesCache = {
     catalog,
+    cart,
     market,
-    logger: createLogger({ module: "after-sales" }),
+    get afterSales() {
+      return getAfterSales();
+    },
+  };
+  logger.info("capabilities.initialized", {
+    market: market.id,
+    currency: market.currency,
+    commerceAdapter: env.COMMERCE_ADAPTER,
+    afterSalesAdapter: env.AFTER_SALES_ADAPTER ?? "mock",
+    databaseDriver: env.DATABASE_DRIVER ?? "neon",
   });
+  return capabilitiesCache;
+}
+
+/**
+ * Lazy, process-wide after-sales capability. `postgres` is never silently
+ * downgraded: missing prerequisites produce an explicit 503 adapter.
+ */
+export function getAfterSales(): AfterSalesPort {
+  if (afterSalesCache) return afterSalesCache;
+
+  if (env.AFTER_SALES_ADAPTER === "postgres") {
+    if (env.COMMERCE_ADAPTER !== "postgres" || !env.DATABASE_URL) {
+      const reason = env.COMMERCE_ADAPTER !== "postgres"
+        ? "commerce_adapter_mismatch"
+        : "database_url_missing";
+      logger.error("capabilities.after_sales_unavailable", { reason });
+      return afterSalesCache = createUnavailableAfterSalesAdapter();
+    }
+    return afterSalesCache = createPostgresAfterSalesAdapter({
+      pool: getCommercePool(),
+      market: getMarket(env.MARKET),
+    });
+  }
+
+  if (env.AFTER_SALES_ADAPTER !== "mock") {
+    throw new AppError("validation", `Unsupported AFTER_SALES_ADAPTER: ${String(env.AFTER_SALES_ADAPTER)}`);
+  }
+
   if (env.NODE_ENV === "production") {
     logger.warn("capabilities.after_sales_mock_in_production", {
       hint: "正在生产环境使用 mock after-sales adapter；仅用于沙箱演示，不提供真实售后能力",
     });
   }
-
-  capabilitiesCache = { catalog, cart, afterSales, market };
-  logger.info("capabilities.initialized", {
-    market: market.id,
-    currency: market.currency,
-    commerceAdapter: env.COMMERCE_ADAPTER,
+  return afterSalesCache = createMockAfterSalesAdapter({
+    catalog: getCapabilities().catalog,
+    market: getMarket(env.MARKET),
+    logger: createLogger({ module: "after-sales" }),
   });
-  return capabilitiesCache;
+}
+
+/** Shared process-wide pool for commerce and after-sales; created only on use. */
+export function getCommercePool(): CommercePool {
+  if (commercePoolCache) return commercePoolCache;
+  if (!env.DATABASE_URL) {
+    throw new AppError("upstream", "Commerce database is not configured");
+  }
+  return commercePoolCache = createCommercePool(
+    env.DATABASE_URL,
+    env.DATABASE_DRIVER ?? "neon",
+  );
 }
 
 function unavailable(): never {
@@ -99,7 +153,7 @@ export function getCommerce() {
   if (commerceCache) return commerceCache;
   if (env.COMMERCE_ADAPTER !== "postgres" || !env.DATABASE_URL || !env.CART_COOKIE_SECRET || !env.APP_ORIGIN) return unavailable();
   const { catalog, market } = getCapabilities();
-  return commerceCache = createPostgresCommerce({ pool: createCommercePool(env.DATABASE_URL), catalog, market, payment: getPayment(), origin: env.APP_ORIGIN });
+  return commerceCache = createPostgresCommerce({ pool: getCommercePool(), catalog, market, payment: getPayment(), origin: env.APP_ORIGIN });
 }
 
 export function getIntegrations(): Integrations {

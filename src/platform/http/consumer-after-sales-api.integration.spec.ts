@@ -38,6 +38,7 @@ vi.mock("@/platform/config/env", () => ({
 
 vi.mock("@/platform/registry", () => ({
   getCapabilities: () => ({ afterSales: testState.port }),
+  getAfterSales: () => testState.port,
 }));
 
 import { POST as uploadAttachment } from "@/app/api/[market]/after-sales/attachments/route";

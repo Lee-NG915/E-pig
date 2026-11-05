@@ -35,6 +35,19 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const containerFile = path.join(state, "container");
 const containerExists = () => fs.existsSync(containerFile);
 
+function countAttempt(name) {
+  const file = path.join(state, name);
+  let value = 0;
+  try {
+    value = Number(fs.readFileSync(file, "utf8")) || 0;
+  } catch {
+    // First attempt.
+  }
+  value += 1;
+  fs.writeFileSync(file, String(value));
+  return value;
+}
+
 async function main() {
   if (args[0] === "version") {
     console.log("27.3.1");
@@ -55,6 +68,18 @@ async function main() {
     return;
   }
   if (args[0] === "exec" && args[2] === "pg_isready") return;
+  if (args[0] === "exec" && args.at(-1) === "SELECT 1") {
+    const attempt = countAttempt("readiness-attempts");
+    if (attempt <= Number(process.env.FAKE_DOCKER_READY_FAILURES ?? 0)) {
+      console.error('psql: error: connection failed: FATAL:  database "e_pig_5c" does not exist');
+      process.exit(2);
+    }
+    if (attempt <= Number(process.env.FAKE_DOCKER_HANG_READINESS ?? 0)) {
+      await sleep(60_000);
+    }
+    console.log("1");
+    return;
+  }
   if (args[0] === "port") {
     console.log("127.0.0.1:49153");
     return;
@@ -63,7 +88,7 @@ async function main() {
     console.log("16.4");
     return;
   }
-  if (args[0] === "exec" && args.some((value) => value.startsWith("SELECT"))) {
+  if (args[0] === "exec" && args.some((value) => value.startsWith("SELECT (SELECT"))) {
     console.log("1,1");
     return;
   }
@@ -94,6 +119,9 @@ process.stderr.on("error", () => {});
 
 fs.writeFileSync(process.env.FAKE_PNPM_PID_FILE, String(process.pid));
 fs.writeFileSync(process.env.FAKE_PNPM_STARTED_FILE, "started");
+if (process.env.FAKE_PNPM_EXIT_CODE) {
+  process.exit(Number(process.env.FAKE_PNPM_EXIT_CODE));
+}
 process.on("SIGTERM", () => {
   fs.writeFileSync(process.env.FAKE_PNPM_TERM_FILE, "term");
   process.exit(143);
@@ -127,7 +155,7 @@ function writeBinary(directory, name, source) {
   chmodSync(binary, 0o755);
 }
 
-function startRunner({ directory, immediateRun = false }) {
+function startRunner({ directory, immediateRun = false, env = {} }) {
   const binaryDirectory = path.join(directory, "bin");
   mkdirSync(binaryDirectory);
   writeBinary(binaryDirectory, "docker", FAKE_DOCKER);
@@ -142,6 +170,7 @@ function startRunner({ directory, immediateRun = false }) {
       FAKE_PNPM_STARTED_FILE: path.join(directory, "pnpm-started"),
       FAKE_PNPM_TERM_FILE: path.join(directory, "pnpm-term"),
       ...(immediateRun ? { FAKE_DOCKER_IMMEDIATE_RUN: "1" } : {}),
+      ...env,
     },
     stdio: ["ignore", "pipe", "pipe"],
   });
@@ -185,6 +214,21 @@ async function waitForMissing(filePath, timeoutMs = 2_000) {
   return !existsSync(filePath);
 }
 
+function readinessAttempts(directory) {
+  const file = path.join(directory, "readiness-attempts");
+  return existsSync(file) ? Number(readFileSync(file, "utf8")) : 0;
+}
+
+async function waitForReadinessAttempts(directory, count, timeoutMs = 5_000) {
+  const deadline = Date.now() + timeoutMs;
+  while (readinessAttempts(directory) < count && Date.now() < deadline) {
+    await delay(10);
+  }
+  if (readinessAttempts(directory) < count) {
+    throw new Error(`timed out waiting for ${count} readiness probes`);
+  }
+}
+
 function isProcessAlive(pid) {
   try {
     process.kill(pid, 0);
@@ -193,6 +237,60 @@ function isProcessAlive(pid) {
     return false;
   }
 }
+
+describe("after-sales PostgreSQL runner readiness", () => {
+  it("queries the target database instead of trusting pg_isready", async () => {
+    const directory = temporaryDirectory();
+    const runner = startRunner({
+      directory,
+      immediateRun: true,
+      env: {
+        FAKE_DOCKER_READY_FAILURES: "2",
+        FAKE_PNPM_EXIT_CODE: "0",
+      },
+    });
+
+    // pg_isready in the fake already succeeds, but the target SQL probe fails
+    // twice. A pg_isready-only runner would have started the test process.
+    await waitForReadinessAttempts(directory, 2);
+    expect(existsSync(path.join(directory, "pnpm-started"))).toBe(false);
+
+    const result = await runner.exit;
+    expect(result.code, result.output).toBe(0);
+    expect(readinessAttempts(directory)).toBe(3);
+    expect(existsSync(path.join(directory, "pnpm-started"))).toBe(true);
+
+    const calls = readFileSync(path.join(directory, "calls.log"), "utf8");
+    expect(calls).toContain(" psql -h 127.0.0.1 ");
+    expect(calls).not.toContain("pg_isready");
+    expect(
+      await waitForMissing(path.join(directory, "container")),
+      `container survived runner exit\n${result.output}`,
+    ).toBe(true);
+  }, 20_000);
+
+  it("bounds a hung readiness probe and continues until the target database responds", async () => {
+    const directory = temporaryDirectory();
+    const runner = startRunner({
+      directory,
+      immediateRun: true,
+      env: {
+        FAKE_DOCKER_HANG_READINESS: "1",
+        FAKE_PNPM_EXIT_CODE: "0",
+      },
+    });
+
+    const result = await runner.exit;
+    expect(result.code, result.output).toBe(0);
+    // The first command was killed by the per-command timeout, then retried.
+    expect(readinessAttempts(directory)).toBe(2);
+    expect(existsSync(path.join(directory, "pnpm-started"))).toBe(true);
+    expect(
+      await waitForMissing(path.join(directory, "container")),
+      `container survived runner exit\n${result.output}`,
+    ).toBe(true);
+  }, 30_000);
+});
 
 describe("after-sales PostgreSQL runner signal lifecycle", () => {
   it("waits out an in-flight docker run before cleanup and removes its container", async () => {

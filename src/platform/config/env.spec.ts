@@ -28,6 +28,20 @@ describe("env schema", () => {
     expect(() => serverEnvSchema.COMMERCE_ADAPTER.parse("shopify")).toThrow();
   });
 
+  it("AFTER_SALES_ADAPTER 缺省 mock，只接受 mock/postgres", () => {
+    expect(serverEnvSchema.AFTER_SALES_ADAPTER.parse(undefined)).toBe("mock");
+    expect(serverEnvSchema.AFTER_SALES_ADAPTER.parse("mock")).toBe("mock");
+    expect(serverEnvSchema.AFTER_SALES_ADAPTER.parse("postgres")).toBe("postgres");
+    expect(() => serverEnvSchema.AFTER_SALES_ADAPTER.parse("neon")).toThrow();
+  });
+
+  it("DATABASE_DRIVER 缺省 neon，只接受 neon/tcp", () => {
+    expect(serverEnvSchema.DATABASE_DRIVER.parse(undefined)).toBe("neon");
+    expect(serverEnvSchema.DATABASE_DRIVER.parse("neon")).toBe("neon");
+    expect(serverEnvSchema.DATABASE_DRIVER.parse("tcp")).toBe("tcp");
+    expect(() => serverEnvSchema.DATABASE_DRIVER.parse("pg")).toThrow();
+  });
+
   it("accepts persistent commerce and rejects live payment keys and unsafe origins", () => {
     expect(serverEnvSchema.COMMERCE_ADAPTER.parse("postgres")).toBe("postgres");
     expect(serverEnvSchema.STRIPE_SECRET_KEY.safeParse("sk_live_not-allowed").success).toBe(false);

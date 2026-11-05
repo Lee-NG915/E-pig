@@ -19,7 +19,10 @@ const execFileAsync = promisify(execFile);
 const scriptDirectory = path.dirname(fileURLToPath(import.meta.url));
 const repositoryRoot = path.resolve(scriptDirectory, "../..");
 const READY_TIMEOUT_MS = 60_000;
-const TEST_PROCESS_TIMEOUT_MS = 240_000;
+const READY_POLL_INTERVAL_MS = 250;
+const READY_COMMAND_TIMEOUT_MS = 5_000;
+const QUERY_COMMAND_TIMEOUT_MS = 10_000;
+const TEST_PROCESS_TIMEOUT_MS = 600_000;
 const TEST_PROCESS_TERM_GRACE_MS = 5_000;
 const VITEST_CONFIG = "scripts/database/after-sales-pg.vitest.config.ts";
 
@@ -62,45 +65,75 @@ async function requireDocker() {
 
 async function waitUntilReady(name) {
   const deadline = Date.now() + READY_TIMEOUT_MS;
+  let lastFailure = "no readiness probe completed";
   while (Date.now() < deadline) {
     throwIfCancelled();
     try {
-      await docker(["exec", name, "pg_isready", "-U", TEST_USER, "-d", TEST_DATABASE]);
-      return;
-    } catch {
-      await delay(250);
+      // The official image runs a temporary init server that answers
+      // pg_isready and socket psql before the target database exists. Only a
+      // real query over the final TCP listener proves readiness.
+      const { stdout } = await docker(
+        [
+          "exec",
+          name,
+          "psql",
+          "-h",
+          "127.0.0.1",
+          "-U",
+          TEST_USER,
+          "-d",
+          TEST_DATABASE,
+          "-tAc",
+          "SELECT 1",
+        ],
+        { timeout: READY_COMMAND_TIMEOUT_MS },
+      );
+      if (stdout.trim() === "1") return;
+      lastFailure = `unexpected SELECT 1 output: ${JSON.stringify(stdout.trim())}`;
+    } catch (error) {
+      lastFailure = error instanceof Error ? error.message : String(error);
     }
+    await delay(READY_POLL_INTERVAL_MS);
   }
-  throw new Error(`PostgreSQL did not become ready within ${READY_TIMEOUT_MS}ms`);
+  throwIfCancelled();
+  throw new Error(
+    `PostgreSQL did not become ready within ${READY_TIMEOUT_MS}ms (last probe: ${lastFailure})`,
+  );
 }
 
 async function serverVersion(name) {
-  const { stdout } = await docker([
-    "exec",
-    name,
-    "psql",
-    "-U",
-    TEST_USER,
-    "-d",
-    TEST_DATABASE,
-    "-tAc",
-    "SHOW server_version",
-  ]);
+  const { stdout } = await docker(
+    [
+      "exec",
+      name,
+      "psql",
+      "-U",
+      TEST_USER,
+      "-d",
+      TEST_DATABASE,
+      "-tAc",
+      "SHOW server_version",
+    ],
+    { timeout: QUERY_COMMAND_TIMEOUT_MS },
+  );
   return stdout.trim();
 }
 
 async function durableRowCounts(name) {
-  const { stdout } = await docker([
-    "exec",
-    name,
-    "psql",
-    "-U",
-    TEST_USER,
-    "-d",
-    TEST_DATABASE,
-    "-tAc",
-    "SELECT (SELECT count(*) FROM after_sales_requests)::text || ',' || (SELECT count(*) FROM after_sales_tickets)::text",
-  ]);
+  const { stdout } = await docker(
+    [
+      "exec",
+      name,
+      "psql",
+      "-U",
+      TEST_USER,
+      "-d",
+      TEST_DATABASE,
+      "-tAc",
+      "SELECT (SELECT count(*) FROM after_sales_requests)::text || ',' || (SELECT count(*) FROM after_sales_tickets)::text",
+    ],
+    { timeout: QUERY_COMMAND_TIMEOUT_MS },
+  );
   const [requests, tickets] = stdout.trim().split(",").map((value) => Number(value));
   return { requests, tickets };
 }
