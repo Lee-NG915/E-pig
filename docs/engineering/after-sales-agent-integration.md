@@ -418,7 +418,7 @@ v1没有按订单枚举诉求接口。首期同浏览器续看只保存服务已
 
 新申请提供damaged/wrong_item/return/other、非空描述（5000 Unicode码点）、最多3张JPEG/PNG/WebP、每张5MiB。上传逐个真实POST并保存返回attachment_id，失败明确到文件，不悄悄压缩/截断；客户端检查是体验提示，服务端仍验证真实内容。只读预览经授权下载字节并用受控blob URL，切换/卸载撤销，不加载远端任意URL。已有request状态从服务重新读取，缓存只能标陈旧，不能渲染绿色假成功。
 
-幂等恢复：首次发送申请前固定随机key及规范化body，锁定相关表单；用按market/cart/order隔离的sessionStorage保存本标签页待定key/body/attachment_ids及创建时间，明确这只用于合成/内部演示环境，同origin脚本可读，禁止凭据存储。成功回包后，先将服务request_id可靠写入同一market/cart/order索引并确认成功，再删除待定key/body。索引写失败或提交间崩溃时保留原key/body锁定重放，不能先删pending导致两份恢复依据同时丢失；持久索引只留服务request_id/时间。刷新/超时/429/5xx后只能恢复原key原body；用户未解决未知结果前不能编辑参数或重新上传替换再用同key。无法保存恢复上下文时发送前明确阻止，不能写后丢key。已明确未写入的400/413/415等允许修正并新建上下文；409不同指纹不能换key绕过，显示恢复/人工说明。取消编辑只在尚未发送时允许；网络中断不是外部撤销。
+幂等恢复：首次发送申请前固定随机key及规范化body，锁定相关表单；用按market/cart/order隔离的sessionStorage保存本标签页待定key/body/attachment_ids及创建时间，明确这只用于合成/内部演示环境，同origin脚本可读，禁止凭据存储。成功回包后，先将服务request_id可靠写入同一market/cart/order索引并确认成功，再删除待定key/body。索引写失败或提交间崩溃时保留原key/body锁定重放，不能先删pending导致两份恢复依据同时丢失；持久索引只留服务request_id/时间。另在同一主体分区保存不含正文的pending标记（原key、规范化请求SHA-256、创建时间）；只有确认request_id索引写成功才删除。标签页关闭导致sessionStorage正文丢失时，保留“结果未知、需人工恢复”状态并禁止新建/换key，不显示空申请表。可用客服提供的request_id通过现有消费者GET核验归属及order_id后恢复索引，不能由人工输入成功/回复。刷新/超时/429/5xx后只能恢复原key原body；用户未解决未知结果前不能编辑参数或重新上传替换再用同key。无法保存恢复上下文时发送前明确阻止，不能写后丢key。已明确未写入的400/413/415等允许修正并新建上下文；409不同指纹不能换key绕过，显示恢复/人工说明。取消编辑只在尚未发送时允许；网络中断不是外部撤销。
 
 八类状态落实到面板：loading读回、empty浏览器未保存、forbidden清敏感内容和query缓存并停止自动重试，不显示其他身份pending、error说明读/写及可重试性、stale标最后读成功、conflict保留锁定原上下文、retrying保持原key、success只在真实读回。可见label、字数/文件错误关联、role=status/alert、键盘焦点与小屏换行；消费者文案沿用英文和市场金额/日期，不硬编码AU。
 
@@ -442,3 +442,6 @@ Codex独立复跑修复后`pnpm test:after-sales:pg` exit0：PostgreSQL16.15，*
 
 
 CI隔离修复的独立复跑（2026-11-06，Codex）：`pnpm test:after-sales:pg` exit0，9文件40项；scoped_rows=requests:1,tickets:1,ticket_keys:1，control_rows=requests:1,tickets:1，table_rows=2,2，同端口重启读回正确，group_exited=true、clean=true。日志在本机临时`/tmp/epig-stage5d/codex-ci-isolation-fixed-pg.log`。根已Review两文件diff，确认是精确作用域唯一性而非放宽断言，待修复提交CI回读后闭环。
+
+
+5d远端闭环（2026-11-06）：修复提交`fe15a992cd62dcae665557ee4be3788f73fcd6f8`的[CI42081613637](https://github.com/Lee-NG915/E-pig/actions/runs/42081613637)已实际success，quality（含生产构建/standalone市场smoke）与after-sales-postgres均success，deploy按非main条件skipped。本章本地/远端范围验收通过，未合并/部署。后续消费者页面按已Review方案实施，UI本身仍未实现/验收；其标签页未知提交使用无正文pending标记与现有授权读取恢复，不新增wire接口。
