@@ -245,3 +245,25 @@ Claude 独立复核上述检查并审查实际 diff 后，首轮不作验收通�
 提交前复核（2026-11-05，Codex）：独立只读审查发现消费者 24 KiB 上限遗漏 JSON surrogate-escape 膨胀：5000 emoji 的合法转义输入为 60061 字节。Claude 使用 auto 模式最小返工为 64 KiB，并新增真实路由 5000 转义字符成功回读、5001 拒绝且零写入回归；原始 Unicode 用例保留。此前 24 KiB 的阶段 3 结论仅保留历史，本次修复后才覆盖该编码形式。Codex 独立复跑 typecheck、lint、两套 HTTP 集成测试 **58/58**、固定源契约检查和 diff-check 全部通过；修复前完整 verify 已由 Codex 独立执行，600 测试及其他步骤通过，最终仅因既有 agent-doctor 环境失败退出 1。未重复把修复前600全量数写成本轮602实际全量结果。
 
 独立 Review 其余未发现权限/恢复阻断项；两个专用 handler 与薄路由沿用既有分层，未新增通用路由器、工作流或依赖，未发现需要进一步抽象的依据。阶段3/4及最小返工可以提交，README 无关改动保留。范围验收不代表所有现实缺陷不存在，也不代表完整 verify、生产或跨仓验收通过。
+
+### 阶段 5a：持久诉求发布基础（2026-11-05，计划）
+
+目的：先证明进程重启后诉求仍可读，以及发布回滚不消耗高水位，再接完整 Postgres AfterSalesPort。由 Codex 设计与验收、Claude auto 模式实现。基线为阶段3/4本地提交 `8438254`，固定源契约不变。
+
+采用最小专用存储模块，复用现有 CommercePool/query/transaction 和 PostgreSQL；不建通用 repository、任务框架或新依赖。只新增 `scripts/database/002-after-sales-requests.sql`、`src/adapters/after-sales/postgres/request-store.ts` 及就近 `.spec.ts`。不改 registry、HTTP、env、现有订单表或原迁移脚本，不执行外部数据库迁移；完整 adapter 将来显式接入。
+
+存储设计：一张每市场发布计数器表，一张诉求表。诉求表保留 id、market、稳定 consumer/cart 主体、order_id、creation_key、fingerprint、sequence 和 request JSONB；主键/唯一约束保证 ID 唯一、(market,cart_id,creation_key) 唯一、(market,sequence) 唯一，sequence用bigint且正数。计数器非负。JSONB为当前内部 AfterSalesRequest；不存token、地址或附件字节。不建立未来工单、审批、事件或私密存储表。
+
+模块仅三个行为：发布已验证的诉求、按市场和稳定主体与创建键查当前表示、按市场和数字位置/limit读取feed。接口是adapter内部存储，不是线上DTO正本，不负责HTTP身份/业务/附件校验。发布接受内部AfterSalesRequest及cartId/key/fingerprint，序号由DB覆盖分配，返回request/replayed。使用每市场计数器行锁在同一事务序列化发布；先锁后查键，同键同指纹返回当前对象，同键异指纹使用既有typed IDEMPOTENCY_CONFLICT。新发布分配序号并存记录，一并提交；失败回滚不耗号。新市场初始化须并发安全。禁止nextval、MAX+1或网络调用持锁。不存在按键返回null，不能把null解释为允许换键。不要引入假in-flight状态。
+
+feed接受可信内部数字位置字符串（验证非负十进制，超过高水位失败）及1..200 limit，返回已有内部ServiceRequestFeed；复用当前游标编码工具，不造第二套cursor。高水位和页面在一致读快照中读取（单条SQL或REPEATABLE READ），读当前JSONB表示并强制sequence来自列；非空末页nextCursor可继续，空页保持有效位置。不删除历史。当前阶段无状态写入方法，不提前建工单；后续工单事务需要在同一数据库中更新当前表示。
+
+测试计划：使用现有PGlite真实SQL及串行连接lease，明确不证明外部Postgres多连接并发。验证幂等DDL重复执行、发布读回、同键同指纹重放不增号、同键异指纹冲突、主体/市场隔离、ID冲突导致事务回滚后下一条序号连续、多页与非空末页/空页、无效位置/limit。用文件支持的PGlite关闭重开及重建store验证真实持久读取；不得把重建对象的内存测试称为数据库重启。迁移与存储都只在隔离合成数据库执行。
+
+Claude先运行typecheck→lint→相关测试及契约check，返回证据；Codex独立Review与复跑。未完成完整adapter/订单映射/附件/建单事务/真实PG并发，不宣称Postgres上线或完整AS-ACC通过。此阶段完成不自动提交推送，返回Codex验收。
+
+阶段5a最终验收（2026-11-05，Codex）：**阶段范围通过**。Claude auto新增002 SQL、request-store与spec三个文件，没有修改运行时接入、旧迁移脚本或契约。独立Codex只读Review确认两表/三个存储行为无额外框架，counter行锁覆盖查重与分配，回滚不耗号，feed单语句一致快照；发现超PG bigint位置先抛22003的问题，Claude最小返工在SQL前返回INVALID_CURSOR并补两类越界回归。返工中首次BigInt字面量不兼容target的类型检查失败，改为BigInt构造后通过，失败历史保留。
+
+Codex实际独立复跑typecheck、lint、request-store **11/11**（包含文件PGlite关闭重开、回滚后连续序号、幂等/市场主体隔离和分页）、契约check、docs:check、diff-check均退出0。Claude返工前全量为74文件/612测试，返工后聚焦11通过，不把新增1测试倒算成613全量已运行。完整verify既有agent-doctor阻塞未修复；本阶段不接HTTP/registry，不执行真实数据库迁移、不证明外部Postgres多连接并发。阶段3/4已本地提交8438254；无关README仍保留，未推送。
+
+AI Test Record：持久发布基础与SQL约束，新增11项就近测试；上述Codex实际命令通过，完整仓库门禁仍受既有环境失败限制。AI Review Record：独立Codex审查事务/快照/幂等/边界及抽象规模，溢出缺陷已修复并复验；无本阶段剩余阻断项。后续需设计完整Postgres adapter、可信订单版本映射、附件私密存储及建单/回执原子事务，再切换registry并开展真实多连接故障验证；不将本阶段称为完整售后持久化完成。
