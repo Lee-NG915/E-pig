@@ -84,7 +84,37 @@ contracts/epig-after-sales/v1/                  原样 vendor 的契约包与 so
 
 ## 任务拆解
 
-- [ ] vendor OpenAPI 与共享 fixtures，建立不可变 `source-lock.json`、digest/freshness 检查和 `pnpm verify` 门禁
+### 阶段 1：契约 vendor 与验证门禁（2026-11-05，阶段范围已验收）
+
+不可变源固定为 DTC 提交 `2dc37231946b24e00f27c09111fba346a5affc90`，源目录为 `contracts/epig-after-sales/v1/`；源 `SHA256SUMS` 文件自身 SHA-256 为 `b27f002fc639f0e5fee730651fdbf18c515a51a04de41324e6cfdf930f626752`，包含 13 个操作、49 个共享 fixtures 和 51 个契约文件。旧提交和旧 digest 不得用于本次 vendor。
+
+开发计划：
+
+1. 先核对本仓 package scripts、依赖和测试约定，复用现有工具，不新增通用契约框架。
+2. 从上述不可变提交原样 vendor 完整契约包，保留 OpenAPI、fixtures、二进制附件和 `SHA256SUMS`；禁止手工编辑 vendor 内容。
+3. 新建最小 `source-lock.json`，记录源仓库、完整提交、跟踪源分支、契约版本、源路径、源 sums digest、逐文件 SHA-256、同步时间和双仓 Issue；source lock 自身不属于上游 bundle。
+4. 提供显式 sync/check。sync 只能接受不可变提交，不得跟随分支或硬编码本机路径；check 只读，不得隐式改写 vendor、source lock 或生成物。独立 freshness 检查显式比较跟踪源并在源前进时报告陈旧，普通测试和构建不得隐式联网。
+5. 检查缺失、额外、内容漂移、错误 digest、source lock 不一致、跟踪源前进和生成物过期；原样解析并执行 49 个共享 fixtures 的适用正反断言及二进制 digest，不能只生成 TypeScript 类型代替运行时检查。
+6. 按现有脚本结构把契约检查纳入 `pnpm verify`，不绕过既有 lint、类型检查或测试。
+
+测试计划：
+
+- 正向：完整 vendor/source-lock/digest/fixtures/freshness 检查通过，`pnpm verify` 实际运行并记录结果。
+- 负向：只在隔离临时副本中注入缺文件、额外文件、内容/digest 漂移、无效 source commit、跟踪源前进和损坏 fixture，检查必须失败且不修改正式 vendor。
+- 复核 49 个 manifest 项无游离/缺失文件，响应版本头、状态码、安全 DTO、非空白文本和状态联动按各 fixture 的既有语义执行；68 字节 PNG 样例同时校验内容和大小。
+- Review 最终 diff，确认没有服务 token、原始 Cookie、本机绝对路径、真实客户数据或手写第二套线路 Schema。
+
+非目标：本阶段不实现 AfterSalesPort、adapter、Route Handler、页面、数据库事务或真实联调，不调用真实外部写入。Codex 返回实际文件、命令、通过/失败结果和未验证范围，由 Claude 审查后决定是否验收；Codex 自测不等于最终验收。
+
+执行状态（2026-11-05）：**Codex 实施完成，Claude 阶段范围验收通过；完整 `pnpm verify` 仍有既有本地环境阻塞。**
+
+- 已从 DTC 不可变提交 `2dc37231946b24e00f27c09111fba346a5affc90` 原样 vendor 51 个文件；Claude 独立按字节比对上游 archive、vendor 和 source lock，全部一致。`SHA256SUMS` 自身摘要为 `b27f002fc639f0e5fee730651fdbf18c515a51a04de41324e6cfdf930f626752`。
+- 显式 `sync`、只读 `check` 和独立 `freshness` 已实现；普通检查不联网、不改写 vendor 或 lock。13 个操作、49 个 manifest fixtures、二进制内容/大小及关键 OpenAPI 安全语义均纳入运行时检查。
+- Codex 与 Claude 分别运行契约正向检查和 17 个隔离负向测试，均通过；freshness 通过。`pnpm typecheck`、`pnpm lint`、`pnpm test`（64 个文件、476 个测试）、happy-dog（22 个测试）和 8 个 harness evals 通过，`git diff --check` 通过。
+- 完整 `pnpm verify` 已实际运行但退出码为 1：上述步骤全部通过后，最后的既有 `agent-doctor` 因本机缺少 `../DTC-skills`、20 个已跟踪 DTC skill 软链无法找到 `SKILL.md` 而失败。本阶段没有修改这些软链、doctor 或其安装清单；文档记录的另一实际源路径也不存在。因此这里只验收阶段实现，不宣称完整仓库门禁全绿。恢复该本地依赖后仍需重跑完整 `pnpm verify`。
+- 本阶段未实现 AfterSalesPort、adapter、Route Handler、页面、数据库事务或真实联调，未执行部署或真实外部写入。
+
+- [x] vendor OpenAPI 与共享 fixtures，建立不可变 `source-lock.json`、digest/freshness 检查和 `pnpm verify` 门禁（完整 verify 的既有 DTC-skills 环境阻塞见上）
 - [ ] contracts：AfterSalesPort、诉求 / 工单 DTO、消费者与 service 序列化边界、错误映射
 - [ ] mock adapter + fixtures（与 catalog 商品对齐的合成订单诉求）
 - [ ] 消费者 Route Handlers：附件上传/读取、诉求创建/读取、本人工单读取
