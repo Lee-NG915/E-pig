@@ -1,13 +1,13 @@
 {
   "schema_version": "1.0.0",
   "source_repository": "https://github.com/Lee-NG915/dtc-support-agent.git",
-  "source_commit": "2dc37231946b24e00f27c09111fba346a5affc90",
+  "source_commit": "edc8443831ad23c4ab6675f9dc1c998221cbd39b",
   "tracking_ref": "refs/remotes/origin/codex/2-epig-after-sales",
   "contract_version": "1.0.0",
   "wire_major": "1",
   "source_path": "contracts/epig-after-sales/v1",
   "source_sums_sha256": "b27f002fc639f0e5fee730651fdbf18c515a51a04de41324e6cfdf930f626752",
-  "synced_at": "2026-11-05T09:20:48.375Z",
+  "synced_at": "2026-11-05T17:14:28.304Z",
   "coordination": {
     "dtc": {
       "issue": "https://github.com/Lee-NG915/dtc-support-agent/issues/2",

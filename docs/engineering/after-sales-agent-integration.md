@@ -10,9 +10,9 @@ register: engineering
 
 ## 当前交付状态（2026-11-06）
 
-阶段1～5b已完成各自范围验收；阶段3/4、5a、5b分别以 `8438254`、`bdfc9fb`、`d16285909faf104539a253802542b3fefc77aaaa` 推送至 `after-sales/agent-integration`，远端分支SHA已回读一致。下文阶段执行记录中的“未提交/未推送”保留为当时事实，以本节为当前交付状态。
+阶段1～5b已推送并完成各自范围验收；阶段5c真实PG多连接和环境收敛已本地范围验收，待本章提交推送。阶段3/4、5a、5b提交分别为8438254、bdfc9fb、d162859，交付记录为a72371f。下文历史“计划/未提交/环境失败”保留为当时事实，以本节和最新阶段记录判断当前状态。
 
-消费者5个及service8个Route Handler已实现，当前运行时仍使用mock；完整持久AfterSalesPort与003以内迁移仅在隔离PGlite验证，尚未切换registry或执行真实数据库迁移。最后Codex独立验证为630项测试通过；完整verify仍受既有DTC-skills/agent-doctor环境失败阻塞。契约源仍为DTC `2dc3723`，vendor/source-lock未变化。下一步是隔离真实Postgres多连接验证，再做显式adapter切换与跨仓联调；页面、DTC Connector、完整旅程、部署未完成。
+消费者5个及service8个Route Handler已实现，运行时仍用mock。持久adapter已通过PGlite和隔离PostgreSQL16多连接测试，但尚未切换registry或执行线上迁移；专用PG测试与普通verify由Codex独立复跑通过，旧agent-doctor技能环境阻塞已消除。当前锁定源只在[source-lock](../../contracts/epig-after-sales/source-lock.json)维护；本章因DTC文档/环境提交前进进行显式源交接，51契约文件、摘要和版本均未改变，不是线上契约变更。下一步5d做显式迁移、adapter切换与HTTP验证；消费者页面、DTC Connector/持久审批和完整跨仓旅程尚未完成。
 
 ## 背景
 
@@ -125,7 +125,8 @@ contracts/epig-after-sales/v1/                  原样 vendor 的契约包与 so
 - [x] mock adapter + fixtures（与 catalog 商品对齐的合成订单诉求）
 - [x] 消费者 Route Handlers：附件上传/读取、诉求创建/读取、本人工单读取
 - [x] service Route Handlers：订单/物流、附件内容、追加式诉求 feed/detail、工单创建/按 ID/按幂等键查询
-- [ ] 持久事务：连续发布高水位、原子幂等与 `(market, request_id)` 唯一约束、不可变回复和回执
+- [x] 隔离持久实现：连续发布高水位、原子幂等与 `(market, request_id)` 唯一约束、不可变回复和回执（PGlite范围，真实PG多连接/运行时接入未验收）
+- [ ] 真实PG多连接故障验证、显式迁移及持久adapter运行时接入（阶段5c/5d）
 - [ ] 订单详情页售后入口、真实进度与唯一最终回复组件
 - [ ] 按产品蓝图 `AS-ACC-*` 完成中台 EpigConnector 联调与故障演练，结果回写 DTC Issue #2 和 E-pig Issue #2
 
@@ -252,7 +253,7 @@ Claude 独立复核上述检查并审查实际 diff 后，首轮不作验收通�
 
 独立 Review 其余未发现权限/恢复阻断项；两个专用 handler 与薄路由沿用既有分层，未新增通用路由器、工作流或依赖，未发现需要进一步抽象的依据。阶段3/4及最小返工可以提交，README 无关改动保留。范围验收不代表所有现实缺陷不存在，也不代表完整 verify、生产或跨仓验收通过。
 
-### 阶段 5a：持久诉求发布基础（2026-11-05，计划）
+### 阶段 5a：持久诉求发布基础（2026-11-05，阶段范围已验收）
 
 目的：先证明进程重启后诉求仍可读，以及发布回滚不消耗高水位，再接完整 Postgres AfterSalesPort。由 Codex 设计与验收、Claude auto 模式实现。基线为阶段3/4本地提交 `8438254`，固定源契约不变。
 
@@ -274,7 +275,7 @@ Codex实际独立复跑typecheck、lint、request-store **11/11**（包含文件
 
 AI Test Record：持久发布基础与SQL约束，新增11项就近测试；上述Codex实际命令通过，完整仓库门禁仍受既有环境失败限制。AI Review Record：独立Codex审查事务/快照/幂等/边界及抽象规模，溢出缺陷已修复并复验；无本阶段剩余阻断项。后续需设计完整Postgres adapter、可信订单版本映射、附件私密存储及建单/回执原子事务，再切换registry并开展真实多连接故障验证；不将本阶段称为完整售后持久化完成。
 
-### 阶段5b：完整持久adapter（2026-11-05，计划，当前Codex设计/验收）
+### 阶段5b：完整持久adapter（2026-11-06，阶段范围已验收）
 
 基线bdfc9fb；Claude auto实现及必要测试，Codex Review/验证/最终验收。固定源2dc3723不变，不改vendor。目标是完成可注入隔离数据库的AfterSalesPort，不接registry/env，不执行真实迁移/写入/支付，不提交推送。保留无关README。复用现有pool/transaction/request-store/fingerprints/cursor/typed errors，无新依赖、审批系统、任务框架或通用存储抽象。
 
@@ -301,3 +302,66 @@ Codex返工后独立完整`pnpm verify`：docs、契约17/17、固定源13操作
 限制：旧订单缺SKU或快照金额不一致返回安全UPSTREAM_UNAVAILABLE，不回查当前catalog伪造历史；当前订单只有paid且无真实物流，授权订单的shipment返回NOT_FOUND。收件人脱敏由既有wire白名单完成；内部adapter持有的订单信息不得直返浏览器。PG单事务未提交不可见按键查询返回currently_unavailable，不伪造IN_FLIGHT且不得换键重建。PGlite单连接/lease测试不证明真实PG多连接锁竞争；未测真实迁移/数据库故障、生产存储、运行时adapter切换、DTC Connector、跨仓旅程、build与部署。
 
 下一阶段：先验证隔离真实Postgres多连接事务与故障场景，再设计显式after-sales adapter选择/迁移运行指南及HTTP接入；缺条件时保持mock默认，不在真实订单上试验。已存在README无关改动保留，提交不等于推送或部署。
+
+## 2026-11-06 后续开发顺序（用户已确认）
+
+保留阶段1～5b的实现与验收历史。跨仓整体执行窗口、证据分层、容量/运维前提和学习交付只由DTC `docs/project-plan.md`维护；六个核心故事及原AS-ACC映射由DTC产品蓝图13.1维护。本节只列E-pig落点，不复制线上Schema、不新增需求。DTC本次计划调整仍为工作区候选，契约源/49 fixtures/source-lock保持2dc3723；普通检查不隐式更新vendor，跟踪源分支前进时须按既有freshness流程显式核对。
+
+| 顺序 | E-pig责任与完成条件 | DTC配合及边界 |
+|---|---|---|
+| 5c 真实PG隔离验证（本地范围已验收） | 独立连接、锁等待/竞争、回滚无空洞、唯一工单、订单版本竞争、事务失败后原键恢复；有可重跑命令和实际输出 | 不等于持久审批/跨仓旅程通过；不使用现有线上数据库 |
+| 5d 显式迁移与运行时接入 | 复用001～003迁移，新增清晰adapter选择/缺配置失败关闭，mock默认保持，真实HTTP对隔离PG跑通；空库/重复迁移/重启与回退边界可验证 | 不自动部署；旧SKU缺失和无物流行为保持事实，不伪造历史数据 |
+| 6 最小消费者页面 | 订单申请/附件/进度/唯一回复，覆盖八类交互状态、重复恢复和可访问性；与DTC最小闭环交替交付 | DTC先完成最小身份/Connector/同步/持久草稿审批与回读，不等待所有后端完成才做页面 |
+| 7 跨仓恢复与完整评测 | 原键恢复、越权、陈旧批准、响应丢失和重启故事协同演练，保留AS-ACC逐项证据；测量约定负载下性能 | Worker/审批/游标/对账由DTC负责；PGlite、真实PG、HTTP、浏览器和AI评测分列 |
+| 8 隔离部署与试点材料 | 安装升级、备份恢复、日志/基础监控、操作手册、演示脚本与源码小实验 | 容量、恢复目标、数据保留责任在试点前确认；无实际试用不写效率提升或生产落地 |
+
+### 阶段5c：隔离真实PostgreSQL多连接验证（2026-11-06，本地阶段范围已验收）
+
+目标：补足PGlite单连接无法证明的锁竞争与提交可见性，使用现有adapter和真实PG多连接，不为测试引入消息队列、锁框架或新服务。由Codex明确测试计划/Review/最终验收，Claude必须以auto权限模式实现与执行必要测试；自动审批不可用时记录阻塞，不能绕过。
+
+开始条件：先核对现有 `scripts/database/concurrency.spec.ts`、`vitest.config.ts`、pool驱动及本机Docker/PG能力。明确专用测试实例/数据库、端口、合成数据标识、迁移和清理范围；无需读取.env或已有服务凭据。使用本机容器或现有独立测试数据库的选择须基于可用性，不把未检查的Docker命令写成已成功。若安装、镜像下载或外部访问需要权限，按工具审批；无隔离条件则记录未运行，继续可独立完成的测试设计，不退用PGlite冒充多连接。
+
+开发范围：优先复用当前外部PG集成测试目录/配置和pool接口；测试自带连接释放、超时和失败清理，仅清理本次专用实例/记录。严禁迁移或清空现有商城/线上数据库。若当前Neon WebSocket驱动不适用于普通本机PG，应先比较仅测试使用的最小连接适配与既有隔离PG入口；涉及新增依赖或更改生产驱动须先交Codex形成明确补充方案，不静默替换生产驱动。
+
+场景与断言：
+
+1. 两个独立连接同时发布：同键同指纹只一诉求，同键异指纹冲突；不同键成功序号连续，回滚不会耗号或阻塞后续高水位。
+2. feed与未提交/回滚发布交错：页面与高水位同一快照，不出现未提交项，非空末页游标可续读；提交后新连接可以读取完整记录。
+3. 同键、不同键/同诉求并发建单：数据库只有一张工单与一条回复，成功键均可查同回执，同键不同指纹不能覆盖。
+4. 新建单与订单变更竞争：明确哪个连接先持有订单锁，通过可控屏障和超时验证合法等待/当前版本校验；不靠无界sleep或时序碰运气，不允许陈旧新写入。
+5. 工单插入后、诉求更新前失败：工单/键/回复/诉求状态全部回滚；新连接原键恢复只产生一个结果。
+6. 建单已提交但调用方未保存结果：丢弃本次返回值或在测试边界模拟响应丢失，新连接按原键恢复；未提交时查不到不是永久不存在证明。该实验不冒充真实网络断连演练。
+
+记录连接数、超时/隔离级别、PG版本、迁移版本、输入/预期/实际、命令退出码和失败历史；不预填并发量、吞吐或SLA。必要时最小修复发现的真实代码问题并补回归。验收须独立Review及实际多连接结果；未执行外部网络/HTTP/浏览器的场景明确保留到5d/后续窗口。学习材料随任务解释事务、行锁、幂等和提交可见性，并提供可复现实验，不新增独立通用故障注入平台。
+
+阶段5c实施补充（2026-11-06，Codex已确认）：本机Docker已启动，官方postgres:16-alpine镜像已下载；真实技能源位于已有导出目录，通过恢复兄弟源路径链接后agent-doctor已PASS，未修改doctor或伪造技能。环境路径仅记在本机运行记录，仓库指南使用相对路径/可配置来源。
+
+普通本机Postgres使用TCP；当前Neon WebSocket驱动不直接用于该测试连接。批准仅新增开发依赖`pg`及`@types/pg`，测试侧以其Pool满足既有CommercePool接口，生产驱动/adapter均不替换。事务必须在同一client执行BEGIN/COMMIT/ROLLBACK，见[node-postgres事务文档](https://node-postgres.com/features/transactions)。专用runner创建带唯一名称/标签、仅监听127.0.0.1随机端口、随机临时密码的Postgres16容器；不使用.env.local或现有DATABASE_URL，不输出连接串/密码；容器名及合成库有明确所有权，finally只删除本次容器及匿名卷，不做全局docker清理。
+
+允许增加独立runner、专用after-sales多连接spec与Vitest配置、package脚本/开发锁依赖及相关最小安全测试；默认verify不隐式启动Docker，专用命令缺Docker须明确失败，不能skip算通过。runner生成连接参数仅传子进程环境，不提供任意数据库URL入口；测试验证已知专用库/用户和独立session PID，迁移001～003只在该新容器执行。可用受控屏障/pg_locks等待建立竞争，不用应用层串行lease模拟并发；等待均有超时及释放清理。普通verify与专用PG命令分别报告。CI可增加不部署的专用PG测试步骤，但不扩大生产部署触发范围。
+
+源交接补充（2026-11-06）：DTC协作与执行计划已推送不可变提交 `8b00574f038a76c768bb72562a740d68b0f8bbae`，远端回读一致。与旧源 `2dc37231946b24e00f27c09111fba346a5affc90` 对比，`contracts/epig-after-sales/v1/` 无差异，原 sums digest不变。本章交付前由Claude最小更新现有检查器允许源常量及相关负例，然后以现有显式sync从该不可变提交重建source-lock，并逐字节核对51文件、check/freshness和测试；不手改vendor。旧源作为契约内容历史基线保留，新源锁状态需以实际同步结果记录。
+
+### 第一章 / 阶段5c验收记录（2026-11-06，Codex）
+
+结论：本地阶段范围通过，远端CI须待实际运行另记。实现由Claude auto执行，Codex负责方案、独立Review、复跑和最终验收。只增加专用测试与CI非部署job、pg/@types/pg开发依赖及显式源锁交接；生产驱动、业务adapter、数据库Schema/fixtures未改变，不引入通用任务或存储框架。
+
+Codex实际独立命令与结果：
+
+| 命令/证据 | 实际结果及边界 |
+|---|---|
+| `pnpm test:after-sales:pg` | exit0；PostgreSQL16.15，4文件/16测试，包括六类真实多连接场景、5项安全、3项子树生命周期、2项runner取消回归 |
+| PG连接与事务 | read committed，statement_timeout45秒、lock_timeout20秒、connection_timeout5秒；观测PID87/88/89，订单锁持有者89/等待者88；本次专用容器只迁移001～003 |
+| 清理 | 命令报告container_removed=true、tracked_volumes=1、removed_volumes=1、remaining_volumes=0；独立按本项目标签查询无遗留容器 |
+| `pnpm verify` | exit0；75文件/630测试，契约17/17，docs/typecheck/lint、happy-dog22、harness8与agent-doctor全部通过 |
+| 源check/freshness及字节比对 | 51个已提交源文件/vendor/lock逐文件匹配；目录与2dc内容基线无差异，sums自身digest仍b27f002fc639f0e5fee730651fdbf18c515a51a04de41324e6cfdf930f626752；最终锁源以source-lock与Issue交接为准 |
+
+Review与失败历史：首轮安全测试的错误文案断言失败、verify缺AGENTS命令锚点，均最小修复。独立Review发现CI缺镜像准备（已显式pull）、测试只TERM父进程无强制退出（已专用进程组TERM→有限宽限→KILL→等待）、setup期间提前清理导致延迟创建容器遗留（已信号只标记取消，等待在途操作settle后顶层finally唯一清理）。后者同一受控回归先RED（旧代码提前退出，延迟容器遗留）、后GREEN；原审查者逐项复查关闭。首次进程回归误用Vitest不支持的t.after，改为onTestFinished后通过，不删除失败历史。
+
+AI Test Record：六场景验证发布竞争/回滚连续高水位、未提交feed可见性、同键/不同键竞争建单、订单锁与版本、半途失败原子回滚、原键恢复；取消/强制终止采用隔离fake-child/fake-docker，不能冒充真实Docker daemon故障或真实网络断连。AI Review Record：检查事务真实性、runner所有权/环境剥离、清理和CI边界，无本章剩余阻断项；新增模块均为专用测试边界，无生产抽象扩张。
+
+环境复现：使用项目Node24和pnpm10.34.5，先`pnpm install --frozen-lockfile`，确认Docker运行，显式`docker pull postgres:16-alpine`，再执行专用命令；普通verify不启动Docker。技能检查需要真实来源工作区位于安装清单约定的兄弟DTC-skills目录，按其源校验和安装指南恢复，不复制空SKILL或跳过doctor。镜像是浮动16-alpine标签，报告记录实际PG版本，不把未来下载视为同一二进制。
+
+原始本机临时日志不作为长期唯一证据；Git中保留上述命令、合成测试与精简结果，后续可按命令复算。未证明：HTTP运行时接入、真实网络断连/数据库宕机、消费者浏览器旅程、DTC持久审批/Worker/Connector、部署和实际用户收益。下一章5d按已确认计划继续，生产写入和部署仍需对应授权。
+
+本章最终源交接：锁定DTC `edc8443831ad23c4ab6675f9dc1c998221cbd39b`（含已确认计划、环境记录与限定开发分支的非部署CI触发），不是先前中间文档提交d060。源目录与原2dc内容基线无差异，source-lock由显式sync产生；最后元数据更新后check、freshness、17项隔离契约测试及typecheck/lint重新通过，未重复冒称一次新的630全量运行。第一章普通verify的630全量证据对应相同应用/测试代码，最终源元数据另有专项验证。
