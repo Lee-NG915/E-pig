@@ -32,7 +32,19 @@ export const serverEnvSchema = {
   STRIPE_SECRET_KEY: z.string().startsWith("sk_test_").optional(),
   STRIPE_WEBHOOK_SECRET: z.string().startsWith("whsec_").optional(),
   LOG_LEVEL: z.enum(["debug", "info", "warn", "error"]).default("info"),
+  /**
+   * Optional so consumer-only deployments keep starting. The service handler
+   * validates both values at request time and fails closed when absent/invalid.
+   */
+  AFTER_SALES_SERVICE_TOKEN: z.string().optional(),
+  /** Comma-separated allowed markets, e.g. "au,sg". */
+  AFTER_SALES_SERVICE_MARKETS: z.string().optional(),
 } as const;
+
+export {
+  afterSalesServiceConfigSchema,
+  afterSalesServiceMarketsSchema,
+} from "./after-sales-service-config";
 
 /**
  * 浏览器公开变量 schema。规则（04 §7 Hard Rule）：
@@ -55,6 +67,8 @@ export const env = createEnv({
     APP_ORIGIN: process.env.APP_ORIGIN,
     STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
     STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,
+    AFTER_SALES_SERVICE_TOKEN: process.env.AFTER_SALES_SERVICE_TOKEN,
+    AFTER_SALES_SERVICE_MARKETS: process.env.AFTER_SALES_SERVICE_MARKETS,
   },
 });
 

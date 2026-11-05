@@ -12,6 +12,7 @@ import consumerRequestCreated from "../../../contracts/epig-after-sales/v1/fixtu
 import consumerTicketOk from "../../../contracts/epig-after-sales/v1/fixtures/responses/get_consumer_ticket.ok.json";
 import serviceOrderOk from "../../../contracts/epig-after-sales/v1/fixtures/responses/get_service_order.ok.json";
 import serviceRequestOk from "../../../contracts/epig-after-sales/v1/fixtures/responses/get_service_request.ok.json";
+import serviceFeedOk from "../../../contracts/epig-after-sales/v1/fixtures/responses/list_service_requests.ok.json";
 import shipmentOk from "../../../contracts/epig-after-sales/v1/fixtures/responses/get_service_order_shipment.ok.json";
 import serviceTicketOk from "../../../contracts/epig-after-sales/v1/fixtures/responses/get_service_ticket.ok.json";
 import attachmentCreated from "../../../contracts/epig-after-sales/v1/fixtures/responses/upload_attachment.created.json";
@@ -21,12 +22,14 @@ import {
   toConsumerTicket,
   toServiceOrder,
   toServiceRequest,
+  toServiceRequestFeed,
   toServiceShipment,
   toServiceTicket,
   type WireAttachment,
   type WireConsumerRequest,
   type WireServiceOrder,
   type WireServiceRequest,
+  type WireServiceRequestFeed,
   type WireServiceShipment,
   type WireServiceTicket,
 } from "./wire";
@@ -138,6 +141,40 @@ describe("after-sales wire serializers", () => {
 
     expect(toServiceRequest(request)).toEqual(serviceRequestOk);
     expect(toConsumerRequest(request)).not.toHaveProperty("sequence");
+  });
+
+  it("matches the shared service feed fixture with hand-authored paging fields", () => {
+    const fixture = serviceFeedOk as WireServiceRequestFeed;
+    const source = serviceRequestOk as WireServiceRequest;
+    const request: AfterSalesRequest = {
+      id: source.request_id,
+      sequence: source.sequence,
+      orderId: source.order_id,
+      market: source.market,
+      type: source.type,
+      description: source.description,
+      attachments: source.attachments.map((attachment) => ({
+        id: attachment.attachment_id,
+        fileName: attachment.file_name,
+        mediaType: attachment.media_type,
+        sizeBytes: attachment.size_bytes,
+        status: attachment.status,
+        createdAt: attachment.created_at,
+        expiresAt: attachment.expires_at,
+      })),
+      status: source.status,
+      progress: [],
+      ticketId: source.ticket_id,
+      createdAt: source.created_at,
+      updatedAt: source.updated_at,
+    };
+
+    expect(toServiceRequestFeed({
+      items: [request],
+      highWatermark: fixture.high_watermark,
+      nextCursor: fixture.next_cursor,
+      hasMore: fixture.has_more,
+    })).toEqual(serviceFeedOk);
   });
 
   it("matches consumer and service ticket fixtures while removing audit fields only from the consumer view", () => {

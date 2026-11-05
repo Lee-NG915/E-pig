@@ -137,9 +137,9 @@ function hasMagic(bytes: Uint8Array, mediaType: AfterSalesMediaType): boolean {
 
 function safeFileName(value: string): string {
   const base = value.split(/[\\/]/).at(-1) ?? "";
-  return (
-    base.replace(/[\u0000-\u001f\u007f"\\]/g, "").trim() || "attachment"
-  ).slice(0, 255);
+  return Array.from(
+    base.replace(/[\u0000-\u001f\u007f"\\]/g, "").trim() || "attachment",
+  ).slice(0, 255).join("");
 }
 
 function countryCode(market: MarketId): "AU" | "SG" | "US" {
@@ -348,7 +348,7 @@ export function createMockAfterSalesAdapter({
       || !["damaged", "wrong_item", "return", "other"].includes(input.type)
       || typeof input.description !== "string"
       || input.description.trim().length === 0
-      || input.description.length > 5000
+      || Array.from(input.description).length > 5000
     ) {
       fail("VALIDATION_ERROR", { field: "description" });
     }
@@ -363,7 +363,7 @@ export function createMockAfterSalesAdapter({
       || !["reship", "return", "refund", "reject", "other"].includes(input.action)
       || typeof input.reply !== "string"
       || input.reply.trim().length === 0
-      || input.reply.length > 10_000
+      || Array.from(input.reply).length > 10_000
     ) {
       fail("VALIDATION_ERROR", { field: "reply" });
     }
@@ -373,7 +373,11 @@ export function createMockAfterSalesAdapter({
       input.policyVersion,
       input.orderVersion,
     ]) {
-      if (typeof value !== "string" || value.trim().length === 0 || value.length > 128) {
+      if (
+        typeof value !== "string"
+        || value.trim().length === 0
+        || Array.from(value).length > 128
+      ) {
         fail("VALIDATION_ERROR");
       }
     }

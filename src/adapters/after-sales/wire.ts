@@ -20,6 +20,7 @@ import {
   type AfterSalesTicket,
   type AfterSalesTicketAction,
   type AfterSalesTicketStatus,
+  type ServiceRequestFeed,
 } from "@/core/contracts/after-sales";
 
 export type WireAttachment = {
@@ -115,6 +116,13 @@ export type WireServiceOrder = {
   };
 };
 
+export type WireServiceRequestFeed = {
+  items: WireServiceRequest[];
+  high_watermark: string;
+  next_cursor: string;
+  has_more: boolean;
+};
+
 export type WireServiceShipment = {
   shipment_id: string;
   order_id: string;
@@ -172,7 +180,24 @@ function utc(value: string): string {
 function safeFileName(value: string): string {
   const base = value.split(/[\\/]/).at(-1) ?? "";
   const cleaned = base.replace(/[\u0000-\u001f\u007f"\\]/g, "").trim();
-  return (cleaned || "attachment").slice(0, 255);
+  return Array.from(cleaned || "attachment").slice(0, 255).join("");
+}
+
+function contentDisposition(fileName: string): string {
+  const asciiName = Array.from(fileName)
+    .map((character) => /^[\u0020-\u007e]$/.test(character) ? character : "_")
+    .join("");
+  const fallback = `attachment; filename="${asciiName}"`;
+  if (asciiName === fileName) return fallback;
+  try {
+    const encoded = encodeURIComponent(fileName).replace(
+      /['()*]/g,
+      (character) => `%${character.charCodeAt(0).toString(16).toUpperCase()}`,
+    );
+    return `${fallback}; filename*=UTF-8''${encoded}`;
+  } catch {
+    return fallback;
+  }
 }
 
 function progress(value: AfterSalesProgress): WireProgress {
@@ -264,6 +289,15 @@ export function toServiceRequest(value: AfterSalesRequest): WireServiceRequest {
   };
 }
 
+export function toServiceRequestFeed(value: ServiceRequestFeed): WireServiceRequestFeed {
+  return {
+    items: value.items.map(toServiceRequest),
+    high_watermark: value.highWatermark,
+    next_cursor: value.nextCursor,
+    has_more: value.hasMore,
+  };
+}
+
 export function toServiceTicket(value: AfterSalesTicket): WireServiceTicket {
   return {
     ticket_id: value.id,
@@ -344,7 +378,7 @@ export function attachmentContentHeaders(
 ): { contentType: AfterSalesMediaType; contentDisposition: string } {
   return {
     contentType: value.mediaType,
-    contentDisposition: `attachment; filename="${safeFileName(value.fileName)}"`,
+    contentDisposition: contentDisposition(safeFileName(value.fileName)),
   };
 }
 

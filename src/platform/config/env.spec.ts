@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { serverEnvSchema } from "./env";
+import {
+  afterSalesServiceConfigSchema,
+  afterSalesServiceMarketsSchema,
+  serverEnvSchema,
+} from "./env";
 
 describe("env schema", () => {
   it("测试环境 MARKET 缺省时回退到 au", () => {
@@ -38,5 +42,29 @@ describe("env schema", () => {
     expect(serverEnvSchema.LOG_LEVEL.parse(undefined)).toBe("info");
     expect(serverEnvSchema.LOG_LEVEL.parse("debug")).toBe("debug");
     expect(() => serverEnvSchema.LOG_LEVEL.parse("verbose")).toThrow();
+  });
+
+  it("keeps service configuration optional at startup", () => {
+    expect(serverEnvSchema.AFTER_SALES_SERVICE_TOKEN.parse(undefined)).toBeUndefined();
+    expect(serverEnvSchema.AFTER_SALES_SERVICE_MARKETS.parse(undefined)).toBeUndefined();
+    expect(serverEnvSchema.AFTER_SALES_SERVICE_TOKEN.parse("s".repeat(32))).toBe("s".repeat(32));
+  });
+
+  it("parses an ordered, deduplicated service market allowlist", () => {
+    expect(afterSalesServiceMarketsSchema.parse("au, sg,au")).toEqual(["au", "sg"]);
+    expect(() => afterSalesServiceMarketsSchema.parse("")).toThrow();
+    expect(() => afterSalesServiceMarketsSchema.parse("au,xx")).toThrow();
+    expect(() => afterSalesServiceMarketsSchema.parse("au,,sg")).toThrow();
+  });
+
+  it("validates a strong, whitespace-free service token and at least one market", () => {
+    const token = "synthetic-service-token-32-characters-minimum";
+    expect(afterSalesServiceConfigSchema.safeParse({ token, markets: "au" }).success).toBe(true);
+    expect(afterSalesServiceConfigSchema.safeParse({ token: "short", markets: "au" }).success).toBe(false);
+    expect(
+      afterSalesServiceConfigSchema.safeParse({ token: `${token} `, markets: "au" }).success,
+    ).toBe(false);
+    expect(afterSalesServiceConfigSchema.safeParse({ token, markets: "" }).success).toBe(false);
+    expect(afterSalesServiceConfigSchema.safeParse({ token }).success).toBe(false);
   });
 });

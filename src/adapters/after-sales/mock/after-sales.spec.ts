@@ -394,6 +394,55 @@ describe("mock after-sales adapter", () => {
     expect((await context.adapter.listServiceRequests(context.service)).highWatermark).toBe("1");
   });
 
+  it("counts the description limit in Unicode code points", async () => {
+    const context = setup();
+    const description = "😀".repeat(5000);
+    const created = await createRequest(
+      context,
+      { description },
+      "unicode-description-boundary",
+    );
+    expect(created.request.description).toBe(description);
+    await expect(createRequest(
+      context,
+      { description: "😀".repeat(5001) },
+      "unicode-description-too-long",
+    )).rejects.toMatchObject({ code: "VALIDATION_ERROR" });
+    expect(await context.adapter.listServiceRequests(context.service)).toMatchObject({
+      items: [expect.objectContaining({ description })],
+      highWatermark: "1",
+    });
+  });
+
+  it("counts the final reply limit in Unicode code points", async () => {
+    const context = setup();
+    const created = await createRequest(context, {}, "unicode-reply-request");
+    const order = await context.adapter.getServiceOrder(
+      context.service,
+      mockAfterSalesOrderId("au"),
+    );
+    const reply = "😀".repeat(10_000);
+    const ticket = await createTicket(
+      context,
+      created.request.id,
+      order.orderVersion,
+      { reply },
+      "unicode-reply",
+    );
+    expect(ticket.ticket.reply).toBe(reply);
+
+    const second = await createRequest(context, {}, "unicode-reply-too-long-request");
+    await expect(createTicket(
+      context,
+      second.request.id,
+      order.orderVersion,
+      { reply: "😀".repeat(10_001) },
+      "unicode-reply-too-long",
+    )).rejects.toMatchObject({ code: "VALIDATION_ERROR" });
+    expect(await context.adapter.getServiceRequest(context.service, second.request.id))
+      .toMatchObject({ status: "pending", ticketId: null });
+  });
+
   it("rejects an attachment owned by another order even for the same consumer", async () => {
     const seed = setup();
     const firstOrder = await seed.adapter.getServiceOrder(

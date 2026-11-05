@@ -117,8 +117,8 @@ contracts/epig-after-sales/v1/                  原样 vendor 的契约包与 so
 - [x] vendor OpenAPI 与共享 fixtures，建立不可变 `source-lock.json`、digest/freshness 检查和 `pnpm verify` 门禁（完整 verify 的既有 DTC-skills 环境阻塞见上）
 - [x] contracts：AfterSalesPort、诉求 / 工单 DTO、消费者与 service 序列化边界、错误映射
 - [x] mock adapter + fixtures（与 catalog 商品对齐的合成订单诉求）
-- [ ] 消费者 Route Handlers：附件上传/读取、诉求创建/读取、本人工单读取
-- [ ] service Route Handlers：订单/物流、附件内容、追加式诉求 feed/detail、工单创建/按 ID/按幂等键查询
+- [x] 消费者 Route Handlers：附件上传/读取、诉求创建/读取、本人工单读取
+- [x] service Route Handlers：订单/物流、附件内容、追加式诉求 feed/detail、工单创建/按 ID/按幂等键查询
 - [ ] 持久事务：连续发布高水位、原子幂等与 `(market, request_id)` 唯一约束、不可变回复和回执
 - [ ] 订单详情页售后入口、真实进度与唯一最终回复组件
 - [ ] 按产品蓝图 `AS-ACC-*` 完成中台 EpigConnector 联调与故障演练，结果回写 DTC Issue #2 和 E-pig Issue #2
@@ -163,4 +163,85 @@ contracts/epig-after-sales/v1/                  原样 vendor 的契约包与 so
 - Claude 独立复跑聚焦测试 7 个文件、62 个测试通过；契约 Node 测试 17/17、13 个操作、49 个 fixtures 和 51 个 vendor 文件检查通过。Codex 全量 Vitest 71 个文件、538 个测试通过，typecheck、lint、happy-dog 22 个测试、8 个 harness evals 和 `git diff --check` 通过。
 - 全部 `expected_valid` 的共享 ErrorResponse fixtures 已参数化执行，保留 code、request ID、retryable、recovery action 和白名单 details；敏感字段、绝对本机路径和硬编码秘密扫描未发现本阶段新增问题。
 - 完整 `pnpm verify` 已实际运行但仍在最后的既有 `agent-doctor` 因本机缺少 `../DTC-skills`、20 个 DTC skill 软链找不到 `SKILL.md` 而退出 1，不宣称完整仓库门禁全绿。
-- 本阶段未实现 Route Handler、真实 Cookie/Bearer、Postgres 原子事务、页面、真实私密存储或真实联调；mock 通过不等于数据库事务或 `AS-ACC-001～015` 验收。本阶段改动尚未提交或推送。
+- 本阶段未实现 Route Handler、真实 Cookie/Bearer、Postgres 原子事务、页面、真实私密存储或真实联调；mock 通过不等于数据库事务或 `AS-ACC-001～015` 验收。
+- 阶段 2 已于 2026-11-05 以 `1980a77c1f00cea6dd34eff7ee30d60f1a0ce7b3` 提交并推送到 `after-sales/agent-integration`；远端回读一致，推送后工作区干净。双仓 Issue #2 已回写。
+
+### 阶段 3：消费者 Route Handlers（2026-11-05，阶段范围已验收）
+
+目标：只实现 `uploadAttachment`、`getAttachmentContent`、`createAfterSalesRequest`、`getAfterSalesRequest`、`getConsumerTicket` 五个消费者 operation。Route Handler 负责 HTTP 校验、认证、防跨站写入、状态码与响应头；业务归属、附件规则、幂等和当前表示继续由已验收的 `AfterSalesPort` 负责。成功 body 直接是 OpenAPI 的 attachment/request/ticket DTO，不增加 `{ data: ... }`、`{ request: ... }` 等包装。
+
+内部落点：
+
+1. 在 `src/platform/http/` 新建消费者售后 HTTP handler，复用 `readCartCookie`、现有 `MarketId`、Zod、wire serializer 和 typed error；在 `src/app/api/` 建立单一 composition root，从 server env 读取 `MARKET/APP_ORIGIN/CART_COOKIE_SECRET`，每次请求从 `getCapabilities().afterSales` 取端口。不得新增通用路由器、第二套身份系统或 service token 配置。
+2. 新建五条薄 Route Handler：`attachments/route.ts` POST、`attachments/[attachmentId]/content/route.ts` GET、`requests/route.ts` POST、`requests/[requestId]/route.ts` GET、`tickets/[ticketId]/route.ts` GET。所有 `params` 先 `await`；不在消费者路径下实现 `/service/`。
+3. 所有请求必须带精确的 `X-After-Sales-Contract-Version: 1`，缺失或其他值返回 400 `UNSUPPORTED_CONTRACT_VERSION`，details 只含 `supported_major: "1"`。所有 JSON/二进制成功和错误响应带同一版本头、`Cache-Control: private, no-store, max-age=0`、`Vary: Cookie`、`X-Content-Type-Options: nosniff`。
+4. 消费者身份只从验证后的 `epig_cart_{market}` Cookie 构造 `{ kind: "consumer", market, cartId }`。缺失、签名无效、过期或跨市场 Cookie 返回 401 `UNAUTHORIZED`；非法 market 路径返回 400，合法但非本进程服务市场返回 404；消费者订单/诉求/工单/附件归属失败统一 404 `NOT_FOUND`，不能用 body、query 或原始 Cookie 文本指定主体。
+5. POST 继续执行既有可信 Origin 与 `Sec-Fetch-Site` 防跨站边界；缺失/不配置 `APP_ORIGIN`、缺失/过短 Cookie secret 必须失败关闭为安全 500，不进入 port。跨站请求在调用 port 前拒绝为 401 `UNAUTHORIZED`；403 `FORBIDDEN_MARKET` 只保留给契约定义的“已认证主体无该市场权限”，不能拿它表示普通消费者归属失败或 CSRF。
+6. 诉求创建只接受 `application/json`，限制 64 KiB（覆盖 5000 个 Unicode code point 的原始 UTF-8 或 JSON surrogate-escape 编码及三个最长附件 ID），拒绝非法 JSON、未知字段、空白描述、非法 ID/type、重复或超过三个附件；描述长度按 JSON Schema 的 Unicode code point 计数，不能按 UTF-16 code unit 错拒合法 Unicode 文本。`Idempotency-Key` 只从请求头读取并按 OpenAPI 格式校验，缺失等同校验失败。新建返回 201；同键同指纹重放返回 200 且仅此时增加 `Idempotency-Replayed: true`；同键不同指纹返回 409。
+7. 附件上传只接受契约 multipart 字段 `order_id` 和单个 `file`，拒绝额外/重复字段；先检查声明大小，再读取字节，由 mock 继续校验真实 magic、MIME、非空、5 MiB 和订单归属。上传没有幂等键，不伪造重放语义。内容下载返回实际字节和契约允许的媒体类型、清洗后的 `Content-Disposition`，不返回存储 URL、公开永久链接或附件 metadata 包裹。
+8. 状态码只按 vendored OpenAPI 映射，不能复用 storefront 的 `kind` 响应形状。`Retry-After` 仅在契约允许且 details 给出非负秒数时输出。错误统一使用 `toWireError` 的白名单结构和服务端 request ID，不复制 Zod 原始错误、堆栈、cause、Cookie、描述或附件内容。
+9. 未知写结果的恢复动作按 operation 区分：消费者诉求创建的 500/503 使用 `retryable: false + RETRY_CREATE_WITH_SAME_KEY`；安全 GET 可用 `RETRY_REQUEST`；无幂等键的上传不使用 `LOOKUP_FIRST` 或盲目重建。service 工单创建的 `LOOKUP_FIRST` 留待 service 阶段，不能泄漏到消费者流程。
+
+开发计划：
+
+- 先实现纯 HTTP 输入校验、统一响应/错误映射及消费者 principal，再接五条薄路由；除修复本阶段直接发现的集成缺口外，不改阶段 1 vendor、source lock 或阶段 2 领域语义。
+- 集成测试直接调用真实 Route Handler，使用真实签名 Cookie、真实 HTTP handler 和有行为 mock；仅在测试内部用 service principal 创建一张工单，以验证消费者工单视图，不因此提前实现 service Route Handler。
+- 复用现有测试中的合成 catalog/订单，不新增生产测试 helper、数据库、页面或真实存储；测试 secret 明确为 fixture，不读取或输出 `.env`。
+- 若发现必须修改 vendored 契约才能通过，停止相关实现并交回 Claude；不得单边修改 OpenAPI/fixtures 或把测试改成错误预期。
+
+测试计划：
+
+- 五个 operation 的正向状态、裸 DTO 字段、下载字节和响应头；创建后读取、同键当前表示重放、不同指纹冲突及不重复创建。
+- 缺失/错误/过期/跨市场 Cookie、伪造 body 主体、他人订单/诉求/工单/附件、未知资源、非法/非服务市场；所有越权都不能返回受限数据。
+- 缺失/错误版本头、非法 key/ID/type、未知 JSON 字段、空白/超长描述、非法 JSON、非 JSON、非法 multipart、重复/额外字段、伪造 MIME、超 5 MiB、四个附件引用；描述必须覆盖 5000 个四字节 Unicode 字符合法、5001 个失败的边界，失败不得产生业务写入。
+- POST 的可信 Origin、跨站拒绝和配置失败关闭；所有错误仍带版本/no-store/nosniff，且不含原始错误、Cookie、完整描述、回复或存储信息。
+- 500/503 的 operation 恢复动作、429 `Retry-After`、410 附件过期、413/415 和 replay header 精确性；消费者 ticket 不含审批/版本审计字段。
+- 实际运行聚焦 Vitest、全量 `pnpm test`、`pnpm typecheck`、`pnpm lint`、契约 Node 测试/check、`pnpm verify`、`git diff --check`。完整 verify 的既有 DTC-skills 环境失败单独记录；mock HTTP 集成不等于 Postgres、真实私密存储、部署或真实 DTC 联调通过。
+
+非目标：不实现 service Route Handler、Bearer、feed、Postgres、页面、真实存储、真实联调、提交或推送。Codex 返回实际 diff、命令、通过/失败结果和未验证范围；Claude 审查后才决定阶段验收。
+
+执行状态（2026-11-05）：任务包和双仓 Issue 计划同步已完成。最初连续三次启动均在 Codex 进程运行前被权限分类服务临时不可用拒绝；第四次启动恢复，后台任务 `byq5sioi5`、Codex session `01a1abbe-12dd-7703-bcc9-6c53b553250c` 完成首轮实施。首轮新增五个真实 Route Handler、HTTP 边界和 32 个集成测试，并修复 Unicode 文件名的 Content-Disposition；Codex 全量 72 个文件、570 个测试通过，typecheck、lint、契约 17/17、happy-dog 22 个测试和 8 个 harness evals 通过，完整 `pnpm verify` 仍仅因既有 agent-doctor/DTC-skills 缺失退出 1。
+
+Claude 独立复核上述检查并审查实际 diff 后，首轮不作验收通过：OpenAPI 的描述 `maxLength: 5000` 按 Unicode code point 计数，首轮 Zod/mock 却按 UTF-16 code unit 计数，且 16 KiB body 上限会拒绝合法的 5000 个四字节字符。已下发最小返工：路由与 mock 统一按 code point 计数，当时 JSON body 上限改为 24 KiB，并通过真实 Route Handler 验证 5000 个 emoji 成功、5001 个失败且不写入。该返工不改变线路 Schema，只修正消费者对既有契约的实现。
+
+最终验收（2026-11-05）：**Claude 阶段范围验收通过。** Codex 返工后，Claude 独立复跑 Route Handler 34 项与 mock 21 项共 55 个聚焦测试通过；最终完整 `pnpm verify` 实际运行，docs、契约 17/17、typecheck、lint、全量 72 个文件/573 个测试、happy-dog 22 个测试及 8 个 harness evals 全部通过，仍仅在最后既有 `agent-doctor` 因 20 个 DTC skill 缺少 `SKILL.md` 退出 1。`git diff --check`、敏感信息/本机路径扫描通过，vendor 目录无改动。阶段 3 尚未提交或推送；service/Bearer、Postgres、页面、真实私密存储、真实 DTC 联调、浏览器 E2E、build 和部署均未验收。
+
+### 阶段 4：service Route Handlers（2026-11-05，阶段范围已验收）
+
+用户已调整后续分工：当前 Codex 负责文档、方案、开发/测试计划、Review、验收验证与最终验收，Claude 负责实现、调试和必要的单元测试。此前阶段执行与验收记录不改写。协作正本为 DTC `docs/guides/ai-collaboration.md` 当前工作区；双仓 Issue #2 已记录本次用户决定。
+
+目标：在现有 mock 上开放 vendored v1 的八个 service operation，供 DTC 后续 Connector 调用。固定源仍为 DTC `2dc37231946b24e00f27c09111fba346a5affc90`；不修改 vendor/source-lock。消费者阶段 3 未提交改动保留，不重置、不混作本轮成果。
+
+方案与文件落点：
+
+- 新建 `src/platform/http/service-after-sales-api.ts`，将 HTTP 校验、Bearer 认证和服务市场授权集中在专用 handler；复用 AfterSalesPort 和 service wire serializers。新建八条 `/service/` 薄 Route Handler，params 先 await。在 `src/app/api/after-sales.ts` 增加独立 service composition root，不能复用消费者身份或 DTO。
+- `src/platform/config/env.ts` 增加 server-only `AFTER_SALES_SERVICE_TOKEN` 与 `AFTER_SALES_SERVICE_MARKETS`（逗号分隔的有效市场列表），补 schema 测试。配置可选以保持消费者部署兼容，但 service 请求遇缺失/空白/无效配置必须安全 500；配置 token 至少 32 字符。Bearer 必须精确匹配服务端 token，使用无时序差异的比较；缺失或错误凭证 401。服务 principal 使用稳定 actorId（如 dtc-service），不把 token 当 actorId/日志字段，避免凭据轮换改变幂等作用域。
+- 服务请求不依赖 Cookie、Origin 或消费者 cartId；有效凭证但市场不在允许列表返回契约 403；有效授权但非进程 MARKET 返回 404；非法市场 400。所有认证与授权在 port 调用前完成，不能信任请求体中的身份。
+- 成功响应使用 OpenAPI 裸 DTO，JSON 与二进制、错误统一返回版本头、private/no-store、nosniff；service Vary 使用 Authorization。版本头精确为 1，错误安全白名单复用 toWireError，不泄漏秘密或原始错误。
+- 订单/物流、诉求详情/feed、工单创建与两种查询、附件内容按现有端口实现。feed query cursor/limit、opaque ID、幂等 key、严格 JSON 字段和长度以 OpenAPI 为准；不得另发明线上字段。reply 按 Unicode code point 计数，JSON 大小上限足以容纳最大合法输入；超限按既有契约错误，不引入契约未定义状态。
+- 创建工单新建 201、重放 200 且 replay header；同键不同指纹、一诉求多工单、订单版本变化按契约冲突。E-pig 只保存审批审计字段，不自建 DTC 审批校验。写超时或 500/503 使用 LOOKUP_FIRST，不能换键重发；按键查询准确区分 200 ticket、202 IN_FLIGHT 与暂时 404，后两者都指向原键恢复，不声称永久未创建。具体错误字段、retryable/recovery_action 与 Retry-After 以 OpenAPI 和 fixtures 为准。
+
+测试计划与验收：
+
+1. Claude 为八个真实 Route Handler 编写就近集成级 Vitest，使用真实 handler 与现有有行为 mock；覆盖所有成功 DTO/头/附件字节、feed 多页与续读、201/200 重放、当前视图、冲突不写入及按键恢复三态。可以在测试内用 consumer principal 准备合成诉求。
+2. 覆盖缺失/错误/畸形 Bearer、Cookie 不能代替 Bearer、市场授权和非服务市场、缺配置失败关闭；拒绝时断言 port 未调用、无数据泄漏。配置测试不得读取 .env。
+3. 覆盖版本头、未知/缺字段、非 JSON、非法游标/limit/key/ID、空白/超长 Unicode 回复和最大合法回复、非法请求不写入。确保 service DTO 保留约定审计字段且无完整地址/token/存储字段；消费者既有响应不受影响。
+4. 注入 port 错误验证安全错误映射、GET 重试、创建 LOOKUP_FIRST、202/404 原键恢复与 Retry-After。共享 fixtures 原样检查，不能改 vendor 以迁就实现。
+5. Claude 执行 typecheck → lint → 聚焦/全量 test，契约 check 与17项隔离测试及 pnpm verify，返回命令退出码、计数和未测边界。完整 verify 的既有 agent-doctor 环境失败单列。
+6. Codex 独立审查增量 diff 和关键权限/恢复用例，复跑聚焦测试、类型/静态检查及契约门禁，根据实际证据作通过/不通过/有条件通过结论。mock HTTP 通过不代表 PostgreSQL 事务、真实存储、部署或 AS-ACC 全体验收。
+
+非目标：Postgres、消费者 UI、DTC Connector、真实外部写入、密钥读取、提交推送、修复 DTC-skills 环境、通用路由框架或无关重构。Claude 发现契约缺口须停止相关实现交回 Codex。
+
+阶段 4 最终验收（2026-11-05，当前 Codex）：**阶段范围通过；完整仓库 verify 未通过。**
+
+- Claude session `bb93fb9a-eea6-4391-9701-4f8f8014513f` 使用 `--permission-mode auto` 完成实现与测试，未提交推送。新增八个 service operation、独立 Bearer/市场授权、server-only 配置、service feed serializer 和集成测试。凭据通过 SHA-256 后 timingSafeEqual 比较，principal 使用稳定 `dtc-service`，Cookie 不能代替 Bearer；缺配置在请求时失败关闭。
+- Codex 审查专用 handler、配置、composition root、路由、wire 与 mock 增量以及鉴权/恢复测试；未发现本阶段阻断项。工单回复与版本长度按 Unicode code point 校验，JSON 上限 128 KiB，覆盖 10000 emoji 的原始与 surrogate-escape 编码；消费者既有逻辑保留。
+- Codex 实际执行 `pnpm typecheck`、`pnpm lint`、service/consumer HTTP + env + wire 四文件聚焦测试，退出 0，**72/72** 通过；`node scripts/after-sales/contract.mjs check`、`node --test scripts/after-sales/contract.spec.mjs`、`git diff --check` 均退出 0，契约 **17/17**，13 operations / 49 fixtures / 51 files 与固定源一致。
+- Claude 返回的实际全量执行记录为 **73 文件 / 600 tests**，happy-dog 22、harness 8 通过；完整 `pnpm verify` 退出 1，仍因既有 20 个 DTC skill 缺少 SKILL.md。全量结果是实现方报告，Codex 本轮独立复跑范围见上一项；不把完整 verify 写成全绿。执行报告保留于本机临时文件，不含真实客户数据；临时文件非持久证据，后续需复算可重跑上述命令。
+- AI Test Record：行为为八个 mock-backed service HTTP 接口；新增/更新 service HTTP、env、wire 和 mock 测试；阶段检查通过，完整 verify 为 PARTIAL。AI Review Record：Codex 关注身份隔离、市场、白名单、幂等当前视图、202/404 原键恢复与未知写 LOOKUP_FIRST；无本阶段阻断项，数据库原子事务和真实网络故障不在本次证明范围。
+- 未验证：PostgreSQL 原子事务/并发、真实附件存储、DTC Connector 联调、浏览器 E2E、build/OpenNext、部署与完整 AS-ACC。阶段 3 和本阶段均保持未提交推送，不改变此前验收执行者。
+- 下一步：按现有路线规划 Postgres adapter/迁移及事务测试，之后推进页面与 DTC Connector；本次验收不授权自动开始真实写入或部署。
+
+提交前复核（2026-11-05，Codex）：独立只读审查发现消费者 24 KiB 上限遗漏 JSON surrogate-escape 膨胀：5000 emoji 的合法转义输入为 60061 字节。Claude 使用 auto 模式最小返工为 64 KiB，并新增真实路由 5000 转义字符成功回读、5001 拒绝且零写入回归；原始 Unicode 用例保留。此前 24 KiB 的阶段 3 结论仅保留历史，本次修复后才覆盖该编码形式。Codex 独立复跑 typecheck、lint、两套 HTTP 集成测试 **58/58**、固定源契约检查和 diff-check 全部通过；修复前完整 verify 已由 Codex 独立执行，600 测试及其他步骤通过，最终仅因既有 agent-doctor 环境失败退出 1。未重复把修复前600全量数写成本轮602实际全量结果。
+
+独立 Review 其余未发现权限/恢复阻断项；两个专用 handler 与薄路由沿用既有分层，未新增通用路由器、工作流或依赖，未发现需要进一步抽象的依据。阶段3/4及最小返工可以提交，README 无关改动保留。范围验收不代表所有现实缺陷不存在，也不代表完整 verify、生产或跨仓验收通过。
