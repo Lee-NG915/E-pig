@@ -178,7 +178,7 @@ test("sync rejects a mutable revision expression before writing", (t) => {
 test("sync rejects the previous source commit before writing", (t) => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "epig-after-sales-wrong-commit-"));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
-  const previousCommit = "d3cab389429ab27a2f0d5483fb6388afc9e05bed";
+  const previousCommit = "d25dc00f35c20f3353d89997e348da9c72a392d5";
   assert.throws(
     () =>
       syncContract({

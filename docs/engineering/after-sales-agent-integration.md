@@ -12,9 +12,9 @@ register: engineering
 
 5d持久运行时、显式迁移/adapter/tcp及真实HTTP已交付，代码5d6cb6e、隔离范围修复fe15a99、记录e675720；历史CI42081613637成功。默认mock保留，显式postgres所需配置失败不回退mock，未部署生产。各阶段历史失败与验证记录保留在下文。
 
-本批消费者页面、合成浏览器沙箱和生命周期检查已实现，Codex工程范围有条件通过、待本次开发分支推送；真实浏览器/键盘/窄屏/刷新交互未验收，不称完整MVP完成。最新根完整pnpm verify exit0，706主测试及17契约/22 happy-dog/8 harness/doctor通过；专用PG入口53项/10文件通过，其中含脚本逻辑测试，不把53项都称数据库测试。前次默认沙箱日志写入失败与客户端node:crypto编译失败的历史保留，均不冒称旧命令成功。
+消费者页面、合成浏览器沙箱和生命周期检查已推送72f1621；Codex独立Chromium合成旅程已通过正常人工批准建单、未知结果恢复、角色/冲突及桌面/320px范围验收。它不等于真实用户试用、完整WCAG或生产可用。最新根完整pnpm verify exit0，706主测试及17契约/22 happy-dog/8 harness/doctor通过；专用PG入口53项/10文件通过，其中含脚本逻辑测试，不把53项都称数据库测试。前次默认沙箱日志写入失败与客户端node:crypto编译失败的历史保留，均不冒称旧命令成功。
 
-source-lock由官方sync生成，已固定DTC d25dc00f35c20f3353d89997e348da9c72a392d5；root check/freshness/17正负检查通过，51文件逐字节及SHA-256匹配不可变源，SUMS摘要b27f002fc639f0e5fee730651fdbf18c515a51a04de41324e6cfdf930f626752。13操作/49fixtures线路内容未变，本次仅来源元数据推进。未来DTC分支前进须再次实际核对freshness，不能用“内容相同”代替交接。
+source-lock由官方sync生成，本批最终固定DTC 19f1d4550f532a73f56da9e4a4b830a759acc768；root check/freshness及51文件逐字节/SHA-256核对通过。更新只含来源锁、允许源常量与旧源拒绝负例，SUMS摘要保持b27f002fc639f0e5fee730651fdbf18c515a51a04de41324e6cfdf930f626752。13操作/49fixtures线路内容未变，本次仅来源元数据推进。未来DTC分支前进须再次实际核对freshness，不能用“内容相同”代替交接。
 
 真实跨仓六故事加内部驳回/正式reject的API/DB子范围由Codex独立run1022edfdb9fb782a验收通过，包含合法PNG/JPEG、另一审批人、原键恢复及实际API重启；人工草稿/零模型调用不替代页面或AI质量。备份恢复到全新目标的operator原键对账另有root run2285c4f3bdf42db6，38检查通过、POST增量0，详情将持续由DTC流程记录维护。未合并主分支或生产部署。
 
@@ -490,3 +490,17 @@ DTC使用固定b01513b无.env源码归档，不混入并行员工后端；两仓
 仅工程与服务层范围有条件通过；真实浏览器仍因页面控制工具timeoutMs失败未测，用户重连后错误仍存在，不用API/组件替代。根完整`pnpm verify`本次exit0（`/tmp/epig-delivery-full-verify.log`）；专用`pnpm test:after-sales:pg`本次exit0、53 passed/10 files，真实NextHTTP与所属容器/卷/进程清理通过（`/tmp/epig-consumer-codex-final-pg.log`），表级总数是观察，不是每request唯一性证明；逐request唯一性由真实跨仓场景另验。
 
 独立Review已关闭Cookie身份失效晚回包、存储不可用先拒发、unknown同key/body恢复、源客户端node:crypto叶导入等问题，未增加polyfill/业务框架。源锁官方同步至d25dc00，root51文件逐字节/SHA回读、check/freshness及17负向检查通过（`/tmp/epig-final-contract-codex.log`）；vendor内容未手改。仅提交当前任务文件，README.md用户既有改动保留。本章不代表新提交远端CI成功，实际run须推送后回读。
+
+
+## 最终源交接与页面验收（2026-11-06）
+
+Claude在auto权限模式以官方sync从DTC不可变源19f1d4550f532a73f56da9e4a4b830a759acc768重新生成source-lock，仅推进元数据；允许源常量与拒绝旧d25dc00的负例同批调整。vendor文件未手改，线上13操作/49fixtures及digest不变。README.md既有用户改动保留，不在本批提交范围。最终根门禁与推送回执在本节后续及两仓Issue #2追踪；不把作者自测当最终验收。
+
+消费者应用源72f1621配合DTC应用源2209edd的Codex独立页面run022608Z-6e1d0901ea9fceff：四组75条页面断言、18项数据库核对通过，未知结果503后原键/body恢复唯一request；正常是另一审批人批准后的other人工跟进工单与唯一v2回复，不是自动退款/资格承诺。夹具已改为真实Synthetic Mug订单的damaged mug描述并核对页面SKU，旧沙发描述工程运行不作为最终语义正常样例。桌面/320px截图已人工复核，Chromium/Node/API/Worker精确组、所属容器/卷与私有配置清理。该浏览器工具在DTC仓，独立软件测试不要求用户配置ChatGPT扩展。
+
+DTC真实模型评测独立报告保留金额单位等质量缺口，员工必须核对草稿；页面零模型调用不替代AI质量。两仓Compose只验证空feed启动，备份恢复为合成环境特定丢响应窗口，不承诺生产RPO/RTO或实际客户采用。完整证据由[DTC流程记录](https://github.com/Lee-NG915/dtc-support-agent/blob/19f1d4550f532a73f56da9e4a4b830a759acc768/docs/records/after-sales/dtc-workflow.md)维护，跨仓来源版本与线上契约语义分别验证。
+
+
+Codex最终独立交接门禁：`pnpm verify` exit0，17契约/706主测试（78文件）/22 happy-dog/8 harness及doctor通过，typecheck/lint通过；另显式check/freshness/17项契约测试通过，51文件与DTC不可变源逐字节及各SHA-256一致。日志`/tmp/epig-final-handoff-root-verify.log`、`/tmp/epig-final-handoff-root-contract.log`。文档准备首次在E仓误用不存在的venv路径，未执行该次写入；改用DTC解释器后实际同步并`pnpm docs:check`通过，旧调用不当作成功。后续仅追加本记录，再执行docs检查与diff检查；未重复无关数据库或页面测试。
+
+最终推送/ref/文件回读与CI实际状态在两仓Issue #2最新交接评论追踪；不把历史CI42081613637挪作新提交成绩，不为记录自身提交再次推进DTC源。
