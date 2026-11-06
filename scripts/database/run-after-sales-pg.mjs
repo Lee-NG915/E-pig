@@ -14,6 +14,10 @@ import {
   TEST_USER,
 } from "./after-sales-pg-safety.mjs";
 import { runInProcessGroup } from "./after-sales-pg-process.mjs";
+import {
+  isProcessGroupAlive,
+  terminateProcessGroup,
+} from "./after-sales-process-group.mjs";
 
 const execFileAsync = promisify(execFile);
 const scriptDirectory = path.dirname(fileURLToPath(import.meta.url));
@@ -24,16 +28,38 @@ const READY_COMMAND_TIMEOUT_MS = 5_000;
 const QUERY_COMMAND_TIMEOUT_MS = 10_000;
 const TEST_PROCESS_TIMEOUT_MS = 600_000;
 const TEST_PROCESS_TERM_GRACE_MS = 5_000;
+const BROWSER_PROCESS_TIMEOUT_MS = 60 * 60 * 1000;
+const BROWSER_PROCESS_TERM_GRACE_MS = 30_000;
+const BROWSER_SANDBOX_SCRIPT = path.join(scriptDirectory, "after-sales-browser-sandbox.mjs");
 const VITEST_CONFIG = "scripts/database/after-sales-pg.vitest.config.ts";
+const SANDBOX_SAFE_LINE = /^\[after-sales-sandbox\] (?:browser_origin=\S+|manifest=\S+|next_pgid=\d+|ready\b|stopped\b|FAILED:)/;
 
 let containerName;
 let containerCreated = false;
 let cleanupPromise;
 let activeRun;
 let requestedSignal;
+let redactionSecrets = [];
 
 function log(message) {
   console.info(`[after-sales-pg] ${message}`);
+}
+
+function redact(value) {
+  let redacted = String(value);
+  for (const secret of redactionSecrets) {
+    if (typeof secret !== "string" || !secret) continue;
+    redacted = redacted.split(secret).join("[redacted]");
+  }
+  return redacted
+    .replace(/postgres(?:ql)?:\/\/[^\s"']+/gi, "[redacted-database-url]")
+    .replace(/Bearer\s+[A-Za-z0-9._~-]+/gi, "Bearer [redacted]");
+}
+
+function parseRunnerMode(argv) {
+  if (argv.length === 0) return "test";
+  if (argv.length === 1 && argv[0] === "--browser") return "browser";
+  throw new Error("Usage: node scripts/database/run-after-sales-pg.mjs [--browser]");
 }
 
 function throwIfCancelled() {
@@ -154,6 +180,89 @@ function runTests(childEnv, signal) {
   });
 }
 
+/**
+ * The sandbox owns its Next group, copy and manifest cleanup. Only an allowlist
+ * of safe status lines is forwarded; anything that could contain a secret is
+ * redacted again here before it reaches stdout.
+ */
+function forwardSandboxStream(stream, onNextPgid) {
+  let buffer = "";
+  const handleLine = (line) => {
+    const sanitized = redact(line);
+    if (!SANDBOX_SAFE_LINE.test(sanitized)) return;
+    console.info(sanitized);
+    const match = /\bnext_pgid=(\d+)\b/.exec(sanitized);
+    if (match) onNextPgid(Number(match[1]));
+  };
+  stream?.setEncoding("utf8");
+  stream?.on("data", (chunk) => {
+    buffer += chunk;
+    let newline;
+    while ((newline = buffer.indexOf("\n")) >= 0) {
+      handleLine(buffer.slice(0, newline).replace(/\r$/, ""));
+      buffer = buffer.slice(newline + 1);
+    }
+    if (buffer.length > 64_000) buffer = buffer.slice(-1_000);
+  });
+  stream?.on("end", () => {
+    if (buffer) handleLine(buffer.replace(/\r$/, ""));
+  });
+}
+
+async function runBrowserSandbox(childEnv, signal) {
+  let nextPgid;
+  const result = await runInProcessGroup({
+    command: process.execPath,
+    args: [BROWSER_SANDBOX_SCRIPT],
+    cwd: repositoryRoot,
+    env: childEnv,
+    stdio: ["ignore", "pipe", "pipe"],
+    timeoutMs: BROWSER_PROCESS_TIMEOUT_MS,
+    termGraceMs: BROWSER_PROCESS_TERM_GRACE_MS,
+    signal,
+    onSpawn: (child) => {
+      const record = (pgid) => {
+        nextPgid = pgid;
+      };
+      forwardSandboxStream(child.stdout, record);
+      forwardSandboxStream(child.stderr, record);
+    },
+    onTimeout: () => {
+      log(`browser_sandbox_timeout=${BROWSER_PROCESS_TIMEOUT_MS}ms; terminating process group`);
+    },
+  });
+
+  // The sandbox normally removes its own Next group. If it was SIGKILLed after
+  // the term grace, this bounded second check prevents a detached server from
+  // outliving the runner. The ready/next_pgid status line is the only source.
+  let nextGroupClean = true;
+  if (Number.isInteger(nextPgid) && isProcessGroupAlive(nextPgid)) {
+    nextGroupClean = await terminateProcessGroup({
+      pgid: nextPgid,
+      termGraceMs: 5_000,
+      killWaitMs: 2_000,
+    });
+    log(`browser_next_group pgid=${nextPgid} clean=${nextGroupClean}`);
+  }
+  if (!nextGroupClean) {
+    throw new Error("Next dev process group survived the browser sandbox");
+  }
+
+  const exitCode = result.code === 0
+    && result.signal === null
+    && !result.timedOut
+    && !result.aborted
+    && !result.spawnError
+    ? 0
+    : 1;
+  log(
+    `browser_sandbox_exit=${exitCode} timed_out=${result.timedOut} aborted=${result.aborted} `
+      + `signal=${result.signal ?? "none"} group_exited=${result.groupExited}`
+      + (result.spawnError ? ` spawn_error=${redact(result.spawnError.message)}` : ""),
+  );
+  return exitCode;
+}
+
 async function cleanup() {
   if (!containerName || !containerCreated) return true;
   const name = containerName;
@@ -221,9 +330,12 @@ function cleanupOnce() {
 }
 
 async function main() {
+  const mode = parseRunnerMode(process.argv.slice(2));
   const identity = createInstanceIdentity();
   containerName = identity.containerName;
   const password = randomBytes(24).toString("base64url");
+  redactionSecrets = [password];
+  log(`mode=${mode}`);
 
   await requireDocker();
   throwIfCancelled();
@@ -289,11 +401,17 @@ async function main() {
     containerName: identity.containerName,
   });
   const controller = new AbortController();
-  const testRun = runTests(childEnv, controller.signal);
-  activeRun = { abort: () => controller.abort(), promise: testRun };
-  const result = await testRun;
+  const run = mode === "browser"
+    ? runBrowserSandbox(childEnv, controller.signal)
+    : runTests(childEnv, controller.signal);
+  activeRun = { abort: () => controller.abort(), promise: run };
+  const outcome = await run;
   activeRun = undefined;
   throwIfCancelled();
+
+  if (mode === "browser") return outcome;
+
+  const result = outcome;
   const testExitCode =
     result.code === 0 &&
     result.signal === null &&
@@ -305,7 +423,7 @@ async function main() {
   log(
     `test_command_exit=${testExitCode} timed_out=${result.timedOut} aborted=${result.aborted} `
       + `signal=${result.signal ?? "none"} group_exited=${result.groupExited}`
-      + (result.spawnError ? ` spawn_error=${result.spawnError.message}` : ""),
+      + (result.spawnError ? ` spawn_error=${redact(result.spawnError.message)}` : ""),
   );
 
   if (testExitCode === 0) {
@@ -342,9 +460,9 @@ try {
   exitCode = await main();
 } catch (error) {
   if (requestedSignal) {
-    log(`cancelled by ${requestedSignal}: ${error instanceof Error ? error.message : String(error)}`);
+    log(`cancelled by ${requestedSignal}: ${redact(error instanceof Error ? error.message : String(error))}`);
   } else {
-    log(`FAILED: ${error instanceof Error ? error.message : String(error)}`);
+    log(`FAILED: ${redact(error instanceof Error ? error.message : String(error))}`);
   }
   exitCode = 1;
 } finally {

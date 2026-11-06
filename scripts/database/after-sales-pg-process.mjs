@@ -21,6 +21,7 @@ export function runInProcessGroup({
   groupExitTimeoutMs = termGraceMs + 5_000,
   signal,
   onTimeout,
+  onSpawn,
 }) {
   return new Promise((resolve) => {
     const child = spawn(command, args, {
@@ -29,6 +30,7 @@ export function runInProcessGroup({
       stdio,
       detached: true,
     });
+    onSpawn?.(child);
     const pgid = child.pid;
     let settled = false;
     let terminationReason = null;

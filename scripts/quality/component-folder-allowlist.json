@@ -2,7 +2,8 @@
   "happyDogComponentsDir": "packages/happy-dog/src/components",
   "moduleComponentDirs": [
     "src/modules/cart/components",
-    "src/modules/catalog/components"
+    "src/modules/catalog/components",
+    "src/modules/order/components"
   ],
   "requireMdForModuleFolders": true,
   "requireStoriesForModuleFolders": true,

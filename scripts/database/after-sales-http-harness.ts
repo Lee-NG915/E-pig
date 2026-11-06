@@ -230,7 +230,7 @@ export type NextDevServer = {
   port: number;
   origin: string;
   output(): string;
-  waitUntilReady(timeoutMs?: number): Promise<void>;
+  waitUntilReady(timeoutMs?: number, signal?: AbortSignal): Promise<void>;
   stop(): Promise<void>;
 };
 
@@ -240,6 +240,13 @@ export type StartNextDevOptions = {
   market: string;
   env: NodeJS.ProcessEnv;
   secrets: readonly string[];
+  /**
+   * The isolated HTTP spec keeps the default signal handling. The browser
+   * sandbox disables it so its own signal handler can stop Next, remove the
+   * controlled copy and remove the private manifest in one `finally` block.
+   * The synchronous process-exit SIGKILL fallback stays armed either way.
+   */
+  manageSignals?: boolean;
 };
 
 export function startNextDev({
@@ -248,6 +255,7 @@ export function startNextDev({
   market,
   env,
   secrets,
+  manageSignals = true,
 }: StartNextDevOptions): NextDevServer {
   const nextBin = path.join(repositoryRoot, "node_modules/next/dist/bin/next");
   const origin = `http://localhost:${port}`;
@@ -350,17 +358,22 @@ export function startNextDev({
   }
 
   process.once("exit", onExit);
-  process.once("SIGTERM", onSigterm);
-  process.once("SIGINT", onSigint);
+  if (manageSignals) {
+    process.once("SIGTERM", onSigterm);
+    process.once("SIGINT", onSigint);
+  }
 
   const server: NextDevServer = {
     child,
     port,
     origin,
     output: () => redact(output),
-    async waitUntilReady(timeoutMs = 120_000) {
+    async waitUntilReady(timeoutMs = 120_000, signal?: AbortSignal) {
       const deadline = Date.now() + timeoutMs;
       while (Date.now() < deadline) {
+        if (signal?.aborted) {
+          await stopAfterFailure(new Error("Next dev readiness wait was cancelled"));
+        }
         if (exited) {
           const error = new Error(
             `Next dev exited before becoming ready${spawnError ? `: ${spawnError.message}` : ""}:\n`

@@ -10,9 +10,13 @@ register: engineering
 
 ## 当前交付状态（2026-11-06）
 
-阶段1～5b已推送并完成各自范围验收；阶段5c真实PG多连接和环境收敛已范围验收，并以 `dc80e637b847907700f33b0f9195329951a6c5d8` 推送，远端SHA已回读一致。阶段3/4、5a、5b提交分别为8438254、bdfc9fb、d162859，交付记录为a72371f。下文历史“计划/未提交/环境失败”保留为当时事实，以本节和最新阶段记录判断当前状态。
+5d持久运行时、显式迁移/adapter/tcp及真实HTTP已交付，代码5d6cb6e、隔离范围修复fe15a99、记录e675720；历史CI42081613637成功。默认mock保留，显式postgres所需配置失败不回退mock，未部署生产。各阶段历史失败与验证记录保留在下文。
 
-消费者5个及service8个Route Handler已实现，运行时仍用mock。持久adapter已通过PGlite和隔离PostgreSQL16多连接测试，但尚未切换registry或执行线上迁移；专用PG测试与普通verify由Codex独立复跑通过，旧agent-doctor技能环境阻塞已消除。当前锁定源只在[source-lock](../../contracts/epig-after-sales/source-lock.json)维护；本章因DTC文档/环境提交前进进行显式源交接，51契约文件、摘要和版本均未改变，不是线上契约变更。下一步5d做显式迁移、adapter切换与HTTP验证；消费者页面、DTC Connector/持久审批和完整跨仓旅程尚未完成。
+本批消费者页面、合成浏览器沙箱和生命周期检查已实现，Codex工程范围有条件通过、待本次开发分支推送；真实浏览器/键盘/窄屏/刷新交互未验收，不称完整MVP完成。最新根完整pnpm verify exit0，706主测试及17契约/22 happy-dog/8 harness/doctor通过；专用PG入口53项/10文件通过，其中含脚本逻辑测试，不把53项都称数据库测试。前次默认沙箱日志写入失败与客户端node:crypto编译失败的历史保留，均不冒称旧命令成功。
+
+source-lock由官方sync生成，已固定DTC d25dc00f35c20f3353d89997e348da9c72a392d5；root check/freshness/17正负检查通过，51文件逐字节及SHA-256匹配不可变源，SUMS摘要b27f002fc639f0e5fee730651fdbf18c515a51a04de41324e6cfdf930f626752。13操作/49fixtures线路内容未变，本次仅来源元数据推进。未来DTC分支前进须再次实际核对freshness，不能用“内容相同”代替交接。
+
+真实跨仓六故事加内部驳回/正式reject的API/DB子范围由Codex独立run1022edfdb9fb782a验收通过，包含合法PNG/JPEG、另一审批人、原键恢复及实际API重启；人工草稿/零模型调用不替代页面或AI质量。备份恢复到全新目标的operator原键对账另有root run2285c4f3bdf42db6，38检查通过、POST增量0，详情将持续由DTC流程记录维护。未合并主分支或生产部署。
 
 ## 背景
 
@@ -445,3 +449,44 @@ CI隔离修复的独立复跑（2026-11-06，Codex）：`pnpm test:after-sales:p
 
 
 5d远端闭环（2026-11-06）：修复提交`fe15a992cd62dcae665557ee4be3788f73fcd6f8`的[CI42081613637](https://github.com/Lee-NG915/E-pig/actions/runs/42081613637)已实际success，quality（含生产构建/standalone市场smoke）与after-sales-postgres均success，deploy按非main条件skipped。本章本地/远端范围验收通过，未合并/部署。后续消费者页面按已Review方案实施，UI本身仍未实现/验收；其标签页未知提交使用无正文pending标记与现有授权读取恢复，不新增wire接口。
+
+
+### 消费者页面实施与Review进展（2026-11-06）
+
+首轮Claude auto实现达到110turn，无完整交付报告；组件/client/storage/spec/stories与OrderHistory详情挂载已形成未提交候选。Codex独立`pnpm verify` exit0：78文件679主测试、契约17、happy-dog22、harness8与doctor通过；不等于浏览器或章节验收，临时日志`/tmp/epig-consumer-codex-verify.log`。
+
+Review发现并下发最小返工：POST成功须匹配原申请scope/body才清pending；401/403须中止在途并阻止迟到缓存回填；手工编号恢复须匹配原marker hash才解除未知锁；client需补receipt action、非空白及Unicode文件名契约边界；消费者文案不暴露key/hash等实现术语。没有新wire接口/框架，仍未提交消费者章节。
+
+### 实际浏览器隔离验收入口（实施前方案）
+
+复用已有专用PG runner的容器/密码/就绪/进程组/清理，计划增加固定browser模式与一个sandbox脚本，不提供任意数据库URL或任意外部命令入口。sandbox使用现有受控无.env源码副本启动Next，先经实际cart API生成完整合成购物车，再仅向本次新库seed合成checkout/order；原商店/生产库不参与。
+
+浏览器需要自己的签名访客会话：只在临时源码副本中生成测试bootstrap路由，把本次实际cart API签发的合成Cookie经正常Set-Cookie响应交给浏览器并重定向订单页。该路由不进入真实src/、不入生产构建，不读取浏览器cookie/profile。浏览器使用本次唯一的`*.localhost`来源隔离Cookie，避免覆盖用户已有localhost/127开发会话；Next仍绑定回环，非浏览器fixture/服务调用可用内部127地址，manifest区分browser/internal origin，不修改系统hosts。bootstrap只接受固定两个合成主体、当前市场与订单页跳转，不接受任意Cookie/重定向/数据库参数，绑定回环地址。准备两个合成主体便于归属负例；service token/DB连接仅写唯一临时目录内0600 manifest供验收程序使用，不打印、不进浏览器页面/URL。manifest完整写入后才输出ready，退出一并清理且错误不打印内容；stdout只输出回环入口/安全状态。
+
+sandbox有有界运行期限、正常/中断子进程组终止、finally容器/卷/临时副本清理；复用现有helper，不能把Next leader退出当整组清理。浏览器仅操作DOM、表单与合成图片；服务器端服务调用与DB核验从非浏览器工具执行，不通过浏览器读取隐藏存储。实际验收覆盖提交→刷新保留原申请→服务建单→唯一回复，两个主体切换后重新经真实订单归属读取、旧页面/查询迟到不回填，越权不展示缓存且保留未知提交上下文、附件、键盘与窄屏；可控丢响应由测试服务器边界实现，不修改正式业务逻辑或以客户端假数据冒充成功。
+
+
+### 消费者页面实际编译与浏览器验收边界（2026-11-06，进行中）
+
+恢复sandbox的真实订单页编译门槛后发现新增client经契约barrel引入node:crypto，静态/单元通过未覆盖该问题。Claude已改为浏览器安全errors叶模块，自测相关67项、typecheck/lint、合成配置production build及sandbox ready/正常TERM清理通过；生产构建是作者证据，尚未等同消费者交互验收。未为此增加polyfill或放宽生产配置。
+
+Codex实际另启新专用环境，订单页编译gate成功并ready；浏览器控制能创建标签页，但导航与DOM接口均返回工具timeoutMs错误，未进入页面，不能记录附件/刷新/窄屏/账号切换通过。已仅对本次manifest所指且ps核实命令的runner发TERM；日志确认server/pool/copy/manifest清理、container_removed=true、1个所属卷移除且remaining=0。主动停止退出128不是旅程通过或业务失败。日志本机临时/tmp/epig-codex-browser-acceptance.log，不包含manifest内容/凭据。
+
+浏览器交互保留未验收，后续独立推进真实跨仓HTTP/Worker重启恢复，不用API结果替代界面证据。强杀SIGKILL可能遗留本次manifest/copy，原调试记录不能据此声称强杀全清；正常TERM路径已验证。
+
+
+Codex消费者候选独立工程复验：`pnpm verify`的docs、17契约/check、typecheck/lint、78文件706主测试和22 happy-dog通过；随后stop-review harness因默认沙箱不能写本仓logs而退出，整条命令不标exit0。按所属项目写权限单独复跑`pnpm test:harness-evals` 8项通过，`pnpm agent-doctor`通过；未改源码绕过检查。日志`/tmp/epig-consumer-codex-final-verify.log`、`...-harness.log`、`...-doctor.log`。当前vendor仍历史源d3cab38；这些不是实际freshness或浏览器交互通过，交付前须显式同步源锁并完成剩余验收。
+
+
+### 真实DTC审批与提交后崩溃恢复（2026-11-06，Codex范围验收通过）
+
+根独立临时旅程报告`/tmp/dtc_epig_e2e/runs/9b9ad702f882499d/report.json` exit0：DTC实际HTTP同步/材料/草稿/不同员工批准，真实E-pig service建单201后代理尚未转回响应即杀Worker；此时本地dispatching、有租约、receipt_json为空，源request/ticket/key已1/1/1。自然租约到期8.96s后第二进程原key查询→GET核验完成，原payload/key摘要不变，原draft/approval consumed，case completed/operation succeeded；第三进程claimed0、累计POST仍1，源与DTC均唯一。消费者实际GET200读到回复，第二主体404、坏cookie401。
+
+DTC使用固定b01513b无.env源码归档，不混入并行员工后端；两仓独立新合成PG，非Fake外部效果。根另行ps核对全部所属组成员为空、确认Docker健康后精确查两个容器/两个所属卷均不存在、owned copy/data目录不存在。脚本203个检查点不是203项独立业务测试，且不含浏览器附件/刷新/窄屏、AI建议质量或全故事。完整证据与临时脚本失败/清理返工历史见DTC流程实施记录；EPERM探测分支另作5项局部回归并由根通过，未把权限拒绝当组不存在。未合并/部署或操作真实客户/已有业务库。
+
+
+### 消费者工程候选最终交付裁决（2026-11-06，Codex）
+
+仅工程与服务层范围有条件通过；真实浏览器仍因页面控制工具timeoutMs失败未测，用户重连后错误仍存在，不用API/组件替代。根完整`pnpm verify`本次exit0（`/tmp/epig-delivery-full-verify.log`）；专用`pnpm test:after-sales:pg`本次exit0、53 passed/10 files，真实NextHTTP与所属容器/卷/进程清理通过（`/tmp/epig-consumer-codex-final-pg.log`），表级总数是观察，不是每request唯一性证明；逐request唯一性由真实跨仓场景另验。
+
+独立Review已关闭Cookie身份失效晚回包、存储不可用先拒发、unknown同key/body恢复、源客户端node:crypto叶导入等问题，未增加polyfill/业务框架。源锁官方同步至d25dc00，root51文件逐字节/SHA回读、check/freshness及17负向检查通过（`/tmp/epig-final-contract-codex.log`）；vendor内容未手改。仅提交当前任务文件，README.md用户既有改动保留。本章不代表新提交远端CI成功，实际run须推送后回读。

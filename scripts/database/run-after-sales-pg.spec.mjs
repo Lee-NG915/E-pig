@@ -155,13 +155,13 @@ function writeBinary(directory, name, source) {
   chmodSync(binary, 0o755);
 }
 
-function startRunner({ directory, immediateRun = false, env = {} }) {
+function startRunner({ directory, immediateRun = false, env = {}, args = [] }) {
   const binaryDirectory = path.join(directory, "bin");
   mkdirSync(binaryDirectory);
   writeBinary(binaryDirectory, "docker", FAKE_DOCKER);
   writeBinary(binaryDirectory, "pnpm", FAKE_PNPM);
 
-  const child = spawn(process.execPath, [runnerPath], {
+  const child = spawn(process.execPath, [runnerPath, ...args], {
     env: {
       ...process.env,
       PATH: `${binaryDirectory}${path.delimiter}${process.env.PATH ?? ""}`,
@@ -290,6 +290,38 @@ describe("after-sales PostgreSQL runner readiness", () => {
       `container survived runner exit\n${result.output}`,
     ).toBe(true);
   }, 30_000);
+});
+
+describe("after-sales PostgreSQL runner fixed modes", () => {
+  it("rejects arbitrary database URLs and commands before Docker runs", async () => {
+    const directory = temporaryDirectory();
+    const runner = startRunner({
+      directory,
+      immediateRun: true,
+      args: ["--database-url=postgres://production.example/app"],
+    });
+    const result = await runner.exit;
+
+    expect(result.code).not.toBe(0);
+    expect(result.output).toContain("Usage:");
+    expect(existsSync(path.join(directory, "calls.log"))).toBe(false);
+    expect(existsSync(path.join(directory, "pnpm-started"))).toBe(false);
+  });
+
+  it("accepts only the single fixed --browser mode flag", async () => {
+    const directory = temporaryDirectory();
+    const runner = startRunner({
+      directory,
+      immediateRun: true,
+      args: ["--browser", "--command=sh"],
+    });
+    const result = await runner.exit;
+
+    expect(result.code).not.toBe(0);
+    expect(result.output).toContain("Usage:");
+    expect(existsSync(path.join(directory, "calls.log"))).toBe(false);
+    expect(existsSync(path.join(directory, "pnpm-started"))).toBe(false);
+  });
 });
 
 describe("after-sales PostgreSQL runner signal lifecycle", () => {

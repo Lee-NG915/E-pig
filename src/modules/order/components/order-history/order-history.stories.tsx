@@ -27,3 +27,35 @@ export const DemoCoupon: Story = {
     });
   },
 };
+export const DetailWithAfterSales: Story = {
+  args: { orderId: "demo-order-detail" },
+  beforeEach: () => {
+    getStorefrontQueryClient().setQueryDefaults(
+      ["orders", "au", "demo-order-detail"],
+      { staleTime: Infinity },
+    );
+    getStorefrontQueryClient().setQueryData(
+      ["orders", "au", "demo-order-detail"],
+      {
+        order: {
+          id: "demo-order-detail",
+          cartId: "demo-cart-detail",
+          checkoutId: "demo-checkout",
+          market: "au",
+          status: "paid",
+          createdAt: "2026-11-03T00:00:00Z",
+          lines: cartFixture.lines,
+          total: { amount: 18, currency: "AUD" },
+          contact: { name: "Demo Buyer", email: "buyer@example.test" },
+          address: {
+            line1: "1 Demo Street",
+            city: "Sydney",
+            state: "NSW",
+            postalCode: "2000",
+            country: "AU",
+          },
+        },
+      },
+    );
+  },
+};

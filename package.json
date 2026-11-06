@@ -19,6 +19,7 @@
     "test": "MARKET=${MARKET:-au} vitest run",
     "test:watch": "MARKET=${MARKET:-au} vitest",
     "test:after-sales:pg": "node scripts/database/run-after-sales-pg.mjs",
+    "dev:after-sales:sandbox": "node scripts/database/run-after-sales-pg.mjs --browser",
     "database:migrate": "node scripts/database/migrate.mjs",
     "database:migrate:all": "node scripts/database/migrate.mjs --scope all",
     "test:harness-evals": "node scripts/quality/run-post-edit-evals.mjs && node scripts/quality/run-stop-review-evals.mjs && node scripts/quality/run-boundary-evals.mjs",

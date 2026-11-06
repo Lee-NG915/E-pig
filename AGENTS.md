@@ -44,6 +44,7 @@ pnpm typecheck      # tsc --noEmit
 pnpm test           # vitest run（纯逻辑 node；组件测试文件显式 jsdom）
 pnpm test:watch     # vitest watch 模式
 pnpm test:after-sales:pg # 专用 Docker 隔离 PG16 多连接/迁移/Route Handler/真实 HTTP 测试（非 verify 默认；缺 Docker 明确失败）
+pnpm dev:after-sales:sandbox # 固定 --browser 隔离验收环境：随机 PG 容器 + 无 .env 源码副本 + 唯一 *.localhost 浏览器入口；stdout 只输出安全入口/manifest/ready
 pnpm database:migrate   # 默认只执行 001 commerce 迁移（保持旧行为）
 pnpm database:migrate:all # 显式执行 001/002/003，可重复运行（需 DATABASE_URL 与 DATABASE_DRIVER）
 pnpm test:harness-evals # post-edit/stop-hook/边界规则 harness 回归（进 CI）

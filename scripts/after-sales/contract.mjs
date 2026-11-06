@@ -15,7 +15,7 @@ export const DEFAULT_BUNDLE = path.join(CONTRACT_ROOT, "v1");
 export const DEFAULT_LOCK = path.join(CONTRACT_ROOT, "source-lock.json");
 
 export const REQUIRED_SOURCE_REPOSITORY = "https://github.com/Lee-NG915/dtc-support-agent.git";
-export const REQUIRED_SOURCE_COMMIT = "d3cab389429ab27a2f0d5483fb6388afc9e05bed";
+export const REQUIRED_SOURCE_COMMIT = "d25dc00f35c20f3353d89997e348da9c72a392d5";
 export const REQUIRED_SOURCE_SUMS_SHA256 =
   "b27f002fc639f0e5fee730651fdbf18c515a51a04de41324e6cfdf930f626752";
 export const REQUIRED_PACKAGE_VERSION = "1.0.0";
