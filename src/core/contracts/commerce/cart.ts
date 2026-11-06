@@ -9,6 +9,8 @@ export type CartLine = {
   id: string;
   productId: string;
   variantId: string;
+  /** Snapshot from the priced variant; absent on legacy cart/order data. */
+  sku?: string;
   variantLabel: string;
   availability?: "in-stock" | "out-of-stock";
   problem?: string;

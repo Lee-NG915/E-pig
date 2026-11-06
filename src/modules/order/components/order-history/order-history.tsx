@@ -9,6 +9,7 @@ import {
   storefrontRequest,
   type CartMarketIdentity,
 } from "@/modules/cart/lib/cart-store";
+import { AfterSalesPanel } from "../after-sales-panel/after-sales-panel";
 
 export function OrderHistory({
   market,
@@ -140,6 +141,14 @@ export function OrderHistory({
                   No real charge, tax assessment or delivery. Shipping and tax
                   are zero in this sandbox.
                 </p>
+                {order.cartId ? (
+                  <AfterSalesPanel
+                    key={`${market.id}:${order.cartId}:${order.id}`}
+                    market={market}
+                    cartId={order.cartId}
+                    orderId={order.id}
+                  />
+                ) : null}
               </div>
             ) : (
               <Link

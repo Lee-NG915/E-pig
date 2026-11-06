@@ -57,6 +57,31 @@ jobs:
       - name: Runtime market smoke (standalone)
         run: pnpm smoke:runtime-market
 
+  after-sales-postgres:
+    # 专用、非部署测试：runner 只创建一次性 PG16 容器并绑定回环随机端口。
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      MARKET: au
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Pull PostgreSQL 16 image
+        run: docker pull postgres:16-alpine
+
+      - name: Isolated PostgreSQL 16 multi-connection after-sales tests
+        run: pnpm test:after-sales:pg
+
   deploy:
     # 本轮交易验收目标为 Netlify；保留 CF 为 main 上的手动发布路径。
     # PR/main push 仅执行 quality，不自动发布未经交易验收的 CF 环境。

@@ -173,6 +173,31 @@ describe("durable sandbox commerce (actual PostgreSQL SQL)", () => {
     expect(locked.lockedCheckoutId).toBe(checkout.id);
     expect(locked.lines).toEqual(checkout.lines);
   });
+  it("freezes the real variant SKU into cart lines and the paid order snapshot", async () => {
+    catalog = createMockCatalogAdapter({ market: markets.au });
+    const app = service();
+    const product = await catalog.getProduct("tamarama-modular-sofa");
+    const variant = product.variants.find((item) => item.id === "tamarama-modular-sofa-default")!;
+    const created = await app.cart.createCart({ idempotencyKey: key() });
+    const cart = await app.cart.addItem(
+      created.id,
+      { productId: product.id, variantId: variant.id, quantity: 1 },
+      { idempotencyKey: key() },
+    );
+    expect(cart.lines[0].sku).toBe(variant.sku);
+
+    const checkout = await app.checkout.start(
+      cart.id,
+      input(cart.revision, cart.total!.amount),
+      { idempotencyKey: key() },
+    );
+    const session = [...sessions.values()].find((item) => item.checkoutId === checkout.id)!;
+    session.status = "complete";
+    session.paid = true;
+    const paid = await app.checkout.reconcile(cart.id, checkout.id);
+    const order = await app.orders.get(cart.id, paid.orderId!);
+    expect(order.lines[0].sku).toBe(variant.sku);
+  });
   it("removes one real Tamarama variant without changing the other variant", async () => {
     catalog = createMockCatalogAdapter({ market: markets.au });
     const app = service();

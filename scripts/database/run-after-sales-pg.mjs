@@ -1,0 +1,475 @@
+import { execFile } from "node:child_process";
+import { randomBytes } from "node:crypto";
+import path from "node:path";
+import { setTimeout as delay } from "node:timers/promises";
+import { fileURLToPath } from "node:url";
+import { promisify } from "node:util";
+
+import {
+  buildChildEnv,
+  createInstanceIdentity,
+  parseDockerPortOutput,
+  PG_TEST_IMAGE,
+  TEST_DATABASE,
+  TEST_USER,
+} from "./after-sales-pg-safety.mjs";
+import { runInProcessGroup } from "./after-sales-pg-process.mjs";
+import {
+  isProcessGroupAlive,
+  terminateProcessGroup,
+} from "./after-sales-process-group.mjs";
+
+const execFileAsync = promisify(execFile);
+const scriptDirectory = path.dirname(fileURLToPath(import.meta.url));
+const repositoryRoot = path.resolve(scriptDirectory, "../..");
+const READY_TIMEOUT_MS = 60_000;
+const READY_POLL_INTERVAL_MS = 250;
+const READY_COMMAND_TIMEOUT_MS = 5_000;
+const QUERY_COMMAND_TIMEOUT_MS = 10_000;
+const TEST_PROCESS_TIMEOUT_MS = 600_000;
+const TEST_PROCESS_TERM_GRACE_MS = 5_000;
+const BROWSER_PROCESS_TIMEOUT_MS = 60 * 60 * 1000;
+const BROWSER_PROCESS_TERM_GRACE_MS = 30_000;
+const BROWSER_SANDBOX_SCRIPT = path.join(scriptDirectory, "after-sales-browser-sandbox.mjs");
+const VITEST_CONFIG = "scripts/database/after-sales-pg.vitest.config.ts";
+const SANDBOX_SAFE_LINE = /^\[after-sales-sandbox\] (?:browser_origin=\S+|manifest=\S+|next_pgid=\d+|ready\b|stopped\b|FAILED:)/;
+
+let containerName;
+let containerCreated = false;
+let cleanupPromise;
+let activeRun;
+let requestedSignal;
+let redactionSecrets = [];
+
+function log(message) {
+  console.info(`[after-sales-pg] ${message}`);
+}
+
+function redact(value) {
+  let redacted = String(value);
+  for (const secret of redactionSecrets) {
+    if (typeof secret !== "string" || !secret) continue;
+    redacted = redacted.split(secret).join("[redacted]");
+  }
+  return redacted
+    .replace(/postgres(?:ql)?:\/\/[^\s"']+/gi, "[redacted-database-url]")
+    .replace(/Bearer\s+[A-Za-z0-9._~-]+/gi, "Bearer [redacted]");
+}
+
+function parseRunnerMode(argv) {
+  if (argv.length === 0) return "test";
+  if (argv.length === 1 && argv[0] === "--browser") return "browser";
+  throw new Error("Usage: node scripts/database/run-after-sales-pg.mjs [--browser]");
+}
+
+function throwIfCancelled() {
+  if (requestedSignal) {
+    throw new Error(`run cancelled by ${requestedSignal}`);
+  }
+}
+
+async function docker(args, options = {}) {
+  return execFileAsync("docker", args, {
+    maxBuffer: 10 * 1024 * 1024,
+    ...options,
+  });
+}
+
+async function requireDocker() {
+  try {
+    const { stdout } = await docker(["version", "--format", "{{.Server.Version}}"]);
+    log(`docker_server=${stdout.trim()}`);
+  } catch {
+    throw new Error("Docker is unavailable; this command fails instead of skipping");
+  }
+  try {
+    await docker(["image", "inspect", PG_TEST_IMAGE, "--format", "{{.Id}}"]);
+  } catch {
+    throw new Error(`${PG_TEST_IMAGE} is not available locally; pull it explicitly and rerun`);
+  }
+}
+
+async function waitUntilReady(name) {
+  const deadline = Date.now() + READY_TIMEOUT_MS;
+  let lastFailure = "no readiness probe completed";
+  while (Date.now() < deadline) {
+    throwIfCancelled();
+    try {
+      // The official image runs a temporary init server that answers
+      // pg_isready and socket psql before the target database exists. Only a
+      // real query over the final TCP listener proves readiness.
+      const { stdout } = await docker(
+        [
+          "exec",
+          name,
+          "psql",
+          "-h",
+          "127.0.0.1",
+          "-U",
+          TEST_USER,
+          "-d",
+          TEST_DATABASE,
+          "-tAc",
+          "SELECT 1",
+        ],
+        { timeout: READY_COMMAND_TIMEOUT_MS },
+      );
+      if (stdout.trim() === "1") return;
+      lastFailure = `unexpected SELECT 1 output: ${JSON.stringify(stdout.trim())}`;
+    } catch (error) {
+      lastFailure = error instanceof Error ? error.message : String(error);
+    }
+    await delay(READY_POLL_INTERVAL_MS);
+  }
+  throwIfCancelled();
+  throw new Error(
+    `PostgreSQL did not become ready within ${READY_TIMEOUT_MS}ms (last probe: ${lastFailure})`,
+  );
+}
+
+async function serverVersion(name) {
+  const { stdout } = await docker(
+    [
+      "exec",
+      name,
+      "psql",
+      "-U",
+      TEST_USER,
+      "-d",
+      TEST_DATABASE,
+      "-tAc",
+      "SHOW server_version",
+    ],
+    { timeout: QUERY_COMMAND_TIMEOUT_MS },
+  );
+  return stdout.trim();
+}
+
+async function durableRowCounts(name) {
+  const { stdout } = await docker(
+    [
+      "exec",
+      name,
+      "psql",
+      "-U",
+      TEST_USER,
+      "-d",
+      TEST_DATABASE,
+      "-tAc",
+      "SELECT (SELECT count(*) FROM after_sales_requests)::text || ',' || (SELECT count(*) FROM after_sales_tickets)::text",
+    ],
+    { timeout: QUERY_COMMAND_TIMEOUT_MS },
+  );
+  const [requests, tickets] = stdout.trim().split(",").map((value) => Number(value));
+  return { requests, tickets };
+}
+
+function runTests(childEnv, signal) {
+  return runInProcessGroup({
+    command: "pnpm",
+    args: ["exec", "vitest", "run", "--config", VITEST_CONFIG],
+    cwd: repositoryRoot,
+    env: childEnv,
+    stdio: "inherit",
+    timeoutMs: TEST_PROCESS_TIMEOUT_MS,
+    termGraceMs: TEST_PROCESS_TERM_GRACE_MS,
+    signal,
+    onTimeout: () => {
+      log(`test_process_timeout=${TEST_PROCESS_TIMEOUT_MS}ms; terminating process group`);
+    },
+  });
+}
+
+/**
+ * The sandbox owns its Next group, copy and manifest cleanup. Only an allowlist
+ * of safe status lines is forwarded; anything that could contain a secret is
+ * redacted again here before it reaches stdout.
+ */
+function forwardSandboxStream(stream, onNextPgid) {
+  let buffer = "";
+  const handleLine = (line) => {
+    const sanitized = redact(line);
+    if (!SANDBOX_SAFE_LINE.test(sanitized)) return;
+    console.info(sanitized);
+    const match = /\bnext_pgid=(\d+)\b/.exec(sanitized);
+    if (match) onNextPgid(Number(match[1]));
+  };
+  stream?.setEncoding("utf8");
+  stream?.on("data", (chunk) => {
+    buffer += chunk;
+    let newline;
+    while ((newline = buffer.indexOf("\n")) >= 0) {
+      handleLine(buffer.slice(0, newline).replace(/\r$/, ""));
+      buffer = buffer.slice(newline + 1);
+    }
+    if (buffer.length > 64_000) buffer = buffer.slice(-1_000);
+  });
+  stream?.on("end", () => {
+    if (buffer) handleLine(buffer.replace(/\r$/, ""));
+  });
+}
+
+async function runBrowserSandbox(childEnv, signal) {
+  let nextPgid;
+  const result = await runInProcessGroup({
+    command: process.execPath,
+    args: [BROWSER_SANDBOX_SCRIPT],
+    cwd: repositoryRoot,
+    env: childEnv,
+    stdio: ["ignore", "pipe", "pipe"],
+    timeoutMs: BROWSER_PROCESS_TIMEOUT_MS,
+    termGraceMs: BROWSER_PROCESS_TERM_GRACE_MS,
+    signal,
+    onSpawn: (child) => {
+      const record = (pgid) => {
+        nextPgid = pgid;
+      };
+      forwardSandboxStream(child.stdout, record);
+      forwardSandboxStream(child.stderr, record);
+    },
+    onTimeout: () => {
+      log(`browser_sandbox_timeout=${BROWSER_PROCESS_TIMEOUT_MS}ms; terminating process group`);
+    },
+  });
+
+  // The sandbox normally removes its own Next group. If it was SIGKILLed after
+  // the term grace, this bounded second check prevents a detached server from
+  // outliving the runner. The ready/next_pgid status line is the only source.
+  let nextGroupClean = true;
+  if (Number.isInteger(nextPgid) && isProcessGroupAlive(nextPgid)) {
+    nextGroupClean = await terminateProcessGroup({
+      pgid: nextPgid,
+      termGraceMs: 5_000,
+      killWaitMs: 2_000,
+    });
+    log(`browser_next_group pgid=${nextPgid} clean=${nextGroupClean}`);
+  }
+  if (!nextGroupClean) {
+    throw new Error("Next dev process group survived the browser sandbox");
+  }
+
+  const exitCode = result.code === 0
+    && result.signal === null
+    && !result.timedOut
+    && !result.aborted
+    && !result.spawnError
+    ? 0
+    : 1;
+  log(
+    `browser_sandbox_exit=${exitCode} timed_out=${result.timedOut} aborted=${result.aborted} `
+      + `signal=${result.signal ?? "none"} group_exited=${result.groupExited}`
+      + (result.spawnError ? ` spawn_error=${redact(result.spawnError.message)}` : ""),
+  );
+  return exitCode;
+}
+
+async function cleanup() {
+  if (!containerName || !containerCreated) return true;
+  const name = containerName;
+  let volumes = [];
+  try {
+    const { stdout } = await docker([
+      "inspect",
+      "-f",
+      '{{range .Mounts}}{{if eq .Type "volume"}}{{.Name}}{{"\\n"}}{{end}}{{end}}',
+      name,
+    ]);
+    volumes = stdout.split(/\r?\n/).filter(Boolean);
+  } catch {
+    // The container may not have been created; there is nothing owned to clean.
+  }
+
+  try {
+    await docker(["rm", "-f", "-v", name]);
+  } catch {
+    // Already removed or never created; verification below is authoritative.
+  }
+
+  let volumesRemaining = 0;
+  let removedVolumes = 0;
+  for (const volume of volumes) {
+    try {
+      await docker(["volume", "inspect", volume]);
+    } catch {
+      removedVolumes += 1;
+      continue;
+    }
+    try {
+      await docker(["volume", "rm", "-f", volume]);
+    } catch {
+      // Fall through to the verification below; never run global docker cleanup.
+    }
+    try {
+      await docker(["volume", "inspect", volume]);
+      volumesRemaining += 1;
+    } catch {
+      removedVolumes += 1;
+    }
+  }
+
+  let containerRemoved = true;
+  try {
+    await docker(["inspect", name]);
+    containerRemoved = false;
+  } catch {
+    containerRemoved = true;
+  }
+
+  const clean = containerRemoved && volumesRemaining === 0;
+  log(
+    `cleanup container=${name} container_removed=${containerRemoved} `
+      + `tracked_volumes=${volumes.length} removed_volumes=${removedVolumes} `
+      + `remaining_volumes=${volumesRemaining} clean=${clean}`,
+  );
+  return clean;
+}
+
+function cleanupOnce() {
+  cleanupPromise ??= cleanup();
+  return cleanupPromise;
+}
+
+async function main() {
+  const mode = parseRunnerMode(process.argv.slice(2));
+  const identity = createInstanceIdentity();
+  containerName = identity.containerName;
+  const password = randomBytes(24).toString("base64url");
+  redactionSecrets = [password];
+  log(`mode=${mode}`);
+
+  await requireDocker();
+  throwIfCancelled();
+
+  // The password is passed through the docker CLI environment, not argv. The
+  // flag is set before run settles: once the request reaches the daemon, a
+  // container may exist even if this CLI process is interrupted.
+  containerCreated = true;
+  await docker(
+    [
+      "run",
+      "-d",
+      "--name",
+      identity.containerName,
+      "--label",
+      identity.scopeLabel,
+      "--label",
+      identity.instanceLabel,
+      "-e",
+      "POSTGRES_USER",
+      "-e",
+      "POSTGRES_DB",
+      "-e",
+      "POSTGRES_PASSWORD",
+      "-p",
+      "127.0.0.1::5432",
+      PG_TEST_IMAGE,
+    ],
+    {
+      env: {
+        ...process.env,
+        POSTGRES_USER: TEST_USER,
+        POSTGRES_DB: TEST_DATABASE,
+        POSTGRES_PASSWORD: password,
+      },
+    },
+  );
+  throwIfCancelled();
+
+  await waitUntilReady(identity.containerName);
+  throwIfCancelled();
+  const { stdout: portOutput } = await docker([
+    "port",
+    identity.containerName,
+    "5432/tcp",
+  ]);
+  const { host, port } = parseDockerPortOutput(portOutput);
+  if (host !== "127.0.0.1") {
+    throw new Error("The dedicated PostgreSQL port is not loopback-only");
+  }
+  throwIfCancelled();
+  const version = await serverVersion(identity.containerName);
+  log(
+    `container=${identity.containerName} label=${identity.instanceLabel} `
+      + `loopback=${host}:${port} pg_version=${version} database=${TEST_DATABASE} user=${TEST_USER}`,
+  );
+  throwIfCancelled();
+
+  const childEnv = buildChildEnv({
+    baseEnv: process.env,
+    port,
+    password,
+    containerName: identity.containerName,
+  });
+  const controller = new AbortController();
+  const run = mode === "browser"
+    ? runBrowserSandbox(childEnv, controller.signal)
+    : runTests(childEnv, controller.signal);
+  activeRun = { abort: () => controller.abort(), promise: run };
+  const outcome = await run;
+  activeRun = undefined;
+  throwIfCancelled();
+
+  if (mode === "browser") return outcome;
+
+  const result = outcome;
+  const testExitCode =
+    result.code === 0 &&
+    result.signal === null &&
+    !result.timedOut &&
+    !result.aborted &&
+    !result.spawnError
+      ? 0
+      : 1;
+  log(
+    `test_command_exit=${testExitCode} timed_out=${result.timedOut} aborted=${result.aborted} `
+      + `signal=${result.signal ?? "none"} group_exited=${result.groupExited}`
+      + (result.spawnError ? ` spawn_error=${redact(result.spawnError.message)}` : ""),
+  );
+
+  if (testExitCode === 0) {
+    // A green Vitest run with no durable rows would mean the dedicated spec did
+    // not actually execute; treat that as failure instead of skip-as-pass.
+    // These are whole-table totals shared by every spec in this dedicated
+    // database. They are observational liveness evidence only, never a
+    // per-request uniqueness assertion.
+    const counts = await durableRowCounts(identity.containerName);
+    log(
+      `durable_rows requests=${counts.requests} tickets=${counts.tickets} `
+        + "(observational table totals across all specs; not per-request uniqueness)",
+    );
+    if (counts.requests < 1 || counts.tickets < 1) {
+      throw new Error("Dedicated spec exited 0 without durable after-sales rows; not accepting as passed");
+    }
+  }
+
+  return testExitCode;
+}
+
+function requestCancellation(signal) {
+  if (requestedSignal) return;
+  requestedSignal = signal;
+  log(`received=${signal}; cancelling and waiting for the current step to settle`);
+  activeRun?.abort();
+}
+
+process.on("SIGINT", () => requestCancellation("SIGINT"));
+process.on("SIGTERM", () => requestCancellation("SIGTERM"));
+
+let exitCode = 1;
+try {
+  exitCode = await main();
+} catch (error) {
+  if (requestedSignal) {
+    log(`cancelled by ${requestedSignal}: ${redact(error instanceof Error ? error.message : String(error))}`);
+  } else {
+    log(`FAILED: ${redact(error instanceof Error ? error.message : String(error))}`);
+  }
+  exitCode = 1;
+} finally {
+  // Cleanup runs only after main settles: a SIGTERM during setup must not race
+  // an in-flight docker run whose container the daemon may create afterwards.
+  const clean = await cleanupOnce();
+  process.exitCode = requestedSignal
+    ? (clean ? 128 : 1)
+    : (exitCode === 0 && clean ? 0 : 1);
+}

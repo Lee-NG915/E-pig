@@ -22,7 +22,18 @@ export const serverEnvSchema = {
   }, z.enum(marketIds)),
   /** commerce adapter 选择；P0 只有 mock，真实后端接入后扩展（如 "custom-rest"） */
   COMMERCE_ADAPTER: z.enum(["mock", "postgres"]).default("mock"),
+  /**
+   * after-sales adapter 选择；mock 保持默认。显式 postgres 还要求
+   * COMMERCE_ADAPTER=postgres 且 DATABASE_URL 可用，否则运行时安全关闭（503），
+   * 绝不自动回退到 mock。
+   */
+  AFTER_SALES_ADAPTER: z.enum(["mock", "postgres"]).default("mock"),
   DATABASE_URL: z.url().refine(value => /^postgres(?:ql)?:\/\//.test(value), "Use a Postgres connection URL").optional(),
+  /**
+   * PostgreSQL 传输驱动。neon 保持既有部署路径；tcp 只用于 Node 本地 /
+   * 隔离环境（Cloudflare Workers 不声明支持 tcp）。
+   */
+  DATABASE_DRIVER: z.enum(["neon", "tcp"]).default("neon"),
   CART_COOKIE_SECRET: z.string().min(32).optional(),
   APP_ORIGIN: z.url().refine(value => {
     const url = new URL(value);
@@ -32,7 +43,19 @@ export const serverEnvSchema = {
   STRIPE_SECRET_KEY: z.string().startsWith("sk_test_").optional(),
   STRIPE_WEBHOOK_SECRET: z.string().startsWith("whsec_").optional(),
   LOG_LEVEL: z.enum(["debug", "info", "warn", "error"]).default("info"),
+  /**
+   * Optional so consumer-only deployments keep starting. The service handler
+   * validates both values at request time and fails closed when absent/invalid.
+   */
+  AFTER_SALES_SERVICE_TOKEN: z.string().optional(),
+  /** Comma-separated allowed markets, e.g. "au,sg". */
+  AFTER_SALES_SERVICE_MARKETS: z.string().optional(),
 } as const;
+
+export {
+  afterSalesServiceConfigSchema,
+  afterSalesServiceMarketsSchema,
+} from "./after-sales-service-config";
 
 /**
  * 浏览器公开变量 schema。规则（04 §7 Hard Rule）：
@@ -49,12 +72,16 @@ export const env = createEnv({
     NODE_ENV: process.env.NODE_ENV,
     MARKET: process.env.MARKET,
     COMMERCE_ADAPTER: process.env.COMMERCE_ADAPTER,
+    AFTER_SALES_ADAPTER: process.env.AFTER_SALES_ADAPTER,
     LOG_LEVEL: process.env.LOG_LEVEL,
     DATABASE_URL: process.env.DATABASE_URL,
+    DATABASE_DRIVER: process.env.DATABASE_DRIVER,
     CART_COOKIE_SECRET: process.env.CART_COOKIE_SECRET,
     APP_ORIGIN: process.env.APP_ORIGIN,
     STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
     STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,
+    AFTER_SALES_SERVICE_TOKEN: process.env.AFTER_SALES_SERVICE_TOKEN,
+    AFTER_SALES_SERVICE_MARKETS: process.env.AFTER_SALES_SERVICE_MARKETS,
   },
 });
 

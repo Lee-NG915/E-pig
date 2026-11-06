@@ -62,7 +62,7 @@ export function createPostgresCommerce({ pool, catalog, market, payment, origin,
     const variant = product.variants.find((item) => item.id === line.variantId);
     if (!variant) return unavailable("This variant is no longer available. Remove it to continue.");
     if (variant.price.currency !== market.currency || !Number.isFinite(variant.price.amount) || variant.price.amount <= 0) return unavailable("This variant cannot currently be priced. Remove it to continue.");
-    const priced: CartLine = { ...line, name: product.name, variantLabel: variant.label, image: variant.image, unitPrice: variant.price, lineTotal: money(variant.price.amount * line.quantity), availability: variant.availability };
+    const priced: CartLine = { ...line, sku: variant.sku, name: product.name, variantLabel: variant.label, image: variant.image, unitPrice: variant.price, lineTotal: money(variant.price.amount * line.quantity), availability: variant.availability };
     delete priced.problem;
     const problem = variant.availability !== "in-stock"
       ? "This variant is unavailable. Remove it to continue."
