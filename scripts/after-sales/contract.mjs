@@ -15,7 +15,7 @@ export const DEFAULT_BUNDLE = path.join(CONTRACT_ROOT, "v1");
 export const DEFAULT_LOCK = path.join(CONTRACT_ROOT, "source-lock.json");
 
 export const REQUIRED_SOURCE_REPOSITORY = "https://github.com/Lee-NG915/dtc-support-agent.git";
-export const REQUIRED_SOURCE_COMMIT = "19f1d4550f532a73f56da9e4a4b830a759acc768";
+export const REQUIRED_SOURCE_COMMIT = "c2ba24ed92c68de4d5f53dbc23da12be1144bafb";
 export const REQUIRED_SOURCE_SUMS_SHA256 =
   "b27f002fc639f0e5fee730651fdbf18c515a51a04de41324e6cfdf930f626752";
 export const REQUIRED_PACKAGE_VERSION = "1.0.0";
@@ -241,10 +241,11 @@ function validateSchema(document, schemaValue, value, location = "$", errors = [
   }
 
   if (typeof value === "string") {
-    if (typeof schema.minLength === "number" && value.length < schema.minLength) {
+    const length = Array.from(value).length;
+    if (typeof schema.minLength === "number" && length < schema.minLength) {
       errors.push(`${location}: string is shorter than ${schema.minLength}`);
     }
-    if (typeof schema.maxLength === "number" && value.length > schema.maxLength) {
+    if (typeof schema.maxLength === "number" && length > schema.maxLength) {
       errors.push(`${location}: string is longer than ${schema.maxLength}`);
     }
     if (typeof schema.pattern === "string" && !new RegExp(schema.pattern, "u").test(value)) {

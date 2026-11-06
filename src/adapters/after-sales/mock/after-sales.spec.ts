@@ -264,6 +264,92 @@ describe("mock after-sales adapter", () => {
     )).rejects.toMatchObject({ code: "ATTACHMENT_EXPIRED" });
   });
 
+  it("creates a ticket when the request attachments are still valid", async () => {
+    const context = setup();
+    const attachment = await upload(context);
+    const created = await createRequest(
+      context,
+      { attachmentIds: [attachment.id] },
+      "ticket-valid-attachment-request",
+    );
+    const order = await context.adapter.getServiceOrder(
+      context.service,
+      mockAfterSalesOrderId("au"),
+    );
+    const ticket = await createTicket(
+      context,
+      created.request.id,
+      order.orderVersion,
+      {},
+      "ticket-valid-attachment",
+    );
+
+    expect(ticket.replayed).toBe(false);
+    expect(ticket.ticket).toMatchObject({
+      requestId: created.request.id,
+      orderId: order.id,
+      status: "open",
+    });
+  });
+
+  it("revalidates attachments on new tickets without poisoning the key or later replays", async () => {
+    const context = setup();
+    const attachment = await upload(context);
+    const created = await createRequest(
+      context,
+      { attachmentIds: [attachment.id] },
+      "ticket-expiring-attachment-request",
+    );
+    const order = await context.adapter.getServiceOrder(
+      context.service,
+      mockAfterSalesOrderId("au"),
+    );
+    const idempotencyKey = "ticket-expiring-attachment";
+    const input: CreateServiceTicketInput = {
+      requestId: created.request.id,
+      action: "reship",
+      reply: "Synthetic final reply.",
+      draftVersion: "draft_synthetic_1",
+      approvalId: "approval_synthetic_1",
+      policyVersion: "policy_synthetic_1",
+      orderVersion: order.orderVersion,
+    };
+    const lifetime = 8 * 24 * 60 * 60 * 1000;
+    context.tick(lifetime);
+
+    await expect(context.adapter.createTicket(
+      context.service,
+      input,
+      { idempotencyKey },
+    )).rejects.toMatchObject({ code: "ATTACHMENT_EXPIRED" });
+    expect(await context.adapter.getServiceRequest(context.service, created.request.id))
+      .toMatchObject({ status: "pending", ticketId: null });
+    expect(await context.adapter.listServiceRequests(context.service)).toMatchObject({
+      highWatermark: "1",
+      items: [expect.objectContaining({ status: "pending", ticketId: null })],
+    });
+
+    context.tick(-lifetime);
+    const retried = await context.adapter.createTicket(
+      context.service,
+      input,
+      { idempotencyKey },
+    );
+    expect(retried.replayed).toBe(false);
+    expect(retried.ticket.requestId).toBe(created.request.id);
+
+    context.tick(lifetime);
+    const replayed = await context.adapter.createTicket(
+      context.service,
+      input,
+      { idempotencyKey },
+    );
+    expect(replayed.replayed).toBe(true);
+    expect(replayed.ticket).toEqual(retried.ticket);
+    expect(await context.adapter.findTicketByIdempotencyKey(context.service, idempotencyKey))
+      .toMatchObject({ kind: "ticket", ticket: { id: retried.ticket.id } });
+  });
+
   it("accepts exactly five MiB of valid private bytes", async () => {
     const context = setup();
     const bytes = new Uint8Array(5_242_880);

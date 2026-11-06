@@ -83,6 +83,45 @@ test("check rejects a corrupted positive fixture", (t) => {
   );
 });
 
+test("string length limits count Unicode code points", (t) => {
+  const copy = temporaryCopy(t);
+  const fixturePath = path.join(
+    copy.bundle,
+    "fixtures/requests/create_after_sales_request.valid.json",
+  );
+  const fixture = readJson(fixturePath);
+  fixture.description = "😀".repeat(5000);
+  writeJson(fixturePath, fixture);
+  assert.doesNotThrow(() => validateContract({ ...copy, checkDigests: false }));
+
+  fixture.description = "😀".repeat(5001);
+  writeJson(fixturePath, fixture);
+  assert.throws(
+    () => validateContract({ ...copy, checkDigests: false }),
+    /string is longer than 5000/,
+  );
+});
+
+test("minLength counts Unicode code points for non-BMP text", (t) => {
+  const copy = temporaryCopy(t);
+  const openapiPath = path.join(copy.bundle, "openapi.json");
+  const document = readJson(openapiPath);
+  document.components.schemas.CreateAfterSalesRequestInput.properties.description.minLength = 2;
+  writeJson(openapiPath, document);
+
+  const fixturePath = path.join(
+    copy.bundle,
+    "fixtures/requests/create_after_sales_request.valid.json",
+  );
+  const fixture = readJson(fixturePath);
+  fixture.description = "😀";
+  writeJson(fixturePath, fixture);
+  assert.throws(
+    () => validateContract({ ...copy, checkDigests: false }),
+    /string is shorter than 2/,
+  );
+});
+
 test("check rejects a corrupted binary fixture", (t) => {
   const copy = temporaryCopy(t);
   const manifestPath = path.join(copy.bundle, "fixtures/manifest.json");
@@ -178,7 +217,7 @@ test("sync rejects a mutable revision expression before writing", (t) => {
 test("sync rejects the previous source commit before writing", (t) => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "epig-after-sales-wrong-commit-"));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
-  const previousCommit = "d25dc00f35c20f3353d89997e348da9c72a392d5";
+  const previousCommit = "19f1d4550f532a73f56da9e4a4b830a759acc768";
   assert.throws(
     () =>
       syncContract({

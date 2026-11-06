@@ -322,7 +322,7 @@ export function createMockAfterSalesAdapter({
   }
 
   async function validateRequestAttachments(
-    principal: ConsumerPrincipal,
+    cartId: string,
     orderId: string,
     attachmentIds: string[],
   ): Promise<AfterSalesAttachment[]> {
@@ -332,7 +332,7 @@ export function createMockAfterSalesAdapter({
     const sorted = [...attachmentIds].sort();
     return sorted.map((attachmentId) => {
       const record = attachments.get(attachmentId);
-      if (!record || record.orderId !== orderId || record.ownerCartId !== principal.cartId) {
+      if (!record || record.orderId !== orderId || record.ownerCartId !== cartId) {
         fail("NOT_FOUND", { attachment_id: attachmentId });
       }
       if (attachmentExpired(record)) {
@@ -431,7 +431,7 @@ export function createMockAfterSalesAdapter({
       const result = enqueue(async () => {
         const order = await requireOwnedOrder(consumer, input.orderId);
         const selectedAttachments = await validateRequestAttachments(
-          consumer,
+          consumer.cartId,
           order.id,
           input.attachmentIds ?? [],
         );
@@ -673,6 +673,11 @@ export function createMockAfterSalesAdapter({
         if (input.orderVersion !== order.orderVersion) {
           fail("ORDER_VERSION_CONFLICT", { field: "order_version" });
         }
+        await validateRequestAttachments(
+          requestRecord.ownerCartId,
+          requestRecord.request.orderId,
+          requestRecord.request.attachments.map((attachment) => attachment.id),
+        );
         await beforeTicketCommit?.();
 
         const createdAt = now().toISOString();

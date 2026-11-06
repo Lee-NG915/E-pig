@@ -8,7 +8,27 @@ register: engineering
 
 对接仓库：`Lee-NG915/dtc-support-agent`（FastAPI + LangGraph 售后中台，下称"中台"）。产品行为以该仓库 `docs/architecture/modules/after-sales/product-blueprint.md` 为准，跨仓协作语义以 `epig-contract.md` 为准；HTTP 路径、字段、状态码、请求头和错误结构只以 `contracts/epig-after-sales/v1/openapi.json` 为正本。本文只描述 E-pig 内部落点，不复制线路定义。
 
-## 当前交付状态（2026-11-06）
+## 2026-11-06 Kimi CR 最小修复窗口
+
+原始 CR 固定 E-pig `0a84e5ba` / DTC `19f1d455`，详见 [本仓 CR](https://github.com/Lee-NG915/E-pig/issues/2#issuecomment-6676532361) 和 [DTC CR](https://github.com/Lee-NG915/dtc-support-agent/issues/2#issuecomment-6676472791)。Codex 采纳契约检查器码点计数、mock 新建工单附件重验和正文成熟度标签修正；Claude auto 实现源码/必要测试，Codex 独立验收，本批工程修复已通过Codex独立本地验收，不把原始有条件验收改成产品无条件通过。
+
+配置范围：默认 `COMMERCE_ADAPTER=mock` 沿用仅浏览沙箱；`COMMERCE_ADAPTER=postgres` 搭配默认 `AFTER_SALES_ADAPTER=mock` 时，售后 mock 仅识别固定合成主体与订单，真实 PG 订单提交售后会 404。完整合成订单链路需显式开启两侧 postgres，并配置专用 DATABASE_URL 与合适 DRIVER；缺少前提失败关闭，不自动回退。此处说明配置限制，不改变原购物车、结账或支付行为。
+
+验收要求：真实 contract validator 的合法/非法 Unicode 边界；有效附件新建、过期附件零写入、失败幂等键可恢复、历史重放不被后续过期拒绝。原功能用候选实现叠加原始测试验证；完整 verify/构建及专用 PG 分开报告。DTC 源提交推进后仅由官方 sync 更新 source-lock，再查 freshness/逐文件摘要，未改变线上 OpenAPI 与 fixtures。
+
+### 本批 CR 实施与独立验收
+
+Claude auto 实现检查器按 Unicode 码点计数及 mock 新建工单附件重验，Codex 审查实际 diff。历史同键同参重放先返回原票据，只有新建才检查附件；过期拒绝不改 request/ticket，也不永久占用失败的幂等键。只复用本地校验函数，不改 PG 实现或旧商品/购物车/结账/支付逻辑，不新增依赖、模块层或字段。
+
+本批候选是 `0a84e5ba` 加本节所属提交的代码。Codex独立结果：`pnpm verify` exit0，708主测试、19契约、22组件、8harness与doctor通过；`pnpm test:after-sales:pg` 53项/10文件通过，含真实Next HTTP/重启与自有容器/卷清理；`pnpm build`和SG运行时冒烟通过。另建无实际.env的源码副本，将原64个测试文件还原基线 `98b755da`，476项全通过；152个候选src文件与原测试逐字节核对。初次副本准备因系统Python安全解包参数、开发技能外部符号链接失败，后在Python3.12且排除无关开发链接的副本执行，未跳过任何原始业务测试。
+
+DTC已推送 `c2ba24ed92c68de4d5f53dbc23da12be1144bafb`，本批vendor由官方sync固定该来源；13操作/49fixtures及SUMS摘要 `b27f002fc639f0e5fee730651fdbf18c515a51a04de41324e6cfdf930f626752` 不变。最终source-lock/check/freshness及远端回读结果在两仓Issue同批发布；本节不固定自引用的本仓提交SHA。更早source-lock数字保留在下方历史状态，不作当前来源。
+
+AI Test Record：Behavior changed=码点边界及mock新建时附件重验；Tests added/updated=真实检查器变形fixture及mock过期/恢复/历史重放；Tests run=上述Codex独立门禁；Result=本批工程范围通过；Failures/gaps=保留前述准备失败、无本轮UI变更/浏览器复测、非真实Neon/生产；Next risk=模型H05/H08仍开放，修复工程不代表AI质量通过。
+
+AI Review Record：Focus=原断言不削弱、身份/附件/幂等/失败关闭、剃刀与源锁；Findings=两项已复现CR完成最小修复，正文成熟度及adapter配置范围已澄清；Residual risks=真实用户试用/容量/生产及DTC真实模型质量、远端CI状态另行回读。本机私有日志任务标识`dtc-cr-fixes-20261106`，前缀`epig/codex-*`，不将凭据或原始会话入Git。
+
+## 前次交付状态（CR前，2026-11-06）
 
 5d持久运行时、显式迁移/adapter/tcp及真实HTTP已交付，代码5d6cb6e、隔离范围修复fe15a99、记录e675720；历史CI42081613637成功。默认mock保留，显式postgres所需配置失败不回退mock，未部署生产。各阶段历史失败与验证记录保留在下文。
 

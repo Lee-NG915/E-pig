@@ -1,6 +1,6 @@
 # After-sales panel
 
-状态：实施前行为规范；产品正本见DTC售后蓝图，执行设计见本仓`docs/engineering/after-sales-agent-integration.md`的消费者页面窗口。组件服务已由服务器确认归属的订单，只使用现有消费者售后接口。
+状态：已实现，已有合成浏览器子范围验收；当前CR修复与生产验收状态见实施记录。产品正本见DTC售后蓝图，执行设计见本仓`docs/engineering/after-sales-agent-integration.md`的消费者页面窗口。组件服务已由服务器确认归属的订单，只使用现有消费者售后接口。
 
 ## 用户故事
 
