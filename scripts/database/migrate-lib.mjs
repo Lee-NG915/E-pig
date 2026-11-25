@@ -15,6 +15,7 @@ export const MIGRATION_SCOPES = Object.freeze({
     "001-commerce.sql",
     "002-after-sales-requests.sql",
     "003-after-sales-tickets.sql",
+    "004-consumer-identities.sql",
   ]),
 });
 
