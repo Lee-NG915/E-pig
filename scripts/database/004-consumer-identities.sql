@@ -3,7 +3,7 @@
 -- signed-in GitHub user may read. No passwords or tokens are stored here.
 CREATE TABLE IF NOT EXISTS consumer_identities (
   github_id TEXT NOT NULL,
-  cart_id UUID NOT NULL,
+  cart_id TEXT NOT NULL,
   login TEXT NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   PRIMARY KEY (github_id, cart_id)
