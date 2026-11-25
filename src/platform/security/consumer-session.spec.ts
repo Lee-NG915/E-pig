@@ -33,13 +33,17 @@ describe("consumer session", () => {
 });
 
 describe("oauth state", () => {
-  it("accepts a fresh state only once", () => {
-    const state = issueOAuthState();
-    expect(consumeOAuthState(state)).toBe(true);
-    expect(consumeOAuthState(state)).toBe(false);
+  const stateSecret = "c".repeat(64);
+
+  it("accepts a stateless signed state within its TTL", () => {
+    // 无状态实现：login 与 callback 可在不同实例，TTL 内校验通过即可；
+    // 单次消费语义由 GitHub code 的单次兑换保证（见 oauth-state.ts 注释）。
+    const state = issueOAuthState(stateSecret);
+    expect(consumeOAuthState(state, stateSecret)).toBe(true);
   });
 
-  it("rejects unknown states", () => {
-    expect(consumeOAuthState("forged-state")).toBe(false);
+  it("rejects forged or wrongly-signed states", () => {
+    expect(consumeOAuthState("forged-state", stateSecret)).toBe(false);
+    expect(consumeOAuthState(issueOAuthState(stateSecret), "d".repeat(64))).toBe(false);
   });
 });

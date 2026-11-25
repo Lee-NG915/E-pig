@@ -12,11 +12,11 @@ export async function GET(request: Request) {
   const url = new URL(request.url);
   const code = url.searchParams.get("code") ?? "";
   const state = url.searchParams.get("state") ?? "";
-  if (!code || !consumeOAuthState(state)) {
-    return NextResponse.json({ error: "invalid or expired OAuth state" }, { status: 401 });
-  }
   if (!env.GITHUB_CLIENT_ID || !env.GITHUB_CLIENT_SECRET || !env.CONSUMER_SESSION_SECRET) {
     return NextResponse.json({ error: "GitHub sign-in is not configured" }, { status: 503 });
+  }
+  if (!code || !consumeOAuthState(state, env.CONSUMER_SESSION_SECRET)) {
+    return NextResponse.json({ error: "invalid or expired OAuth state" }, { status: 401 });
   }
 
   const tokenResponse = await fetch("https://github.com/login/oauth/access_token", {

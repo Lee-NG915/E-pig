@@ -6,10 +6,11 @@ import { issueOAuthState } from "@/platform/security/oauth-state";
 function oauthConfig() {
   const clientId = env.GITHUB_CLIENT_ID;
   const redirectUrl = env.GITHUB_OAUTH_REDIRECT_URL;
-  if (!clientId || !env.GITHUB_CLIENT_SECRET || !redirectUrl || !env.CONSUMER_SESSION_SECRET) {
+  const sessionSecret = env.CONSUMER_SESSION_SECRET;
+  if (!clientId || !env.GITHUB_CLIENT_SECRET || !redirectUrl || !sessionSecret) {
     return null;
   }
-  return { clientId, redirectUrl };
+  return { clientId, redirectUrl, sessionSecret };
 }
 
 export async function GET() {
@@ -21,7 +22,7 @@ export async function GET() {
     client_id: config.clientId,
     redirect_uri: config.redirectUrl,
     scope: "read:user",
-    state: issueOAuthState(),
+    state: issueOAuthState(config.sessionSecret),
   });
   return NextResponse.redirect(`https://github.com/login/oauth/authorize?${params}`, 302);
 }
