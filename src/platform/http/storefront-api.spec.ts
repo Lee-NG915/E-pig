@@ -12,7 +12,7 @@ function fixture(configuredOrigin = origin) {
   const ports = {
     cart: { createCart: vi.fn().mockResolvedValue(cart), findCartByCreationKey: vi.fn().mockResolvedValue(null), hasMutation: vi.fn().mockResolvedValue(false), getCart: vi.fn().mockResolvedValue(cart), addItem: vi.fn().mockResolvedValue(cart), addItems: vi.fn().mockResolvedValue(cart), updateItem: vi.fn().mockResolvedValue(cart), removeItem: vi.fn(), applyCoupon: vi.fn().mockResolvedValue(cart) },
     checkout: { start: vi.fn(), get: vi.fn(), reconcile: vi.fn(), cancel: vi.fn() },
-    orders: { list: vi.fn().mockResolvedValue([]), get: vi.fn() },
+    orders: { list: vi.fn().mockResolvedValue([]), listByCartIds: vi.fn().mockResolvedValue([]), get: vi.fn() },
   };
   const getCommerce = vi.fn(() => ports);
   const dependencies: StorefrontApiDependencies = { market: "au", origin: configuredOrigin, cookieSecret: secret, secure: true, checkoutEnabled: true, getCommerce };

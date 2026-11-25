@@ -530,4 +530,14 @@ describe("durable sandbox commerce (actual PostgreSQL SQL)", () => {
     const unlocked = await app.cart.getCart(cart.id); expect(unlocked.lockedCheckoutId).toBeUndefined(); expect(unlocked.revision).toBe(cart.revision + 1);
     expect((await app.checkout.start(cart.id, input(unlocked.revision), { idempotencyKey: key() })).id).not.toBe(checkout.id);
   });
+
+  it("listByCartIds returns only orders from the given carts and handles empty input", async () => {
+    const { orders } = service();
+    await db.query("INSERT INTO commerce_carts (id, market, creation_key, data) VALUES ('cart-a','au','ka','{}'),('cart-b','au','kb','{}'),('cart-c','au','kc','{}')");
+    await db.query("INSERT INTO commerce_checkouts (id, cart_id, market, revision, input_signature, data, payment_request, first_attempt_at) VALUES ('co_a','cart-a','au',1,'sig','{}','{}',now()),('co_b','cart-b','au',1,'sig','{}','{}',now()),('co_c','cart-c','au',1,'sig','{}','{}',now())");
+    await db.query("INSERT INTO commerce_orders (id, checkout_id, cart_id, market, data) VALUES ('ord_a','co_a','cart-a','au','{\"id\":\"ord_a\"}'),('ord_b','co_b','cart-b','au','{\"id\":\"ord_b\"}'),('ord_c','co_c','cart-c','au','{\"id\":\"ord_c\"}')");
+    const visible = await orders.listByCartIds(["cart-a", "cart-b"]);
+    expect(visible.map((order) => order.id).sort()).toEqual(["ord_a", "ord_b"]);
+    expect(await orders.listByCartIds([])).toEqual([]);
+  });
 });

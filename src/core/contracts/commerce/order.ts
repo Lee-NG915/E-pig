@@ -19,5 +19,6 @@ export type Order = {
 };
 export interface OrderPort {
   list(cartId: string): Promise<Order[]>;
+  listByCartIds(cartIds: string[]): Promise<Order[]>;
   get(cartId: string, orderId: string): Promise<Order>;
 }

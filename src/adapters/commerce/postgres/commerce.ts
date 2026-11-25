@@ -263,6 +263,14 @@ export function createPostgresCommerce({ pool, catalog, market, payment, origin,
       const { rows } = await pool.query("SELECT data FROM commerce_orders WHERE cart_id = $1 AND market = $2 ORDER BY data->>'createdAt' DESC", [cartId, market.id]);
       return rows.map((row) => row.data as Order);
     },
+    async listByCartIds(cartIds) {
+      if (cartIds.length === 0) return [];
+      const { rows } = await pool.query(
+        "SELECT data FROM commerce_orders WHERE cart_id = ANY($1::text[]) AND market = $2 ORDER BY data->>'createdAt' DESC",
+        [cartIds, market.id],
+      );
+      return rows.map((row) => row.data as Order);
+    },
     async get(cartId, id) {
       const { rows } = await pool.query("SELECT data FROM commerce_orders WHERE id = $1 AND cart_id = $2 AND market = $3", [id, cartId, market.id]);
       if (!rows[0]) throw new AppError("not_found", "Order not found");

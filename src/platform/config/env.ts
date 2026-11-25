@@ -35,6 +35,12 @@ export const serverEnvSchema = {
    */
   DATABASE_DRIVER: z.enum(["neon", "tcp"]).default("neon"),
   CART_COOKIE_SECRET: z.string().min(32).optional(),
+  /** GitHub OAuth for the consumer platform. Optional so mock/dev still starts. */
+  GITHUB_CLIENT_ID: z.string().optional(),
+  GITHUB_CLIENT_SECRET: z.string().optional(),
+  GITHUB_OAUTH_REDIRECT_URL: z.url().optional(),
+  /** HMAC secret for the consumer session cookie; >=32 chars when OAuth is used. */
+  CONSUMER_SESSION_SECRET: z.string().min(32).optional(),
   APP_ORIGIN: z.url().refine(value => {
     const url = new URL(value);
     return !url.username && !url.password && url.pathname === "/" && !url.search && !url.hash
@@ -82,6 +88,10 @@ export const env = createEnv({
     STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,
     AFTER_SALES_SERVICE_TOKEN: process.env.AFTER_SALES_SERVICE_TOKEN,
     AFTER_SALES_SERVICE_MARKETS: process.env.AFTER_SALES_SERVICE_MARKETS,
+    GITHUB_CLIENT_ID: process.env.GITHUB_CLIENT_ID,
+    GITHUB_CLIENT_SECRET: process.env.GITHUB_CLIENT_SECRET,
+    GITHUB_OAUTH_REDIRECT_URL: process.env.GITHUB_OAUTH_REDIRECT_URL,
+    CONSUMER_SESSION_SECRET: process.env.CONSUMER_SESSION_SECRET,
   },
 });
 
