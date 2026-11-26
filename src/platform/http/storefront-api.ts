@@ -21,6 +21,13 @@ const cartInput = z.discriminatedUnion("action", [
 export type StorefrontApiDependencies = {
   market: string; origin: string; cookieSecret: string; secure: boolean; checkoutEnabled: boolean;
   getCommerce(): { cart: CartPort; checkout: CheckoutPort; orders: OrderPort };
+  /**
+   * 可选副作用：checkout 成功创建后，把当前登录消费者身份绑定到该购物车。
+   * 登录回调只能绑定"登录那一刻存在"的购物车；后创建的购物车（先加购后登录、
+   * 会话过期后新起）只有在进入 checkout 时绑定，订单才能跨设备被消费者读取。
+   * 绑定失败必须不影响 checkout 主流程（可降级副作用）。
+   */
+  bindConsumerIdentity?(cartId: string, request: Request): Promise<void>;
 };
 export type StorefrontResource = "cart" | "checkout" | "orders";
 const headers = { "Cache-Control": "private, no-store, max-age=0", Vary: "Cookie", "X-Content-Type-Options": "nosniff" };
@@ -105,7 +112,16 @@ export function createStorefrontApi(deps: StorefrontApiDependencies) {
       if (request.method !== "POST") return privateJson({ error: { kind: "not_found", message: "Choose a checkout to view." } }, 404);
       const body = checkoutInputSchema.extend({ idempotencyKey: requestKey }).parse(await jsonInput(request));
       const { idempotencyKey, ...input } = body;
-      return privateJson({ checkout: await port.start(cartId, input, { idempotencyKey }) });
+      const checkout = await port.start(cartId, input, { idempotencyKey });
+      if (deps.bindConsumerIdentity) {
+        try {
+          await deps.bindConsumerIdentity(cartId, request);
+        } catch (bindError) {
+          // 绑定是 checkout 成功后的可降级副作用：失败只记日志，不影响支付主流程。
+          console.error(JSON.stringify({ level: "warn", event: "consumer.bind_failed", cartId, error: String(bindError) }));
+        }
+      }
+      return privateJson({ checkout });
     } catch (error) { return apiError(error); }
   };
 }

@@ -8,14 +8,14 @@ const origin = "https://sandbox.example.test";
 const secret = "test-cookie-secret-32-characters-minimum";
 const id = "e87cd5ec-2cea-49cf-ad35-5159c8830478";
 const cart: Cart = { id, market: "au", revision: 0, lines: [], subtotal: { amount: 0, currency: "AUD" } };
-function fixture(configuredOrigin = origin) {
+function fixture(configuredOrigin = origin, extraDeps: Partial<StorefrontApiDependencies> = {}) {
   const ports = {
     cart: { createCart: vi.fn().mockResolvedValue(cart), findCartByCreationKey: vi.fn().mockResolvedValue(null), hasMutation: vi.fn().mockResolvedValue(false), getCart: vi.fn().mockResolvedValue(cart), addItem: vi.fn().mockResolvedValue(cart), addItems: vi.fn().mockResolvedValue(cart), updateItem: vi.fn().mockResolvedValue(cart), removeItem: vi.fn(), applyCoupon: vi.fn().mockResolvedValue(cart) },
     checkout: { start: vi.fn(), get: vi.fn(), reconcile: vi.fn(), cancel: vi.fn() },
     orders: { list: vi.fn().mockResolvedValue([]), listByCartIds: vi.fn().mockResolvedValue([]), get: vi.fn() },
   };
   const getCommerce = vi.fn(() => ports);
-  const dependencies: StorefrontApiDependencies = { market: "au", origin: configuredOrigin, cookieSecret: secret, secure: true, checkoutEnabled: true, getCommerce };
+  const dependencies: StorefrontApiDependencies = { market: "au", origin: configuredOrigin, cookieSecret: secret, secure: true, checkoutEnabled: true, getCommerce, ...extraDeps };
   return { ...ports, getCommerce, api: createStorefrontApi(dependencies) };
 }
 function request(method = "GET", body?: unknown, cookie?: string, suppliedOrigin = origin) {
@@ -218,5 +218,60 @@ describe("storefront HTTP boundary", () => {
     const response = await api(request("GET", undefined, signCartCookie(id, "au", secret)), "au", "checkout", "c1");
     expect(response.status).toBe(503);
     expect(JSON.stringify(await response.json())).not.toContain("secret provider");
+  });
+});
+
+describe("checkout consumer identity binding", () => {
+  const checkoutBody = {
+    revision: 0,
+    expectedTotal: { amount: 1780, currency: "AUD" },
+    contact: { name: "Demo User", email: "demo@example.com" },
+    address: { line1: "1 Demo St", city: "Sydney", state: "NSW", postalCode: "2000", country: "AU" },
+    idempotencyKey: "728fe92a-066f-48bd-9883-d13b858ebba9",
+  };
+  const checkoutRequest = (cookieValue: string) =>
+    new Request(`${origin}/api/au/checkout`, {
+      method: "POST",
+      headers: { origin, "content-type": "application/json", cookie: `epig_cart_au=${cookieValue}` },
+      body: JSON.stringify(checkoutBody),
+    });
+
+  it("binds the consumer identity to the bag after checkout starts", async () => {
+    // 回归：登录回调只能绑定登录那一刻存在的购物车；后创建的购物车
+    // （先加购后登录、会话过期后新起）必须在进入 checkout 时绑定，
+    // 否则订单对登录消费者不可见（DTC/consumer orders 查不到）。
+    const bind = vi.fn().mockResolvedValue(undefined);
+    const { api, checkout } = fixture(origin, { bindConsumerIdentity: bind });
+    checkout.start.mockResolvedValue({ id: "co_1", status: "open" });
+
+    const response = await api(checkoutRequest(signCartCookie(id, "au", secret)), "au", "checkout");
+
+    expect(response.status).toBe(200);
+    expect(checkout.start).toHaveBeenCalledOnce();
+    expect(bind).toHaveBeenCalledWith(id, expect.any(Request));
+  });
+
+  it("keeps checkout successful when the binding side effect fails", async () => {
+    const bind = vi.fn().mockRejectedValue(new Error("db down"));
+    const { api, checkout } = fixture(origin, { bindConsumerIdentity: bind });
+    checkout.start.mockResolvedValue({ id: "co_1", status: "open" });
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const response = await api(checkoutRequest(signCartCookie(id, "au", secret)), "au", "checkout");
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ checkout: { id: "co_1", status: "open" } });
+    expect(bind).toHaveBeenCalledOnce();
+    errorSpy.mockRestore();
+  });
+
+  it("does not require the binding dependency to serve checkout", async () => {
+    const { api, checkout } = fixture();
+    checkout.start.mockResolvedValue({ id: "co_1", status: "open" });
+
+    const response = await api(checkoutRequest(signCartCookie(id, "au", secret)), "au", "checkout");
+
+    expect(response.status).toBe(200);
+    expect(checkout.start).toHaveBeenCalledOnce();
   });
 });
