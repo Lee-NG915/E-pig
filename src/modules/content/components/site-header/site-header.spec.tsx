@@ -34,9 +34,17 @@ vi.mock("@/modules/cart/lib/cart-store", async (importOriginal) => ({
 }));
 beforeEach(() => {
   cart.lines = [];
+  // AccountMenu 挂载即拉取登录态；头部测试固定按未登录处理
+  vi.stubGlobal(
+    "fetch",
+    vi.fn().mockResolvedValue({ ok: true, json: async () => ({ signed_in: false }) }),
+  );
 });
 
 afterEach(cleanup);
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
 
 function renderHeader() {
   return render(

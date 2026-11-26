@@ -21,6 +21,7 @@ import { Button } from "@e-pig/happy-dog/components/button";
 
 import { MegaPanel } from "./parts/mega-panel";
 import { MobileNav } from "./parts/mobile-nav";
+import { AccountMenu } from "../account-menu/account-menu";
 
 function pathIsActive(
   pathname: string,
@@ -259,6 +260,7 @@ export function SiteHeader() {
             >
               Orders
             </Link>
+            <AccountMenu />
             <Button
               type="button"
               variant="ghost"
